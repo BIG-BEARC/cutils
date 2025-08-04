@@ -51,19 +51,19 @@ class TimelineUtil {
     String? locale,
     DayFormat? dayFormat,
   }) {
-    int _locTimeMs = locTimeMs ?? DateTime.now().millisecondsSinceEpoch;
-    String _locale = locale ?? 'en';
-    TimelineInfo info = _timelineInfoMap[_locale] ?? EnInfo();
-    DayFormat _dayFormat = dayFormat ?? DayFormat.common;
+    int nowMs = locTimeMs ?? DateTime.now().millisecondsSinceEpoch;
+    String useLocale = locale ?? 'en';
+    TimelineInfo info = _timelineInfoMap[useLocale] ?? EnInfo();
+    DayFormat useDayFormat = dayFormat ?? DayFormat.common;
 
-    int elapsed = _locTimeMs - ms;
+    int elapsed = nowMs - ms;
     String suffix;
     if (elapsed < 0) {
       suffix = info.suffixAfter();
       // suffix after is empty. user just now.
       if (suffix.isNotEmpty) {
         elapsed = elapsed.abs();
-        _dayFormat = DayFormat.simple;
+        useDayFormat = DayFormat.simple;
       } else {
         return info.lessThanOneMinute();
       }
@@ -72,12 +72,12 @@ class TimelineUtil {
     }
 
     String timeline;
-    if (info.customYesterday().isNotEmpty && dateUtils.isYesterdayByMs(ms, _locTimeMs)) {
-      return _getYesterday(ms, info, _dayFormat);
+    if (info.customYesterday().isNotEmpty && dateUtils.isYesterdayByMs(ms, nowMs)) {
+      return _getYesterday(ms, info, useDayFormat);
     }
 
-    if (!dateUtils.yearIsEqualByMs(ms, _locTimeMs)) {
-      timeline = _getYear(ms, _dayFormat);
+    if (!dateUtils.yearIsEqualByMs(ms, nowMs)) {
+      timeline = _getYear(ms, useDayFormat);
       if (timeline.isNotEmpty) return timeline;
     }
 
@@ -100,10 +100,10 @@ class TimelineUtil {
       timeline = info.hours(hours.round());
     } else {
       if ((days.round() == 1 && info.keepOneDay() == true) || (days.round() == 2 && info.keepTwoDays() == true)) {
-        _dayFormat = DayFormat.simple;
+        useDayFormat = DayFormat.simple;
       }
-      timeline = _formatDays(ms, days.round(), info, _dayFormat);
-      suffix = (_dayFormat == DayFormat.simple ? suffix : '');
+      timeline = _formatDays(ms, days.round(), info, useDayFormat);
+      suffix = (useDayFormat == DayFormat.simple ? suffix : '');
     }
     return timeline + suffix;
   }

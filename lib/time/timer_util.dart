@@ -1,7 +1,7 @@
 import 'dart:async';
 
 ///timer callback.(millisUntilFinished 毫秒).
-typedef void OnTimerTickCallback(int millisUntilFinished);
+typedef OnTimerTickCallback = void Function(int millisUntilFinished);
 
 /// TimerUtil.
 class TimerUtil {
