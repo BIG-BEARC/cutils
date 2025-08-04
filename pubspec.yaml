@@ -1,8 +1,8 @@
 name: cutils
-description: "A new Flutter project."
+description: "Flutter Utils."
 version: 0.0.1
-homepage:
-
+homepage: https://github.com/BIG-BEARC/cutils
+repository: https://github.com/BIG-BEARC/cutils
 environment:
   sdk: ^3.6.2
   flutter: '>=3.3.0'

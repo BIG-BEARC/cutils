@@ -1,181 +1,11 @@
-
 import 'package:cutils/date/date_utils.dart';
 
-/// (xx)Configurable output.
-/// (xx)为可配置输出.
-enum DayFormat {
-  /// (less than 10s->just now)、x minutes、x hours、(Yesterday)、x days.
-  /// (小于10s->刚刚)、x分钟、x小时、(昨天)、x天.
-  simple,
-
-  /// (less than 10s->just now)、x minutes、x hours、[This year:(Yesterday/a day ago)、(two days age)、MM-dd ]、[past years: yyyy-MM-dd]
-  /// (小于10s->刚刚)、x分钟、x小时、[今年: (昨天/1天前)、(2天前)、MM-dd],[往年: yyyy-MM-dd].
-  common,
-
-  /// 日期 + HH:mm
-  /// (less than 10s->just now)、x minutes、x hours、[This year:(Yesterday HH:mm/a day ago)、(two days age)、MM-dd HH:mm]、[past years: yyyy-MM-dd HH:mm]
-  /// 小于10s->刚刚)、x分钟、x小时、[今年: (昨天 HH:mm/1天前)、(2天前)、MM-dd HH:mm],[往年: yyyy-MM-dd HH:mm].
-  full,
-}
-
-/// Timeline information configuration.
-/// Timeline信息配置.
-abstract class TimelineInfo {
-  String suffixAgo(); //suffix ago(后缀 后).
-
-  String suffixAfter(); //suffix after(后缀 前).
-
-  int maxJustNowSecond() => 30; // max just now second.
-
-  String lessThanOneMinute() => ''; //just now(刚刚).
-
-  String customYesterday() => ''; //Yesterday(昨天).优先级高于keepOneDay
-
-  bool keepOneDay(); //保持1天,example: true -> 1天前, false -> MM-dd.
-
-  bool keepTwoDays(); //保持2天,example: true -> 2天前, false -> MM-dd.
-
-  String oneMinute(int minutes); //a minute(1分钟).
-
-  String minutes(int minutes); //x minutes(x分钟).
-
-  String anHour(int hours); //an hour(1小时).
-
-  String hours(int hours); //x hours(x小时).
-
-  String oneDay(int days); //a day(1天).
-
-  String weeks(int week) => ''; //x week(星期x).
-
-  String days(int days); //x days(x天).
-
-}
-
-class ZhInfo implements TimelineInfo {
-  @override
-  String suffixAgo() => '前';
-  @override
-  String suffixAfter() => '后';
-  @override
-  int maxJustNowSecond() => 30;
-  @override
-  String lessThanOneMinute() => '刚刚';
-  @override
-  String customYesterday() => '昨天';
-  @override
-  bool keepOneDay() => true;
-  @override
-  bool keepTwoDays() => true;
-  @override
-  String oneMinute(int minutes) => '$minutes分钟';
-  @override
-  String minutes(int minutes) => '$minutes分钟';
-
-  @override
-  String anHour(int hours) => '$hours小时';
-
-  @override
-  String hours(int hours) => '$hours小时';
-  @override
-  String oneDay(int days) => '$days天';
-  @override
-  String weeks(int week) => ''; //x week(星期x).
-  @override
-  String days(int days) => '$days天';
-}
-
-class EnInfo implements TimelineInfo {
-  @override
-  String suffixAgo() => ' ago';
-  @override
-  String suffixAfter() => ' after';
-  @override
-  int maxJustNowSecond() => 30;
-  @override
-  String lessThanOneMinute() => 'just now';
-  @override
-  String customYesterday() => 'Yesterday';
-  @override
-  bool keepOneDay() => true;
-  @override
-  bool keepTwoDays() => true;
-  @override
-  String oneMinute(int minutes) => 'a minute';
-  @override
-  String minutes(int minutes) => '$minutes minutes';
-  @override
-  String anHour(int hours) => 'an hour';
-  @override
-  String hours(int hours) => '$hours hours';
-  @override
-  String oneDay(int days) => 'a day';
-  @override
-  String weeks(int week) => ''; //x week(星期x).
-  @override
-  String days(int days) => '$days days';
-}
-
-class ZhNormalInfo implements TimelineInfo {
-  @override
-  String suffixAgo() => '前';
-  @override
-  String suffixAfter() => '后';
-  @override
-  int maxJustNowSecond() => 30;
-  @override
-  String lessThanOneMinute() => '刚刚';
-  @override
-  String customYesterday() => '昨天';
-  @override
-  bool keepOneDay() => true;
-  @override
-  bool keepTwoDays() => false;
-  @override
-  String oneMinute(int minutes) => '$minutes分钟';
-  @override
-  String minutes(int minutes) => '$minutes分钟';
-  @override
-  String anHour(int hours) => '$hours小时';
-  @override
-  String hours(int hours) => '$hours小时';
-  @override
-  String oneDay(int days) => '$days天';
-  @override
-  String weeks(int week) => ''; //x week(星期x).
-  @override
-  String days(int days) => '$days天';
-}
-
-class EnNormalInfo implements TimelineInfo {
-  @override
-  String suffixAgo() => ' ago';
-  @override
-  String suffixAfter() => ' after';
-  @override
-  int maxJustNowSecond() => 30;
-  @override
-  String lessThanOneMinute() => 'just now';
-  @override
-  String customYesterday() => 'Yesterday';
-  @override
-  bool keepOneDay() => true;
-  @override
-  bool keepTwoDays() => false;
-  @override
-  String oneMinute(int minutes) => 'a minute';
-  @override
-  String minutes(int minutes) => '$minutes minutes';
-  @override
-  String anHour(int hours) => 'an hour';
-  @override
-  String hours(int hours) => '$hours hours';
-  @override
-  String oneDay(int days) => 'a day';
-  @override
-  String weeks(int week) => ''; //x week(星期x).
-  @override
-  String days(int days) => '$days days';
-}
+import 'abs_time_info.dart';
+import 'day_format.dart';
+import 'en_info.dart';
+import 'en_normal_info.dart';
+import 'zh_info.dart';
+import 'zh_normal_info.dart';
 
 Map<String, TimelineInfo> _timelineInfoMap = {
   'zh': ZhInfo(),
@@ -242,8 +72,7 @@ class TimelineUtil {
     }
 
     String timeline;
-    if (info.customYesterday().isNotEmpty &&
-        dateUtils.isYesterdayByMs(ms, _locTimeMs)) {
+    if (info.customYesterday().isNotEmpty && dateUtils.isYesterdayByMs(ms, _locTimeMs)) {
       return _getYesterday(ms, info, _dayFormat);
     }
 
@@ -259,9 +88,7 @@ class TimelineUtil {
 
     if (seconds < 90) {
       timeline = info.oneMinute(1);
-      if (suffix != info.suffixAfter() &&
-          info.lessThanOneMinute().isNotEmpty &&
-          seconds < info.maxJustNowSecond()) {
+      if (suffix != info.suffixAfter() && info.lessThanOneMinute().isNotEmpty && seconds < info.maxJustNowSecond()) {
         timeline = info.lessThanOneMinute();
         suffix = '';
       }
@@ -272,8 +99,7 @@ class TimelineUtil {
     } else if (hours < 24) {
       timeline = info.hours(hours.round());
     } else {
-      if ((days.round() == 1 && info.keepOneDay() == true) ||
-          (days.round() == 2 && info.keepTwoDays() == true)) {
+      if ((days.round() == 1 && info.keepOneDay() == true) || (days.round() == 2 && info.keepTwoDays() == true)) {
         _dayFormat = DayFormat.simple;
       }
       timeline = _formatDays(ms, days.round(), info, _dayFormat);
@@ -311,8 +137,7 @@ class TimelineUtil {
     }
 
     if (dateUtils.isWeek(ms, locMs: locTimeMs)) {
-      return dateUtils.getWeekdayByMs(ms,
-          languageCode: languageCode, short: short);
+      return dateUtils.getWeekdayByMs(ms, languageCode: languageCode, short: short);
     }
 
     return dateUtils.formatDateMs(ms, format: format);
@@ -325,10 +150,7 @@ class TimelineUtil {
     TimelineInfo info,
     DayFormat dayFormat,
   ) {
-    return info.customYesterday() +
-        (dayFormat == DayFormat.full
-            ? (' ${dateUtils.formatDateMs(ms, format: 'HH:mm')}')
-            : '');
+    return info.customYesterday() + (dayFormat == DayFormat.full ? (' ${dateUtils.formatDateMs(ms, format: 'HH:mm')}') : '');
   }
 
   /// get is not year info.
@@ -338,10 +160,7 @@ class TimelineUtil {
     DayFormat dayFormat,
   ) {
     if (dayFormat != DayFormat.simple) {
-      return dateUtils.formatDateMs(ms,
-          format: (dayFormat == DayFormat.common
-              ? 'yyyy-MM-dd'
-              : 'yyyy-MM-dd HH:mm'));
+      return dateUtils.formatDateMs(ms, format: (dayFormat == DayFormat.common ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm'));
     }
     return '';
   }
