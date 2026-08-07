@@ -1,12 +1,12 @@
 // Flutter imports:
 import 'package:flutter/material.dart';
 
-import '../log_collector.dart';
-import '../log_collector_config.dart';
-import '../log_collector_helper.dart';
-import '../log_entry.dart';
-import '../log_interceptor.dart';
-import '../log_output.dart';
+import 'package:cutils/log_collector/log_collector.dart';
+import 'package:cutils/log_collector/log_collector_config.dart';
+import 'package:cutils/log_collector/log_collector_helper.dart';
+import 'package:cutils/log_collector/log_entry.dart';
+import 'package:cutils/log_collector/log_interceptor.dart';
+import 'package:cutils/log_collector/log_output.dart';
 
 /// * @Author: chuxiong
 /// * @Created at: 2025/01/XX
