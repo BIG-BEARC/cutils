@@ -1,8 +1,2 @@
-
-import 'cutils_platform_interface.dart';
-
-class Cutils {
-  Future<String?> getPlatformVersion() {
-    return CutilsPlatform.instance.getPlatformVersion();
-  }
-}
+// cutils 顶层 barrel —— 详见 Task 10。
+library;
