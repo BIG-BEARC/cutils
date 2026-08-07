@@ -5,14 +5,14 @@ import 'data_formats.dart';
 /// * @Created at: 23-07-2025 16:58
 /// * @Email:
 /// * description
-final dateUtils = DateUtils();
+final dateTimeUtils = DateTimeUtils();
 
-class DateUtils {
-  DateUtils._();
+class DateTimeUtils {
+  DateTimeUtils._();
 
-  static final DateUtils _instance = DateUtils._();
+  static final DateTimeUtils _instance = DateTimeUtils._();
 
-  factory DateUtils() => _instance;
+  factory DateTimeUtils() => _instance;
 
   /// get DateTime By DateStr.
   /// 将字符串时间转化为DateTime
