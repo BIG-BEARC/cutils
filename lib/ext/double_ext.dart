@@ -1,3 +1,5 @@
+import 'string_ext.dart';
+
 /// * @Author: chuxiong
 /// * @Created at: 2023/3/2 4:04 下午
 /// * @Email:
@@ -67,5 +69,20 @@ extension DoubleFormating on double? {
   // 百分比格式化
   String percentFormat([int fractionDigits = 2]) {
     return '${safeValue.toStringAsFixed(fractionDigits)}%';
+  }
+
+  /// 千分位格式化（保留原始小数位）。
+  ///
+  /// 将整数部分每 [digit] 位用 [pattern] 分组，小数部分原样保留。
+  /// 与 [thousandSeparated] 不同：不强制两位小数，且支持自定义分组。
+  /// 例如：`1234567.89.formatDoubleComma3()` → `"1,234,567.89"`。
+  String formatDoubleComma3({int digit = 3, String pattern = ','}) {
+    final n = this;
+    if (n == null) return '0.0';
+    final s = n.toString();
+    final list = s.split('.');
+    final left = list[0].formatDigitPatternEnd(digit: digit, pattern: pattern);
+    final right = list[1];
+    return '$left.$right';
   }
 }

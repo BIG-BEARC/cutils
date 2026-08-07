@@ -115,7 +115,8 @@ extension StringExt on String? {
   // URL 处理
   bool get isUrl {
     if (isNullOrEmpty) return false;
-    final urlPattern = r'(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?';
+    final urlPattern =
+        r'(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?';
     return RegExp(urlPattern).hasMatch(this!);
   }
 
@@ -153,5 +154,107 @@ extension StringExt on String? {
       }
     }
     return buffer.toString();
+  }
+
+  /// 判断一个字符串以任何给定的前缀开始。
+  bool startsWithAny(List<Pattern> prefixes, [int index = 0]) {
+    final s = this;
+    if (s == null) return false;
+    return prefixes.any((prefix) => s.startsWith(prefix, index));
+  }
+
+  /// 判断一个字符串是否包含任何给定的搜索模式。
+  bool containsAny(List<Pattern> searchPatterns, [int startIndex = 0]) {
+    final s = this;
+    if (s == null) return false;
+    return searchPatterns.any((prefix) => s.contains(prefix, startIndex));
+  }
+
+  /// 使用点缩写字符串。
+  String? abbreviate(int maxWidth, {int offset = 0}) {
+    final s = this;
+    if (s == null) {
+      return null;
+    } else if (s.length <= maxWidth) {
+      return s;
+    } else if (offset < 3) {
+      return '${s.substring(offset, (offset + maxWidth) - 3)}...';
+    } else if (maxWidth - offset < 3) {
+      return '...${s.substring(offset, (offset + maxWidth) - 3)}';
+    }
+    return '...${s.substring(offset, (offset + maxWidth) - 6)}...';
+  }
+
+  /// 比较两个字符串是否相同，返回 -1/0/1。
+  int compare(String? other) {
+    final s = this;
+    if (s == null || other == null) {
+      return s == null ? -1 : 1;
+    }
+    if (s == other) {
+      return 0;
+    }
+    return s.compareTo(other);
+  }
+
+  /// 比较两个长度一样的字符串有几个字符不同。
+  int hammingDistance(String other) {
+    final s = this!;
+    if (s.length != other.length) {
+      throw FormatException('Strings must have the same length');
+    }
+    var l1 = s.runes.toList();
+    var l2 = other.runes.toList();
+    var distance = 0;
+    for (var i = 0; i < l1.length; i++) {
+      if (l1[i] != l2[i]) {
+        distance++;
+      }
+    }
+    return distance;
+  }
+
+  /// 每隔 x 位加 pattern。比如用来格式化银行卡。
+  String formatDigitPattern({int digit = 4, String pattern = ' '}) {
+    var text = this!.replaceAllMapped(RegExp('(.{$digit})'), (Match match) {
+      return '${match.group(0)}$pattern';
+    });
+    if (text.endsWith(pattern)) {
+      text = text.substring(0, text.length - 1);
+    }
+    return text;
+  }
+
+  /// 每隔 x 位加 pattern，从末尾开始。
+  String formatDigitPatternEnd({int digit = 4, String pattern = ' '}) {
+    final s = this!;
+    String temp = s.reverse();
+    temp = temp.formatDigitPattern(digit: digit, pattern: pattern);
+    temp = temp.reverse();
+    return temp;
+  }
+
+  /// 每隔 4 位加空格。
+  String formatSpace4() {
+    return formatDigitPattern();
+  }
+
+  /// 隐藏手机号中间 n 位。
+  String hideNumber({int start = 3, int end = 7, String replacement = '****'}) {
+    return this!.replaceRange(start, end, replacement);
+  }
+
+  /// 反转字符串。
+  String reverse() {
+    if (isNullOrEmpty) {
+      return '';
+    }
+    final s = this!;
+    StringBuffer sb = StringBuffer();
+    for (int i = s.length - 1; i >= 0; i--) {
+      var codeUnitAt = s.codeUnitAt(i);
+      sb.writeCharCode(codeUnitAt);
+    }
+    return sb.toString();
   }
 }
