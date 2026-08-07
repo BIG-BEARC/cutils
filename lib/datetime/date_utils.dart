@@ -1,4 +1,3 @@
-
 import 'data_formats.dart';
 
 /// * @Author: chuxiong
@@ -103,7 +102,8 @@ class DateTimeUtils {
       if (format.contains('yyyy')) {
         format = format.replaceAll('yyyy', year);
       } else {
-        format = format.replaceAll('yy', year.substring(year.length - 2, year.length));
+        format = format.replaceAll(
+            'yy', year.substring(year.length - 2, year.length));
       }
     }
 
@@ -121,7 +121,8 @@ class DateTimeUtils {
   String _comFormat(int value, String format, String single, String full) {
     if (format.contains(single)) {
       if (format.contains(full)) {
-        format = format.replaceAll(full, value < 10 ? '0$value' : value.toString());
+        format =
+            format.replaceAll(full, value < 10 ? '0$value' : value.toString());
       } else {
         format = format.replaceAll(single, value.toString());
       }
@@ -134,7 +135,8 @@ class DateTimeUtils {
   /// isUtc
   /// languageCode zh or en
   /// short
-  String getWeekday(DateTime? dateTime, {String languageCode = 'en', bool short = false}) {
+  String getWeekday(DateTime? dateTime,
+      {String languageCode = 'en', bool short = false}) {
     if (dateTime == null) return "";
     String weekday = "";
     switch (dateTime.weekday) {
@@ -162,7 +164,9 @@ class DateTimeUtils {
       default:
         break;
     }
-    return languageCode == 'zh' ? (short ? weekday.replaceAll('星期', '周') : weekday) : weekday.substring(0, short ? 3 : weekday.length);
+    return languageCode == 'zh'
+        ? (short ? weekday.replaceAll('星期', '周') : weekday)
+        : weekday.substring(0, short ? 3 : weekday.length);
   }
 
   /// get WeekDay By Milliseconds.
@@ -202,7 +206,8 @@ class DateTimeUtils {
   /// 是否是当天.
   bool isToday(int? milliseconds, {bool isUtc = false, int? locMs}) {
     if (milliseconds == null || milliseconds == 0) return false;
-    DateTime old = DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: isUtc);
+    DateTime old =
+        DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: isUtc);
     DateTime now;
     if (locMs != null) {
       now = getDateTimeByMs(locMs);
@@ -219,14 +224,19 @@ class DateTimeUtils {
       int spDay = getDayOfYear(locDateTime) - getDayOfYear(dateTime);
       return spDay == 1;
     } else {
-      return ((locDateTime.year - dateTime.year == 1) && dateTime.month == 12 && locDateTime.month == 1 && dateTime.day == 31 && locDateTime.day == 1);
+      return ((locDateTime.year - dateTime.year == 1) &&
+          dateTime.month == 12 &&
+          locDateTime.month == 1 &&
+          dateTime.day == 31 &&
+          locDateTime.day == 1);
     }
   }
 
   /// is yesterday by millis.
   /// 是否是昨天.
   bool isYesterdayByMs(int ms, int locMs) {
-    return isYesterday(DateTime.fromMillisecondsSinceEpoch(ms), DateTime.fromMillisecondsSinceEpoch(locMs));
+    return isYesterday(DateTime.fromMillisecondsSinceEpoch(ms),
+        DateTime.fromMillisecondsSinceEpoch(locMs));
   }
 
   /// is Week.
@@ -243,9 +253,13 @@ class DateTimeUtils {
       now0 = isUtc ? DateTime.now().toUtc() : DateTime.now().toLocal();
     }
 
-    DateTime old = now0.millisecondsSinceEpoch > old0.millisecondsSinceEpoch ? old0 : now0;
-    DateTime now = now0.millisecondsSinceEpoch > old0.millisecondsSinceEpoch ? now0 : old0;
-    return (now.weekday >= old.weekday) && (now.millisecondsSinceEpoch - old.millisecondsSinceEpoch <= 7 * 24 * 60 * 60 * 1000);
+    DateTime old =
+        now0.millisecondsSinceEpoch > old0.millisecondsSinceEpoch ? old0 : now0;
+    DateTime now =
+        now0.millisecondsSinceEpoch > old0.millisecondsSinceEpoch ? now0 : old0;
+    return (now.weekday >= old.weekday) &&
+        (now.millisecondsSinceEpoch - old.millisecondsSinceEpoch <=
+            7 * 24 * 60 * 60 * 1000);
   }
 
   /// year is equal.
@@ -257,7 +271,8 @@ class DateTimeUtils {
   /// year is equal.
   /// 是否同年.
   bool yearIsEqualByMs(int ms, int locMs) {
-    return yearIsEqual(DateTime.fromMillisecondsSinceEpoch(ms), DateTime.fromMillisecondsSinceEpoch(locMs));
+    return yearIsEqual(DateTime.fromMillisecondsSinceEpoch(ms),
+        DateTime.fromMillisecondsSinceEpoch(locMs));
   }
 
   /// Return whether it is leap year.
@@ -293,32 +308,45 @@ class DateTimeUtils {
   /// Returns [DateTime] for the beginning of the day (00:00:00).
   ///
   /// (2020, 4, 9, 16, 50) -> (2020, 4, 9, 0, 0)
-  DateTime startOfDay(DateTime dateTime) => _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day);
+  DateTime startOfDay(DateTime dateTime) =>
+      _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day);
 
   /// Returns [DateTime] for the beginning of the next day (00:00:00).
   ///
   /// (2020, 4, 9, 16, 50) -> (2020, 4, 10, 0, 0)
-  DateTime startOfNextDay(DateTime dateTime) => _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day + 1);
+  DateTime startOfNextDay(DateTime dateTime) =>
+      _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day + 1);
 
   /// Returns [DateTime] for the beginning of today (00:00:00).
   DateTime startOfToday() => startOfDay(DateTime.now());
 
   /// Creates a copy of [date] but with time replaced with the new values.
-  DateTime setTime(DateTime date, int hours, int minutes, [int seconds = 0, int milliseconds = 0, int microseconds = 0]) =>
-      _date(date.isUtc, date.year, date.month, date.day, hours, minutes, seconds, milliseconds, microseconds);
+  DateTime setTime(DateTime date, int hours, int minutes,
+          [int seconds = 0, int milliseconds = 0, int microseconds = 0]) =>
+      _date(date.isUtc, date.year, date.month, date.day, hours, minutes,
+          seconds, milliseconds, microseconds);
 
   /// Creates a copy of [date] but with the given fields
   /// replaced with the new values.
-  DateTime copyWith(DateTime date, {int? year, int? month, int? day, int? hour, int? minute, int? second, int? millisecond, int? microsecond}) => _date(
-      date.isUtc,
-      year ?? date.year,
-      month ?? date.month,
-      day ?? date.day,
-      hour ?? date.hour,
-      minute ?? date.minute,
-      second ?? date.second,
-      millisecond ?? date.millisecond,
-      microsecond ?? date.microsecond);
+  DateTime copyWith(DateTime date,
+          {int? year,
+          int? month,
+          int? day,
+          int? hour,
+          int? minute,
+          int? second,
+          int? millisecond,
+          int? microsecond}) =>
+      _date(
+          date.isUtc,
+          year ?? date.year,
+          month ?? date.month,
+          day ?? date.day,
+          hour ?? date.hour,
+          minute ?? date.minute,
+          second ?? date.second,
+          millisecond ?? date.millisecond,
+          microsecond ?? date.microsecond);
 
   /// Returns the [DateTime] resulting from adding the given number
   /// of months to this [DateTime].
@@ -354,7 +382,8 @@ class DateTimeUtils {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     if (isWeekInYear(date, date.year, firstWeekday)) {
-      final startOfTheFirstWeek = firstDayOfFirstWeek(date.year, firstWeekday: firstWeekday);
+      final startOfTheFirstWeek =
+          firstDayOfFirstWeek(date.year, firstWeekday: firstWeekday);
       final diffInDays = getDaysDifference(date, startOfTheFirstWeek);
       return (diffInDays / DateTime.daysPerWeek).floor() + 1;
     } else if (date.month == DateTime.december) {
@@ -362,7 +391,8 @@ class DateTimeUtils {
       return 1;
     } else {
       // last of the previous year
-      return getWeekNumber(DateTime(date.year - 1, DateTime.december, 31), firstWeekday: firstWeekday);
+      return getWeekNumber(DateTime(date.year - 1, DateTime.december, 31),
+          firstWeekday: firstWeekday);
     }
   }
 
@@ -379,7 +409,8 @@ class DateTimeUtils {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     final start = firstDayOfFirstWeek(year, firstWeekday: firstWeekday);
-    final end = firstDayOfWeek(DateTime(year, DateTime.december, 31), firstWeekday: firstWeekday);
+    final end = firstDayOfWeek(DateTime(year, DateTime.december, 31),
+        firstWeekday: firstWeekday);
     final diffInDays = getDaysDifference(end, start);
     var res = diffInDays ~/ DateTime.daysPerWeek;
     if (isWeekInYear(end, year, firstWeekday)) res++;
@@ -479,13 +510,15 @@ class DateTimeUtils {
   /// [DateTime.monday], ..., [DateTime.sunday].
   ///
   /// By default it's [DateTime.monday].
-  DateTime firstDayOfWeek(DateTime dateTime, {int firstWeekday = DateTime.monday}) {
+  DateTime firstDayOfWeek(DateTime dateTime,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     var days = dateTime.weekday - (firstWeekday);
     if (days < 0) days += DateTime.daysPerWeek;
 
-    return _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day - days);
+    return _date(
+        dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day - days);
   }
 
   /// Returns start of the first day of the first week in [year].
@@ -516,12 +549,14 @@ class DateTimeUtils {
   /// parameter [firstWeekday]. It should be one of the constant values
   /// [DateTime.monday], ..., [DateTime.sunday].
   /// By default it's [DateTime.monday].
-  DateTime firstDayOfNextWeek(DateTime dateTime, {int firstWeekday = DateTime.monday}) {
+  DateTime firstDayOfNextWeek(DateTime dateTime,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     var days = dateTime.weekday - (firstWeekday);
     if (days >= 0) days -= DateTime.daysPerWeek;
-    return _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day - days);
+    return _date(
+        dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day - days);
   }
 
   /// Returns start of the last day of the week for specified [dateTime].
@@ -534,13 +569,15 @@ class DateTimeUtils {
   ///
   /// By default it's [DateTime.monday],
   /// so the last day will be [DateTime.sunday].
-  DateTime lastDayOfWeek(DateTime dateTime, {int firstWeekday = DateTime.monday}) {
+  DateTime lastDayOfWeek(DateTime dateTime,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     var days = (firstWeekday) - 1 - dateTime.weekday;
     if (days < 0) days += DateTime.daysPerWeek;
 
-    return _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day + days);
+    return _date(
+        dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day + days);
   }
 
   /// Returns [DateTime] that represents a beginning
@@ -558,7 +595,9 @@ class DateTimeUtils {
   DateTime firstDayOfNextMonth(DateTime dateTime) {
     final month = dateTime.month;
     final year = dateTime.year;
-    final nextMonthStart = (month < DateTime.monthsPerYear) ? _date(dateTime.isUtc, year, month + 1, 1) : _date(dateTime.isUtc, year + 1, 1, 1);
+    final nextMonthStart = (month < DateTime.monthsPerYear)
+        ? _date(dateTime.isUtc, year, month + 1, 1)
+        : _date(dateTime.isUtc, year + 1, 1, 1);
     return nextMonthStart;
   }
 
@@ -660,15 +699,25 @@ class DateTimeUtils {
       return daysInPrevYear < requiredDaysInYear;
     } else if (startWeekDate.year == year) {
       final startNextYearDate = DateTime(year + 1, DateTime.january, 1);
-      final daysInNextYear = getDaysDifference(endWeekDate, startNextYearDate) + 1;
+      final daysInNextYear =
+          getDaysDifference(endWeekDate, startNextYearDate) + 1;
       return daysInNextYear < requiredDaysInYear;
     } else {
       return false;
     }
   }
 
-  DateTime _date(bool utc, int year, [int month = 1, int day = 1, int hour = 0, int minute = 0, int second = 0, int millisecond = 0, int microsecond = 0]) =>
+  DateTime _date(bool utc, int year,
+          [int month = 1,
+          int day = 1,
+          int hour = 0,
+          int minute = 0,
+          int second = 0,
+          int millisecond = 0,
+          int microsecond = 0]) =>
       utc
-          ? DateTime.utc(year, month, day, hour, minute, second, millisecond, microsecond)
-          : DateTime(year, month, day, hour, minute, second, millisecond, microsecond);
+          ? DateTime.utc(
+              year, month, day, hour, minute, second, millisecond, microsecond)
+          : DateTime(
+              year, month, day, hour, minute, second, millisecond, microsecond);
 }

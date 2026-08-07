@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:cutils/log/log.dart';
 
-
 /// * @Author: chuxiong
 /// * @Created at: 18-07-2024 10:45
 /// * @Email:
@@ -43,7 +42,7 @@ class JsonUtils {
   }
 
   /// 将单个对象转为 JSON 字符串
-   String? encodeObject<T>(T? obj, Map<String, dynamic> Function(T) toJson) {
+  String? encodeObject<T>(T? obj, Map<String, dynamic> Function(T) toJson) {
     if (obj == null) return null;
     try {
       return json.encode(toJson(obj));
@@ -52,8 +51,10 @@ class JsonUtils {
       return null;
     }
   }
+
   /// JSON 字符串转为对象
-  T? fromJson<T>(String? jsonStr, T Function(Map<String, dynamic> map) fromMap) {
+  T? fromJson<T>(
+      String? jsonStr, T Function(Map<String, dynamic> map) fromMap) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
     try {
       final map = json.decode(jsonStr);
@@ -65,7 +66,6 @@ class JsonUtils {
     }
   }
 
-
   String? encodeList(List<dynamic>? list) {
     if (list == null) return null;
     try {
@@ -75,7 +75,9 @@ class JsonUtils {
       return null;
     }
   }
-   String? encodeObjectList<T>(List<T>? list, Map<String, dynamic> Function(T) toJson) {
+
+  String? encodeObjectList<T>(
+      List<T>? list, Map<String, dynamic> Function(T) toJson) {
     if (list == null || list.isEmpty) return null;
     try {
       final encoded = list.map((item) => toJson(item)).toList();
@@ -85,6 +87,7 @@ class JsonUtils {
       return null;
     }
   }
+
   /// JSON 字符串或列表转为对象列表
   List<T>? listFromJson<T>(
     dynamic source,

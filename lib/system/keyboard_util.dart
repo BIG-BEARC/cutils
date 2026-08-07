@@ -34,10 +34,12 @@ class KeyBoardUtils {
   ///isCapsLock 是否键盘锁定 CapsLock键，大写
   String analysisKeyEvent(KeyEvent event) {
     // 不能和下面面代码合并，有时会返回两次enter
-    if (event.logicalKey == LogicalKeyboardKey.enter || event.logicalKey.keyLabel == LogicalKeyboardKey.select.keyLabel) {
+    if (event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey.keyLabel == LogicalKeyboardKey.select.keyLabel) {
       return "";
     }
-    bool isNotEnterOrSelect = event.logicalKey != LogicalKeyboardKey.enter || event.logicalKey.keyLabel != LogicalKeyboardKey.select.keyLabel;
+    bool isNotEnterOrSelect = event.logicalKey != LogicalKeyboardKey.enter ||
+        event.logicalKey.keyLabel != LogicalKeyboardKey.select.keyLabel;
     if (event.logicalKey.keyId > 255 && isNotEnterOrSelect) {
       return "";
     }

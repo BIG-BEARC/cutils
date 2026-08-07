@@ -1,4 +1,3 @@
-
 enum MoneyUnit {
   NORMAL, // 6.00
   YUAN, // ¥6.00

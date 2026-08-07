@@ -29,8 +29,8 @@ class DateFormats {
   static const String PARAM_Y_M = 'yyyy/MM';
   static final String PARAM_M_D = 'MM/dd';
   static final String PARAM_M_D_H_M = 'MM/dd HH:mm';
-
 }
+
 /// month->days.
 Map<int, int> MONTH_DAY = {
   1: 31,

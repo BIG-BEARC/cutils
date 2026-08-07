@@ -15,9 +15,7 @@ class LogCollectorHelper {
 
   /// 获取日志收集器实例
   static LogCollector get instance {
-    if (_instance == null) {
-      _instance = LogCollector();
-    }
+    _instance ??= LogCollector();
     return _instance!;
   }
 

@@ -1,4 +1,3 @@
-
 import 'money_unit.dart';
 import 'num_utils.dart';
 
@@ -35,7 +34,9 @@ class MoneyUtils {
         }
         break;
       case MoneyFormat.YUAN_INTEGER:
-        moneyTxt = (amount % 100 == 0) ? yuan.toInt().toString() : yuan.toStringAsFixed(2);
+        moneyTxt = (amount % 100 == 0)
+            ? yuan.toInt().toString()
+            : yuan.toStringAsFixed(2);
         break;
     }
     return moneyTxt;
@@ -43,17 +44,20 @@ class MoneyUtils {
 
   /// fen str to yuan, format & unit  output.
   /// 分字符串 转 元, format 与 unit 格式 输出.
-  String changeFStr2YWithUnit(String amountStr, {MoneyFormat format = MoneyFormat.NORMAL, MoneyUnit unit = MoneyUnit.NORMAL}) {
+  String changeFStr2YWithUnit(String amountStr,
+      {MoneyFormat format = MoneyFormat.NORMAL,
+      MoneyUnit unit = MoneyUnit.NORMAL}) {
     int amount = int.parse(amountStr);
     return changeF2YWithUnit(amount, format: format, unit: unit);
   }
 
   /// fen to yuan, format & unit  output.
   /// 分 转 元, format 与 unit 格式 输出.
-  String changeF2YWithUnit(int amount, {MoneyFormat format = MoneyFormat.NORMAL, MoneyUnit unit = MoneyUnit.NORMAL}) {
+  String changeF2YWithUnit(int amount,
+      {MoneyFormat format = MoneyFormat.NORMAL,
+      MoneyUnit unit = MoneyUnit.NORMAL}) {
     return withUnit(changeF2Y(amount, format: format), unit);
   }
-
 
   /// with unit.
   /// 拼接单位.

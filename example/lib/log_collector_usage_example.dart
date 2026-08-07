@@ -17,10 +17,10 @@ import 'package:cutils/log_collector/log_output.dart';
 /// 示例1: 快速初始化（最简单的方式）
 Future<void> example1_quickInitialize() async {
   await LogCollectorHelper.quickInitialize();
-  
+
   // 现在所有的debugPrint和异常都会被自动收集
   debugPrint('这条日志会被自动收集');
-  
+
   // 手动收集日志
   LogCollectorHelper.info('这是一条手动收集的日志');
 }
@@ -29,7 +29,7 @@ Future<void> example1_quickInitialize() async {
 Future<void> example2_customConfig() async {
   // 创建生产环境配置
   final config = LogCollectorConfig.production();
-  
+
   // 创建输出器
   final outputs = [
     ConsoleLogOutput(enableColor: false), // 生产环境不使用颜色
@@ -39,12 +39,12 @@ Future<void> example2_customConfig() async {
       maxFileCount: 20,
     ),
   ];
-  
+
   // 创建拦截器
   final interceptors = [
     ExceptionInterceptor(), // 只拦截异常，不拦截debugPrint
   ];
-  
+
   // 初始化
   await logCollector.initialize(
     config: config,
@@ -56,7 +56,7 @@ Future<void> example2_customConfig() async {
 /// 示例3: 使用批量输出器（提高性能）
 Future<void> example3_batchOutput() async {
   final config = LogCollectorConfig.defaultConfig();
-  
+
   // 创建批量网络输出器
   final networkOutput = BatchLogOutput(
     delegate: NetworkLogOutput(
@@ -68,12 +68,12 @@ Future<void> example3_batchOutput() async {
     batchSize: 50, // 每50条日志发送一次
     batchInterval: Duration(seconds: 10), // 或每10秒发送一次
   );
-  
+
   final outputs = [
     ConsoleLogOutput(),
     networkOutput,
   ];
-  
+
   await logCollector.initialize(
     config: config,
     outputs: outputs,
@@ -84,22 +84,22 @@ Future<void> example3_batchOutput() async {
 /// 示例4: 查询和导出日志
 Future<void> example4_queryAndExport() async {
   final collector = logCollector;
-  
+
   // 查询最近24小时的错误日志
   final errorLogs = await collector.getAllLogs(
     startTime: DateTime.now().subtract(Duration(days: 1)),
     endTime: DateTime.now(),
     level: LogLevel.error,
   );
-  
+
   print('找到 ${errorLogs.length} 条错误日志');
-  
+
   // 导出所有警告和错误日志
   final exportFile = await collector.exportLogs(
     startTime: DateTime.now().subtract(Duration(days: 7)),
     level: LogLevel.warning,
   );
-  
+
   if (exportFile != null) {
     print('日志已导出到: ${exportFile.path}');
   }
@@ -117,7 +117,7 @@ Future<void> example5_taggedLogs() async {
       'method': 'GET',
     },
   );
-  
+
   // 收集数据库相关日志
   LogCollectorHelper.log(
     '数据库查询完成',
@@ -128,12 +128,12 @@ Future<void> example5_taggedLogs() async {
       'duration': 150, // 毫秒
     },
   );
-  
+
   // 查询特定标签的日志
   final networkLogs = await logCollector.getAllLogs(
     tag: 'network',
   );
-  
+
   print('网络日志数量: ${networkLogs.length}');
 }
 
@@ -173,7 +173,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
       enableDebugPrintInterceptor: true,
       enableExceptionInterceptor: true,
     );
-    
+
     LogCollectorHelper.info('应用启动', tag: 'app_lifecycle');
   }
 
@@ -182,7 +182,7 @@ class _ExampleHomePageState extends State<ExampleHomePage> {
     LogCollectorHelper.debug('调试信息');
     LogCollectorHelper.info('普通信息');
     LogCollectorHelper.warning('警告信息');
-    
+
     // 测试错误日志
     try {
       throw Exception('测试异常');

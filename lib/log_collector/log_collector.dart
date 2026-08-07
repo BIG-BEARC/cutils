@@ -17,9 +17,10 @@ import 'log_storage.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description 通用日志收集模块
-/// 
+///
 /// 该模块不修改现有代码，通过拦截和监听的方式收集日志
 final logCollector = LogCollector();
+
 class LogCollector {
   LogCollector._internal();
 

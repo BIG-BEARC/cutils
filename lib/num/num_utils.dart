@@ -30,14 +30,18 @@ class NumUtils {
   /// 将数字字符串转num，数字保留x位小数
   num? getNumByValueString(String valueStr, {int? fractionDigits}) {
     double? value = double.tryParse(valueStr);
-    return fractionDigits == null ? value : getNumByValueDouble(value, fractionDigits);
+    return fractionDigits == null
+        ? value
+        : getNumByValueDouble(value, fractionDigits);
   }
 
   /// 浮点数字保留x位小数
   num? getNumByValueDouble(double? value, int fractionDigits) {
     if (value == null) return null;
     String valueStr = value.toStringAsFixed(fractionDigits);
-    return fractionDigits == 0 ? int.tryParse(valueStr) : double.tryParse(valueStr);
+    return fractionDigits == 0
+        ? int.tryParse(valueStr)
+        : double.tryParse(valueStr);
   }
 
   /// get int by value string
@@ -168,7 +172,9 @@ class NumUtils {
   Decimal? divideDecString(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
-    if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) return null;
+    if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) {
+      return null;
+    }
     return (aDecimal / bDecimal).toDecimal();
   }
 
@@ -176,7 +182,9 @@ class NumUtils {
   Decimal? remainderDecString(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
-    if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) return null;
+    if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) {
+      return null;
+    }
     return aDecimal % bDecimal;
   }
 

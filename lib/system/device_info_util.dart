@@ -101,7 +101,6 @@ class DeviceInfoUtil {
     } catch (e) {
       logger.e("_getMacOsInfo异常:${e.toString()}");
     }
-
   }
 
   /// A unique device identifier.
@@ -116,7 +115,12 @@ class DeviceInfoUtil {
       final diskDriveID = await _winDiskDrive();
       final osNumber = await _winOSNumber();
       // md5 generates a unique id, using String.hashCode directly is too easy to collide
-      final all = baseBoardID + biosID + processorID + diskDriveID + osNumber + DateTime.now().toString();
+      final all = baseBoardID +
+          biosID +
+          processorID +
+          diskDriveID +
+          osNumber +
+          DateTime.now().toString();
       final uID = md5.convert(utf8.encode(all)).toString();
       return uID;
     } catch (e) {

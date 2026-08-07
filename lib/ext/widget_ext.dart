@@ -47,5 +47,4 @@ extension WidgetExt on Widget {
       child: this,
     );
   }
-
 }

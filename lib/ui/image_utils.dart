@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 /// * @Email:
 /// * description 图片工具类
 class ImageUtils {
-  static ImageProvider assetImage(String name, {String assetPath = 'assets/images/',ImageFormat format = ImageFormat.png}) {
+  static ImageProvider assetImage(String name,
+      {String assetPath = 'assets/images/',
+      ImageFormat format = ImageFormat.png}) {
     var path = '$assetPath$name.${format.value}';
     return AssetImage(path);
   }
@@ -27,7 +29,8 @@ class ImageUtils {
       color: color,
       cacheHeight: height?.toInt(),
       cacheWidth: width?.toInt(),
-      errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+      errorBuilder:
+          (BuildContext context, Object error, StackTrace? stackTrace) {
         return errorWidget ?? const Icon(Icons.broken_image);
       },
       frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
@@ -41,7 +44,6 @@ class ImageUtils {
       },
     );
   }
-
 }
 
 enum ImageFormat {

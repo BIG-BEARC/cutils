@@ -3,6 +3,7 @@
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description 日志条目
+library;
 
 /// 日志级别
 enum LogLevel {

@@ -113,8 +113,7 @@ class LogCollectorConfig {
       filterTags: filterTags ?? this.filterTags,
       enableCompression: enableCompression ?? this.enableCompression,
       logFormat: logFormat ?? this.logFormat,
-      autoCleanExpiredLogs:
-          autoCleanExpiredLogs ?? this.autoCleanExpiredLogs,
+      autoCleanExpiredLogs: autoCleanExpiredLogs ?? this.autoCleanExpiredLogs,
     );
   }
 }

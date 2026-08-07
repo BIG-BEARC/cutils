@@ -44,7 +44,7 @@ class NetUtil {
     try {
       result = await Connectivity().checkConnectivity();
     } on PlatformException catch (e) {
-     logger.e("Connectivity.checkConnectivity异常:$e");
+      logger.e("Connectivity.checkConnectivity异常:$e");
       result = [ConnectivityResult.none];
     }
     return _getNetType(result[0]);

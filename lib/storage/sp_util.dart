@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cutils/json/json_utils.dart';
 import 'package:cutils/log/log.dart';
 
-
 /// * @Author: chuxiong
 /// * @Created at: 12-06-2025 11:11
 /// * @Email:
@@ -102,7 +101,8 @@ class SpUtil {
           .toList();
       return _prefs?.setStringList(key, encodedList) ?? false;
     } catch (e) {
-      logger.e("SpUtil error putObjectList list for key '$key ,list:$list\n error:$e");
+      logger.e(
+          "SpUtil error putObjectList list for key '$key ,list:$list\n error:$e");
       return false;
     }
   }
@@ -124,7 +124,8 @@ class SpUtil {
 
       return decodedList;
     } catch (e, stackTrace) {
-      logger.e("SpUtil error reading object list for key '$key': $e\n$stackTrace");
+      logger.e(
+          "SpUtil error reading object list for key '$key': $e\n$stackTrace");
       return defValue;
     }
   }
@@ -138,9 +139,9 @@ class SpUtil {
 
   /// 获取字符串
   String? getString(String key, {String? defValue = ''}) {
-     var value = _prefs?.getString(key) ?? defValue;
-     logger.i("getString key:$key value:$value");
-     return value;
+    var value = _prefs?.getString(key) ?? defValue;
+    logger.i("getString key:$key value:$value");
+    return value;
   }
 
   /// 存储布尔值
@@ -152,7 +153,7 @@ class SpUtil {
 
   /// 获取布尔值
   bool? getBool(String key, {bool defValue = false}) {
-    final value =  _prefs?.getBool(key) ?? defValue;
+    final value = _prefs?.getBool(key) ?? defValue;
     logger.i("getBool key:$key value:$value");
     return value;
   }
@@ -166,7 +167,7 @@ class SpUtil {
 
   /// 获取整数
   int? getInt(String key, {int defValue = 0}) {
-    final  value = _prefs?.getInt(key) ?? defValue;
+    final value = _prefs?.getInt(key) ?? defValue;
     logger.i("getInt key:$key value:$value");
     return value;
   }
@@ -180,7 +181,7 @@ class SpUtil {
 
   /// 获取浮点数
   double? getDouble(String key, {double defValue = 0.0}) {
-    final  value = _prefs?.getDouble(key) ?? defValue;
+    final value = _prefs?.getDouble(key) ?? defValue;
     logger.i("getDouble key:$key value:$value");
     return value;
   }
@@ -194,7 +195,7 @@ class SpUtil {
 
   /// 获取字符串列表
   List<String>? getStringList(String key, {List<String>? defValue = const []}) {
-    final  value = _prefs?.getStringList(key) ?? defValue;
+    final value = _prefs?.getStringList(key) ?? defValue;
     logger.i("getStringList key:$key value:$value");
     return value;
   }

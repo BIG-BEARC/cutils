@@ -57,10 +57,11 @@ class SystemUtils {
             statusBarColor: statusBarColor ?? Colors.transparent,
             statusBarIconBrightness: statusBarIconBrightness ?? Brightness.dark,
             systemNavigationBarIconBrightness:
-            systemNavigationBarIconBrightness ?? Brightness.dark,
+                systemNavigationBarIconBrightness ?? Brightness.dark,
           ),
     );
   }
+
   /// 隐藏状态栏和导航栏
   Future<void> hideSystemUI() async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -74,7 +75,9 @@ class SystemUtils {
   /// 获取设备像素密度
   double get devicePixelRatio {
     // 使用 PlatformDispatcher 替代 window
-    return WidgetsBinding.instance.platformDispatcher.implicitView?.devicePixelRatio ?? 1.0;
+    return WidgetsBinding
+            .instance.platformDispatcher.implicitView?.devicePixelRatio ??
+        1.0;
   }
 
   /// 获取屏幕尺寸
@@ -113,12 +116,12 @@ class SystemUtils {
   /// [context] 上下文，用于显示SnackBar提示
   /// [duration] 提示持续时间，默认为1秒
   Future<void> copyToClipboard(
-      String text, {
-        String? successMessage,
-        String? errorMessage,
-        BuildContext? context,
-        Duration duration = const Duration(seconds: 1),
-      }) async {
+    String text, {
+    String? successMessage,
+    String? errorMessage,
+    BuildContext? context,
+    Duration duration = const Duration(seconds: 1),
+  }) async {
     if (text.isNullOrEmpty) {
       return;
     }
@@ -134,6 +137,7 @@ class SystemUtils {
       _showSnackBar(context, errorSnackBarMsg, duration);
     }
   }
+
   /// 显示SnackBar提示
   ///
   /// [context] 上下文
@@ -142,12 +146,12 @@ class SystemUtils {
   /// [actionLabel] 动作按钮标签
   /// [onActionPressed] 动作按钮点击回调
   void _showSnackBar(
-      BuildContext? context,
-      String message,
-      Duration duration, {
-        String? actionLabel,
-        VoidCallback? onActionPressed,
-      }) {
+    BuildContext? context,
+    String message,
+    Duration duration, {
+    String? actionLabel,
+    VoidCallback? onActionPressed,
+  }) {
     if (context != null && context.mounted) {
       final snackBar = SnackBar(
         duration: duration,
@@ -155,19 +159,20 @@ class SystemUtils {
         behavior: SnackBarBehavior.floating,
         action: actionLabel != null && onActionPressed != null
             ? SnackBarAction(
-          label: actionLabel,
-          onPressed: onActionPressed,
-        )
+                label: actionLabel,
+                onPressed: onActionPressed,
+              )
             : SnackBarAction(
-          label: 'close',
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-        ),
+                label: 'close',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
+
   /// 从剪贴板获取文本内容
   ///
   /// 返回剪贴板中的文本内容，如果出错则返回空字符串
@@ -176,10 +181,12 @@ class SystemUtils {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       return clipboardData?.text ?? '';
     } catch (e, stackTrace) {
-      logger.e("get clipboard text error: $e", error: e, stackTrace: stackTrace);
+      logger.e("get clipboard text error: $e",
+          error: e, stackTrace: stackTrace);
       return '';
     }
   }
+
   /// 隐藏软键盘，具体可看：TextInputChannel
   void hideKeyboard() {
     SystemChannels.textInput.invokeMethod('TextInput.hide');

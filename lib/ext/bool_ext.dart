@@ -1,7 +1,6 @@
-
 /// * @Author: chuxiong
 /// * @Created at: 2023/3/2 4:05 下午
-/// * @Email: 
+/// * @Email:
 /// * @Company: 嘉联支付
 /// * description
 ///bool扩展：
@@ -23,7 +22,8 @@ extension BoolExt on bool {
 
   T? ifFalse<T>(T value) => this ? null : value;
 
-  T ifElse<T>(T ifTrueValue, T ifFalseValue) => this ? ifTrueValue : ifFalseValue;
+  T ifElse<T>(T ifTrueValue, T ifFalseValue) =>
+      this ? ifTrueValue : ifFalseValue;
 
   // 类型转换
   int get toInt => this ? 1 : 0;

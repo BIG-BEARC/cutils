@@ -63,7 +63,19 @@ class RegexUtils {
   bool isIDCard18Exact(String input) {
     if (isIDCard18(input)) {
       List<int> factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
-      List<String> suffix = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+      List<String> suffix = [
+        '1',
+        '0',
+        'X',
+        '9',
+        '8',
+        '7',
+        '6',
+        '5',
+        '4',
+        '3',
+        '2'
+      ];
       if (cityMap.isEmpty) {
         List<String> list = ID_CARD_PROVINCE_DICT;
         List<MapEntry<String, String>> mapEntryList = [];
@@ -119,7 +131,8 @@ class RegexUtils {
 
   /// Return whether input matches regex of username.
   /// 返回输入是否匹配用户名的正则表达式。
-  bool isUserName(String input, {String regex = RegexConstants.REGEX_USERNAME}) {
+  bool isUserName(String input,
+      {String regex = RegexConstants.REGEX_USERNAME}) {
     return matches(regex, input);
   }
 
@@ -138,7 +151,6 @@ class RegexUtils {
     return RegExp(regex).hasMatch(input);
   }
 
-
   /// 判断内容是否符合正则（支持Pattern类型参数）
   bool hasMatch(String? s, Pattern pattern) {
     if (s == null) return false;
@@ -150,6 +162,7 @@ class RegexUtils {
     }
     return false;
   }
+
   /// 验证是否为纯数字（整数或小数）
   bool isNumeric(String? s) {
     if (s == null || s.isEmpty) return false;
@@ -205,13 +218,15 @@ class RegexUtils {
 
   /// 验证IP地址（IPv4）
   bool isIPv4(String? ip) {
-    const pattern = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+    const pattern =
+        r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
     return hasMatch(ip, pattern);
   }
 
   /// 验证IPv6地址
   bool isIPv6(String? ip) {
-    const pattern = r'^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$';
+    const pattern =
+        r'^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$';
     return hasMatch(ip, pattern);
   }
 
@@ -221,7 +236,6 @@ class RegexUtils {
     return hasMatch(mac, pattern);
   }
 
-
   /// 验证时间格式 (HH:MM:SS)
   bool isTime(String? time) {
     const pattern = r'^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$';
@@ -230,7 +244,8 @@ class RegexUtils {
 
   /// 验证十六进制颜色值 (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)
   bool isHexColor(String? color) {
-    const pattern = r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8}|[A-Fa-f0-9]{4})$';
+    const pattern =
+        r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8}|[A-Fa-f0-9]{4})$';
     return hasMatch(color, pattern);
   }
 
@@ -244,7 +259,6 @@ class RegexUtils {
       return false;
     }
   }
-
 }
 
 /// id card province dict.

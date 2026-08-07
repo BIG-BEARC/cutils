@@ -72,7 +72,8 @@ class TimelineUtil {
     }
 
     String timeline;
-    if (info.customYesterday().isNotEmpty && dateTimeUtils.isYesterdayByMs(ms, nowMs)) {
+    if (info.customYesterday().isNotEmpty &&
+        dateTimeUtils.isYesterdayByMs(ms, nowMs)) {
       return _getYesterday(ms, info, useDayFormat);
     }
 
@@ -88,7 +89,9 @@ class TimelineUtil {
 
     if (seconds < 90) {
       timeline = info.oneMinute(1);
-      if (suffix != info.suffixAfter() && info.lessThanOneMinute().isNotEmpty && seconds < info.maxJustNowSecond()) {
+      if (suffix != info.suffixAfter() &&
+          info.lessThanOneMinute().isNotEmpty &&
+          seconds < info.maxJustNowSecond()) {
         timeline = info.lessThanOneMinute();
         suffix = '';
       }
@@ -99,7 +102,8 @@ class TimelineUtil {
     } else if (hours < 24) {
       timeline = info.hours(hours.round());
     } else {
-      if ((days.round() == 1 && info.keepOneDay() == true) || (days.round() == 2 && info.keepTwoDays() == true)) {
+      if ((days.round() == 1 && info.keepOneDay() == true) ||
+          (days.round() == 2 && info.keepTwoDays() == true)) {
         useDayFormat = DayFormat.simple;
       }
       timeline = _formatDays(ms, days.round(), info, useDayFormat);
@@ -137,7 +141,8 @@ class TimelineUtil {
     }
 
     if (dateTimeUtils.isWeek(ms, locMs: locTimeMs)) {
-      return dateTimeUtils.getWeekdayByMs(ms, languageCode: languageCode, short: short);
+      return dateTimeUtils.getWeekdayByMs(ms,
+          languageCode: languageCode, short: short);
     }
 
     return dateTimeUtils.formatDateMs(ms, format: format);
@@ -150,7 +155,10 @@ class TimelineUtil {
     TimelineInfo info,
     DayFormat dayFormat,
   ) {
-    return info.customYesterday() + (dayFormat == DayFormat.full ? (' ${dateTimeUtils.formatDateMs(ms, format: 'HH:mm')}') : '');
+    return info.customYesterday() +
+        (dayFormat == DayFormat.full
+            ? (' ${dateTimeUtils.formatDateMs(ms, format: 'HH:mm')}')
+            : '');
   }
 
   /// get is not year info.
@@ -160,7 +168,10 @@ class TimelineUtil {
     DayFormat dayFormat,
   ) {
     if (dayFormat != DayFormat.simple) {
-      return dateTimeUtils.formatDateMs(ms, format: (dayFormat == DayFormat.common ? 'yyyy-MM-dd' : 'yyyy-MM-dd HH:mm'));
+      return dateTimeUtils.formatDateMs(ms,
+          format: (dayFormat == DayFormat.common
+              ? 'yyyy-MM-dd'
+              : 'yyyy-MM-dd HH:mm'));
     }
     return '';
   }

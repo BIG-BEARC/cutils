@@ -14,7 +14,6 @@ class MockPathProviderPlatform extends Mock
     with MockPlatformInterfaceMixin
     implements PathProviderPlatform {}
 
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   final fileUtils = FileUtils();

@@ -1,7 +1,6 @@
-
 /// * @Author: chuxiong
 /// * @Created at: 04-08-2025 10:52
-/// * @Email: 
+/// * @Email:
 /// * description
 /// (xx)Configurable output.
 /// (xx)为可配置输出.

@@ -132,8 +132,10 @@ class LogStorage {
 
     // 删除超出数量限制的文件
     if (logFiles.length >= config.maxFileCount) {
-      logFiles.sort((a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
-      final filesToDelete = logFiles.take(logFiles.length - config.maxFileCount + 1);
+      logFiles
+          .sort((a, b) => a.lastModifiedSync().compareTo(b.lastModifiedSync()));
+      final filesToDelete =
+          logFiles.take(logFiles.length - config.maxFileCount + 1);
       for (final file in filesToDelete) {
         await file.delete();
       }
@@ -306,8 +308,8 @@ class LogStorage {
       return;
     }
 
-    final cutoffDate = DateTime.now()
-        .subtract(Duration(days: config.retentionDays));
+    final cutoffDate =
+        DateTime.now().subtract(Duration(days: config.retentionDays));
     final logFiles = await _getLogFiles();
 
     for (final file in logFiles) {

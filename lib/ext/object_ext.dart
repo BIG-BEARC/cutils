@@ -22,6 +22,4 @@ extension ObjectExt on Object? {
   // value.isTypeOf<String>(); // true
   // value.isTypeOf<int>();    // false
   bool isTypeOf<T>() => this is T;
-
-
 }
