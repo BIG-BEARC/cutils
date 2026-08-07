@@ -1,6 +1,3 @@
-// Flutter imports:
-import 'package:flutter/foundation.dart';
-
 import 'log_collector.dart';
 import 'log_collector_config.dart';
 import 'log_entry.dart';
