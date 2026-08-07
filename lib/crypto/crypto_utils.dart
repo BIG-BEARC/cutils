@@ -5,14 +5,14 @@ import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
 
 /// 加密和解密工具类
-final encryptUtils = EncryptUtils();
+final encryptUtils = CryptoUtils();
 
-class EncryptUtils {
-  EncryptUtils._();
+class CryptoUtils {
+  CryptoUtils._();
 
-  static final EncryptUtils _instance = EncryptUtils._();
+  static final CryptoUtils _instance = CryptoUtils._();
 
-  factory EncryptUtils() => _instance;
+  factory CryptoUtils() => _instance;
 
   /// md5 加密字符串
   String encodeMd5(String data) {
