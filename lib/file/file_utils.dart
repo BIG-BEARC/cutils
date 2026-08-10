@@ -17,6 +17,19 @@ import 'package:cutils/log/log.dart';
 /// * @Created at: 2022/10/31 11:02 上午
 /// * @Email:
 /// * description 文件工具类
+
+/// Thrown when [FileUtils.createFileFromBase64] receives a string that
+/// cannot be decoded as valid base64, replacing the raw [FormatException].
+class InvalidBase64Exception implements Exception {
+  const InvalidBase64Exception(this.message, {this.inner});
+
+  final String message;
+  final Object? inner;
+
+  @override
+  String toString() => 'InvalidBase64Exception: $message';
+}
+
 class FileUtils {
   factory FileUtils() {
     return _ins;
@@ -136,10 +149,25 @@ class FileUtils {
   }
 
   File _getFile(Directory dir, String? filePath, String fileName) {
-    if (filePath.isNullOrEmpty) {
-      return File('${dir.path}/$fileName');
-    } else {
-      return File('${dir.path}/$filePath/$fileName');
+    _validatePathSegment(fileName);
+    if (filePath == null || filePath.isEmpty) {
+      return File(path.join(dir.path, fileName));
+    }
+    _validatePathSegment(filePath);
+    return File(path.join(dir.path, filePath, fileName));
+  }
+
+  /// Rejects caller-supplied path segments that could escape the base
+  /// directory: absolute paths and any component equal to `..`.
+  void _validatePathSegment(String segment) {
+    if (path.isAbsolute(segment)) {
+      throw ArgumentError.value(segment, 'path', 'must not be absolute');
+    }
+    for (final part in path.split(segment)) {
+      if (part == '..' || part == '/') {
+        throw ArgumentError.value(
+            segment, 'path', 'must not contain parent-directory traversal');
+      }
     }
   }
 
@@ -393,28 +421,26 @@ class FileUtils {
 
   ///以流的方式读取文件
   Future<String> readBySink(File file, FileMode? fileMode) async {
-    String content = "";
     //检查文件是否存在 existsSync() 同步检查文件是否存在
     final fileExists = await file.exists();
 
     ///如果文件不存在，创建文件
     if (!fileExists) {
-      return content;
+      return "";
     }
     final StringBuffer buffer = StringBuffer();
     final Stream<List<int>> inputStream = file.openRead();
-
-    inputStream.transform(utf8.decoder).transform(const LineSplitter()).listen(
-        (data) {
-      buffer.write(data);
-    }, onDone: () {
-      content = buffer.toString();
-      logger.d(content);
-    }, onError: (e) {
-      content = "";
+    try {
+      await for (final chunk in inputStream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        buffer.write(chunk);
+      }
+    } catch (e) {
       logger.e(tag: TAG, e);
-    });
-    return content;
+      return "";
+    }
+    return buffer.toString();
   }
 
   ///获取平台默认存储路径
@@ -445,7 +471,7 @@ class FileUtils {
   Future<bool> deleteFileData(String filePath) async {
     try {
       final file = readFile(filePath);
-      file.delete();
+      await file.delete();
       return true;
     } catch (err) {
       logger.e(err, tag: TAG);
@@ -496,15 +522,15 @@ class FileUtils {
     final curTime = DateTimeUtils.getNowDateMs();
     // 根据路径字符串创建目录对象
     // recursive是否递归列出子目录 followLinks是否允许link
-    Directory(logPath).list(followLinks: false).forEach((file) {
+    await for (final file in Directory(logPath).list(followLinks: false)) {
       final FileSystemEntityType type = FileSystemEntity.typeSync(file.path);
       if (type == FileSystemEntityType.file) {
         final lastModified = (file as File).lastModifiedSync();
-        if (curTime - lastModified.millisecond > retentionTime) {
-          file.delete();
+        if (curTime - lastModified.millisecondsSinceEpoch > retentionTime) {
+          await file.delete();
         }
       }
-    });
+    }
   }
 
   Future<List<File>> getFileList() async {
@@ -615,12 +641,12 @@ class FileUtils {
     if (dir == null) {
       return;
     }
-    Directory(dir).list(followLinks: false).forEach((file) {
+    await for (final file in Directory(dir).list(followLinks: false)) {
       if (path.extension(file.path) == ".log" ||
           path.extension(file.path) == ".dmp") {
-        file.delete();
+        await file.delete();
       }
-    });
+    }
   }
 
   /// 删除日志 默认保留3天
@@ -646,9 +672,9 @@ class FileUtils {
       Directory(dir).listSync(followLinks: false).forEach((fileSystemEntity) {
         if (fileSystemEntity.path.contains(".log") ||
             fileSystemEntity.path.contains(".dmp")) {
-          final fileDateTime = FileStat.statSync(fileSystemEntity.path).changed;
+          final fileDateTime = File(fileSystemEntity.path).lastModifiedSync();
           final differDays = DateTime.now().difference(fileDateTime).inDays;
-          if (differDays > 3) {
+          if (differDays > saveDays) {
             fileSystemEntity.deleteSync();
           }
         }
@@ -666,7 +692,15 @@ class FileUtils {
 
   // base64转本地图片
   Future<File> createFileFromBase64(String base64Str) async {
-    final Uint8List bytes = const Base64Decoder().convert(base64Str);
+    final Uint8List bytes;
+    try {
+      bytes = const Base64Decoder().convert(base64Str);
+    } on FormatException catch (e) {
+      throw InvalidBase64Exception(
+        'Input is not valid base64',
+        inner: e,
+      );
+    }
     final tempDir = await getTemporaryDirectory();
     final targetPath =
         "${tempDir.absolute.path}/temp_${DateTime.now().microsecondsSinceEpoch}_base64.jpg";

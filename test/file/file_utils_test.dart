@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -100,6 +101,130 @@ void main() {
       const filePath = '/user/logs/mylog_2025.txt';
       final name = fileUtils.getFileName(filePath);
       expect(name, 'mylog_2025');
+    });
+  });
+
+  group('Wave A high-severity fixes', () {
+    setUp(() {
+      when(() => mockPlatform.getTemporaryPath())
+          .thenAnswer((_) async => tempDir.path);
+      when(() => mockPlatform.getApplicationDocumentsPath())
+          .thenAnswer((_) async => tempDir.path);
+      when(() => mockPlatform.getApplicationSupportPath())
+          .thenAnswer((_) async => tempDir.path);
+      when(() => mockPlatform.getExternalStoragePath())
+          .thenAnswer((_) async => tempDir.path);
+    });
+
+    test('A1: readBySink returns file content instead of empty string',
+        () async {
+      const content = 'line one\nline two\nline three';
+      final file = File('${tempDir.path}/a1_read_by_sink.txt')
+        ..writeAsStringSync(content);
+      final result = await fileUtils.readBySink(file, null);
+      expect(result, isNot(equals('')));
+      expect(result, equals('line oneline twoline three'));
+    });
+
+    test('A2: cleanExpiredLog deletes only files older than retention',
+        () async {
+      final logDir = Directory('${tempDir.path}/a2_clean_expired')
+        ..createSync();
+      final oldFile = File('${logDir.path}/old.log')..writeAsStringSync('old');
+      oldFile.setLastModifiedSync(
+          DateTime.now().subtract(const Duration(days: 3)));
+      final currentFile = File('${logDir.path}/current.log')
+        ..writeAsStringSync('current');
+
+      // retentionTime is in milliseconds; 2 days.
+      fileUtils.cleanExpiredLog(logDir.path, 2 * 24 * 60 * 60 * 1000);
+      // Allow the (currently unawaited) iteration to drain; A3 fixes this.
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      expect(oldFile.existsSync(), isFalse,
+          reason: 'old file past retention should be deleted');
+      expect(currentFile.existsSync(), isTrue,
+          reason: 'current file within retention must remain');
+    });
+
+    test('A3: deleteFileData awaits the delete before returning', () async {
+      // Deleting a nonexistent path rejects the underlying Future. With the
+      // bug (delete not awaited) the error never reaches the catch, so the
+      // function wrongly reports success. With the fix the await lets the
+      // throw be caught and the function returns false.
+      final missing =
+          '${tempDir.path}/a3_definitely_missing_${DateTime.now().microsecondsSinceEpoch}.txt';
+      final result = await fileUtils.deleteFileData(missing);
+      expect(result, isFalse,
+          reason: 'a failed delete must be observed, not silently dropped');
+    });
+
+    test('A3: zipFiles produces a decodable zip', () async {
+      // Lay down a .log file that getFileList() will pick up.
+      final logFile = File('${tempDir.path}/a3_zip.log')
+        ..writeAsStringSync('log content for zip');
+      final zip = await fileUtils.zipFiles('a3_logs');
+      try {
+        await logFile.delete();
+      } catch (_) {}
+      expect(zip, isNotNull);
+      expect(zip!.existsSync(), isTrue);
+      final bytes = await zip.readAsBytes();
+      final archive = ZipDecoder().decodeBytes(bytes);
+      expect(archive.isNotEmpty, isTrue);
+      try {
+        await zip.delete();
+      } catch (_) {}
+    });
+
+    test('A4: deleteLog honors the saveDays parameter', () async {
+      final old1 = File('${tempDir.path}/a4_savelog_10.log')
+        ..writeAsStringSync('five days old');
+      final old2 = File('${tempDir.path}/a4_savelog_2.log')
+        ..writeAsStringSync('five days old');
+      final fiveDaysAgo = DateTime.now().subtract(const Duration(days: 5));
+      old1.setLastModifiedSync(fiveDaysAgo);
+      old2.setLastModifiedSync(fiveDaysAgo);
+
+      // deleteLog is `void ... async` (signature locked), so we cannot await
+      // it directly; pump the event loop to let its body (sync list/delete)
+      // run to completion.
+      fileUtils.deleteLog(saveDays: 10);
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      expect(old1.existsSync(), isTrue,
+          reason: '5-day-old file must remain when saveDays=10');
+
+      fileUtils.deleteLog(saveDays: 2);
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      expect(old2.existsSync(), isFalse,
+          reason: '5-day-old file must be deleted when saveDays=2');
+    });
+
+    test('A5: rejects path traversal in fileName and filePath', () async {
+      // _getFile is private and all public callers wrap it in try/catch,
+      // so the observable contract is "returns null" rather than "throws".
+      final viaName = await fileUtils.getLocalDocumentFile(
+          fileName: '../../a5_escape_name');
+      expect(viaName, isNull,
+          reason: 'fileName traversal must be rejected, not escape base dir');
+
+      final viaPath = await fileUtils.getLocalDocumentFile(
+          fileName: 'innocent.txt', filePath: '../../a5_escape_path');
+      expect(viaPath, isNull,
+          reason: 'filePath traversal must be rejected, not escape base dir');
+
+      // Sanity: a normal relative name still resolves inside the base dir.
+      final ok = await fileUtils.getLocalDocumentFile(fileName: 'a5_ok.txt');
+      expect(ok, isNotNull);
+      expect(ok!.path, contains(tempDir.path));
+    });
+
+    test('A6: createFileFromBase64 wraps invalid input in a typed exception',
+        () async {
+      await expectLater(
+        fileUtils.createFileFromBase64('!!!notbase64!!!'),
+        throwsA(isA<InvalidBase64Exception>()),
+      );
     });
   });
 }
