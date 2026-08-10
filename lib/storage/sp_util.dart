@@ -1,6 +1,13 @@
+// Dart imports:
 import 'dart:convert';
 
+// Flutter imports:
+import 'package:flutter/foundation.dart';
+
+// Package imports:
 import 'package:shared_preferences/shared_preferences.dart';
+
+// Project imports:
 import 'package:cutils/json/json_utils.dart';
 import 'package:cutils/log/log.dart';
 
@@ -18,19 +25,39 @@ class SpUtil {
 
   factory SpUtil() => _instance;
   SharedPreferences? _prefs;
+  // 缓存进行中的初始化 Future，确保并发 init() 调用只触发一次
+  // SharedPreferences.getInstance()。完成或失败后清空。
+  Future<SharedPreferences?>? _initFuture;
 
   Future<SharedPreferences?> init() async {
-    if (_prefs != null) {
-      return _prefs;
-    }
-    _prefs = await SharedPreferences.getInstance();
-    return _prefs;
+    if (_prefs != null) return _prefs;
+    // 并发调用者共享同一个 in-flight Future（single-flight），避免各自调用
+    // getInstance()。
+    if (_initFuture != null) return _initFuture;
+    _initFuture = SharedPreferences.getInstance().then((p) {
+      _prefs = p;
+      _initFuture = null;
+      return p;
+    }).catchError((Object e) {
+      // 失败时清空，允许后续重试。
+      _initFuture = null;
+      throw e;
+    });
+    return _initFuture;
   }
 
   Future<void> ensureInitialized() async {
     if (_prefs == null) {
       await init();
     }
+  }
+
+  /// 仅用于测试：重置单例持有的 SharedPreferences 缓存与 in-flight Future，
+  /// 使下一个 init() 走冷启动路径。生产代码不得调用。
+  @visibleForTesting
+  void resetInstanceForTesting() {
+    _prefs = null;
+    _initFuture = null;
   }
 
   /// 封装 put 操作，自动检查初始化
@@ -63,7 +90,10 @@ class SpUtil {
     }
   }
 
-  /// 存储对象
+  /// 存储「可 JSON 编码」的对象（Map / 带 toJson 的对象 / List / 基本类型）。
+  ///
+  /// [value] 会被 `json.encode(value)` 序列化为字符串后落地，因此必须是一个
+  /// 可被 `dart:convert` 编码的值——这正是「Jsonable」契约的由来。
   /// class User {
   //   final String name;
   //   final int age;
@@ -76,9 +106,17 @@ class SpUtil {
   //     return User(name: json['name'], age: json['age']);
   //   }
   // }
-  // await spUtil.putObject("user", user.toJson());
+  // await spUtil.putJsonable("user", user.toJson());
   // User? loadedUser = spUtil.getObject("user", User.fromJson);
-  Future<bool> putObject(String key, Object value) => _put(key, value);
+  Future<bool> putJsonable(String key, Object value) => _put(key, value);
+
+  /// Deprecated：使用 [putJsonable] 代替。
+  ///
+  /// 原方法名 `putObject` 暗示可存「任意对象」，但实现会调用
+  /// `json.encode(value)`，名不副实，故重命名为 [putJsonable]。
+  @Deprecated('使用 putJsonable 代替。putObject 暗示可存任意对象，但实际会'
+      'json.encode(value)，名不副实。')
+  Future<bool> putObject(String key, Object value) => putJsonable(key, value);
 
   /// 获取对象
   T? getObject<T>(
@@ -97,8 +135,7 @@ class SpUtil {
           .map(
             (e) => JsonUtils.encodeObj(e),
           )
-          .where((e) => e != null)
-          .cast<String>()
+          .whereType<String>()
           .toList();
       return _prefs?.setStringList(key, encodedList) ?? false;
     } catch (e) {

@@ -10,8 +10,11 @@ import 'package:cutils/log/log.dart';
 class JsonUtils {
   JsonUtils._();
 
-  /// 打印 JSON 字符串（支持缩进）
-  static void printJson(dynamic obj, {bool prettyPrint = true}) {
+  /// 以日志方式输出 JSON 字符串（支持缩进）。
+  ///
+  /// 原方法名 `printJson` 踩 CLAUDE.md 日志禁词（`print`），故重命名为 `logJson`。
+  /// `printJson` 已保留为 deprecated 别名以避免下游硬断裂。
+  static void logJson(dynamic obj, {bool prettyPrint = true}) {
     try {
       if (prettyPrint) {
         const encoder = JsonEncoder.withIndent('  ');
@@ -23,6 +26,12 @@ class JsonUtils {
       logger.e("JSON 打印失败: $e");
     }
   }
+
+  /// Deprecated：使用 [logJson] 代替。
+  @Deprecated('使用 logJson 代替。printJson 命名踩日志禁词（print），'
+      '已重命名为 logJson。')
+  static void printJson(dynamic obj, {bool prettyPrint = true}) =>
+      logJson(obj, prettyPrint: prettyPrint);
 
   /// 将任意对象转为 JSON 字符串
   static String? encodeObj(dynamic value) {
@@ -47,7 +56,12 @@ class JsonUtils {
     }
   }
 
-  /// JSON 字符串转为对象
+  /// JSON 字符串转为对象。
+  ///
+  /// ⚠️ 精度限制：底层 `dart:convert` 的 `json.decode` 会把 JSON 数字解析为
+  /// Dart 的 `int`/`double`。当整数大于 2^53（9007199254740992）时，可能因
+  /// 浮点表示而丢失精度。如需精确的大整数，请在源头以字符串承载该字段，
+  /// 再在 [fromMap] 内自行解析为 `BigInt`。
   static T? fromJson<T>(
       String? jsonStr, T Function(Map<String, dynamic> map) fromMap) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
@@ -71,9 +85,12 @@ class JsonUtils {
     }
   }
 
+  /// 将对象列表转为 JSON 字符串。
+  ///
+  /// 空列表返回 `"[]"`（而非 null），以保持「列表」语义；仅 `null` 输入返回 `null`。
   static String? encodeObjectList<T>(
       List<T>? list, Map<String, dynamic> Function(T) toJson) {
-    if (list == null || list.isEmpty) return null;
+    if (list == null) return null;
     try {
       final encoded = list.map((item) => toJson(item)).toList();
       return json.encode(encoded);
@@ -83,7 +100,10 @@ class JsonUtils {
     }
   }
 
-  /// JSON 字符串或列表转为对象列表
+  /// JSON 字符串或列表转为对象列表。
+  ///
+  /// ⚠️ 精度限制：同 [fromJson]——大于 2^53 的整数会丢失精度，需要精确大整数时
+  /// 请以字符串承载并在 `fromMap` 内用 `BigInt` 解析。
   static List<T>? listFromJson<T>(
     dynamic source,
     T Function(Map<String, dynamic> map) fromMap,
@@ -119,7 +139,9 @@ class JsonUtils {
     }
   }
 
-  /// JSON 字符串转为 Map
+  /// JSON 字符串转为 Map。
+  ///
+  /// ⚠️ 精度限制：同 [fromJson]——大于 2^53 的整数会丢失精度。
   static Map<String, dynamic>? toMap(String? jsonStr) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
     try {
@@ -131,7 +153,9 @@ class JsonUtils {
     }
   }
 
-  /// JSON 字符串转为 List<Map>
+  /// JSON 字符串转为 List<Map>。
+  ///
+  /// ⚠️ 精度限制：同 [fromJson]——大于 2^53 的整数会丢失精度。
   static List<Map<String, dynamic>>? toMapList(String? jsonStr) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
     try {
