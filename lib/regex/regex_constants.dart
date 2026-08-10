@@ -19,19 +19,25 @@ class RegexConstants {
 
   /// Regex of id card number which length is 15.
   static const String regexIdCard15 =
-      '^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}\$';
+      '^[1-9]\\d{7}((0\\d)|(1[0-2]))(([012]\\d)|3[0-1])\\d{3}\$';
 
   /// Regex of id card number which length is 15.
   static const String REGEX_ID_CARD15 =
-      "^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}\$";
+      "^[1-9]\\d{7}((0\\d)|(1[0-2]))(([012]\\d)|3[0-1])\\d{3}\$";
 
   /// Regex of id card number which length is 18.
   static const String REGEX_ID_CARD18 =
-      "^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}([0-9Xx])\$";
+      "^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([012]\\d)|3[0-1])\\d{3}([0-9Xx])\$";
 
   ///Regex of email.
-  static const String REGEX_EMAIL =
-      "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*\$";
+  ///
+  /// Non-backtracking, intentionally permissive form: any non-space, non-`@`
+  /// run, then `@`, then a non-space, non-`@` run containing at least one dot.
+  /// This is more permissive than the previous `\w+([-+.]\w+)*` local part
+  /// (which rejected characters like `!`, `#`, `$`, `%`, ... that are legal in
+  /// RFC 5321 local parts). The total length is capped in [RegexUtils.isEmail]
+  /// per RFC 5321 (254 octets).
+  static const String REGEX_EMAIL = r"^[^\s@]+@[^\s@]+\.[^\s@]+$";
 
   ///Regex of url.
   static const String REGEX_URL = "[a-zA-z]+://[^\\s]*";
@@ -85,7 +91,7 @@ class RegexConstants {
   static const String REGEX_CHINA_POSTAL_CODE = "[1-9]\\d{5}(?!\\d)";
 
   /// Regex of integer.
-  static const String REGEX_INTEGER = "^(-?[1-9]\\d*)|0\$";
+  static const String REGEX_INTEGER = "^(?:-?[1-9]\\d*|0)\$";
 
   /// Regex of positive integer.
   static const String REGEX_POSITIVE_INTEGER = "^[1-9]\\d*\$";
@@ -94,31 +100,31 @@ class RegexConstants {
   static const String REGEX_NEGATIVE_INTEGER = "^-[1-9]\\d*\$";
 
   /// Regex of non-negative integer.
-  static const String REGEX_NOT_NEGATIVE_INTEGER = "^[1-9]\\d*|0\$";
+  static const String REGEX_NOT_NEGATIVE_INTEGER = "^(?:[1-9]\\d*|0)\$";
 
   /// Regex of non-positive integer.
-  static const String REGEX_NOT_POSITIVE_INTEGER = "^-[1-9]\\d*|0\$";
+  static const String REGEX_NOT_POSITIVE_INTEGER = "^(?:-[1-9]\\d*|0)\$";
 
-  /// Regex of positive float.
+  /// Regex of float.
   static const String REGEX_FLOAT =
-      "^-?([1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0)\$";
+      "^(?:-?(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0))\$";
 
   /// Regex of positive float.
   static const String REGEX_POSITIVE_FLOAT =
-      "^[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*\$";
+      "^(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*)\$";
 
   /// Regex of negative float.
   static const String REGEX_NEGATIVE_FLOAT =
-      "^-[1-9]\\d*\\.\\d*|-0\\.\\d*[1-9]\\d*\$";
+      "^(?:-[1-9]\\d*\\.\\d*|-0\\.\\d*[1-9]\\d*)\$";
 
-  /// Regex of positive float.
+  /// Regex of non-negative float.
   static const String REGEX_NOT_NEGATIVE_FLOAT =
-      "^[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0\$";
+      "^(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0)\$";
 
-  ///Regex of negative float.
+  ///Regex of non-positive float.
   ///
   static const String REGEX_NOT_POSITIVE_FLOAT =
-      "^(-([1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*))|0?\\.0+|0\$";
+      "^(?:-(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*)|0?\\.0+|0)\$";
 
   /// Email regex
   /// email正则表达式

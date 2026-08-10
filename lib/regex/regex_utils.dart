@@ -92,7 +92,10 @@ class RegexUtils {
           weightSum += (input.codeUnitAt(i) - '0'.codeUnitAt(0)) * factor[i];
         }
         int idCardMod = weightSum % 11;
-        String idCardLast = String.fromCharCode(input.codeUnitAt(17));
+        // [REGEX_ID_CARD18] allows a case-insensitive trailing `X`; normalize
+        // it before comparing against the uppercase suffix table.
+        final String idCardLast =
+            String.fromCharCode(input.codeUnitAt(17)).toUpperCase();
         return idCardLast == suffix[idCardMod];
       }
     }
@@ -100,8 +103,13 @@ class RegexUtils {
   }
 
   /// Return whether input matches regex of email.
-  /// 返回输入是否匹配电子邮件的正则表达式。
+  ///
+  /// Uses the non-backtracking [RegexConstants.REGEX_EMAIL] pattern and caps
+  /// the input at 254 characters per RFC 5321 to bound the work for
+  /// pathological inputs. The pattern is intentionally permissive about the
+  /// local part (any non-space, non-`@` character is allowed).
   bool isEmail(String input) {
+    if (input.length > 254) return false;
     return matches(RegexConstants.REGEX_EMAIL, input);
   }
 
