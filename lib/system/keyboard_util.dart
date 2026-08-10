@@ -1,6 +1,4 @@
 // Flutter imports:
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -12,16 +10,18 @@ import 'package:flutter/services.dart';
 class KeyBoardUtils {
   KeyBoardUtils._();
 
+  /// Closes the on-screen keyboard by releasing focus.
+  ///
+  /// Previously this also called
+  /// `SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive)`, which
+  /// hid the status and navigation bars as a side effect of closing the
+  /// keyboard. That system-UI manipulation has been removed; if the caller
+  /// wants to hide system UI it should do so explicitly via [SystemUtils].
   static void closeKeyBoard(BuildContext context, {FocusNode? focusNode}) {
     if (focusNode != null) {
       focusNode.unfocus();
     } else {
       FocusScope.of(context).unfocus();
-    }
-    // FocusScope.of(context).requestFocus(FocusNode());
-    //FocusScope.of(context).requestFocus();
-    if (Platform.isAndroid || Platform.isIOS) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     }
   }
 

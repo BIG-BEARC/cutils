@@ -102,10 +102,30 @@ class SystemUtils {
   double get navigationBarHeight {
     final view = WidgetsBinding.instance.platformDispatcher.implicitView;
     if (view != null) {
-      final padding = view.padding;
-      return (padding.bottom - padding.top) / view.devicePixelRatio;
+      // view.padding is a dart:ui ViewPadding (physical pixels); wrap its
+      // bottom/top into an EdgeInsets so the pure helper stays testable.
+      final padding = EdgeInsets.fromLTRB(
+        view.padding.left,
+        view.padding.top,
+        view.padding.right,
+        view.padding.bottom,
+      );
+      return navBarHeightFrom(padding, view.devicePixelRatio);
     }
     return 0.0;
+  }
+
+  /// Computes the navigation-bar height from a padding inset and device
+  /// pixel ratio.
+  ///
+  /// Extracted from [navigationBarHeight] so the math is unit-testable
+  /// without a live [MediaQuery] / platform view. Only the bottom inset
+  /// (the navigation-bar gesture area) is divided by [dpr]; subtracting the
+  /// status-bar inset, as the old formula did, yields a wrong — often
+  /// negative — value.
+  @visibleForTesting
+  static double navBarHeightFrom(EdgeInsets padding, double dpr) {
+    return padding.bottom / dpr;
   }
 
   /// 拷贝文本内容到剪切板

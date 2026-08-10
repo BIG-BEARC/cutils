@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:cutils/log/log.dart';
+import 'package:flutter/foundation.dart';
 
 /// * @Author: chuxiong
 /// * @Created at: 10-06-2025 17:40
@@ -114,19 +115,27 @@ class DeviceInfoUtil {
       final processorID = await _winProcessorID();
       final diskDriveID = await _winDiskDrive();
       final osNumber = await _winOSNumber();
-      // md5 generates a unique id, using String.hashCode directly is too easy to collide
-      final all = baseBoardID +
-          biosID +
-          processorID +
-          diskDriveID +
-          osNumber +
-          DateTime.now().toString();
-      final uID = md5.convert(utf8.encode(all)).toString();
-      return uID;
+      // Only stable hardware ids are hashed — never wall-clock time, or the
+      // identifier would change on every call.
+      return buildWinUniqueId(
+        [baseBoardID, biosID, processorID, diskDriveID, osNumber],
+      );
     } catch (e) {
       logger.e('uniqueIdentifier$e');
       return '';
     }
+  }
+
+  /// Builds the md5 device identifier from a set of stable hardware ids.
+  ///
+  /// Extracted from [winUniqueIdentifier] so the hashing logic is unit-
+  /// testable without spawning `wmic` processes. Only stable hardware ids
+  /// may be supplied — never wall-clock time, or the identifier will change
+  /// on every call.
+  @visibleForTesting
+  static String buildWinUniqueId(Iterable<String> ids) {
+    final all = ids.join();
+    return md5.convert(utf8.encode(all)).toString();
   }
 
   /// windows `Win32_BaseBoard::SerialNumber`

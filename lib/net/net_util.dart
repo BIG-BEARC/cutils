@@ -1,8 +1,8 @@
 // Dart imports:
 import 'dart:async';
-import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:cutils/log/log.dart';
 
@@ -32,10 +32,6 @@ class NetUtil {
   ///是否连接网络
   ///reChecked 是否需要重新检测
   Future<bool> isConnectedNet({bool reChecked = false}) async {
-    if (Platform.isWindows) {
-      return true;
-    }
-
     ///如果已连接，则不去检测，频繁检测损耗性能且易出平台异常
     if (_connected && !reChecked) {
       return _connected;
@@ -47,7 +43,19 @@ class NetUtil {
       logger.e("Connectivity.checkConnectivity异常:$e");
       result = [ConnectivityResult.none];
     }
-    return _getNetType(result[0]);
+    // Derive the human-readable label from the first non-none result (if
+    // any) so `netType` reflects an actual connection rather than a stale
+    // `none` at index 0.
+    final representative = result.firstWhere(
+      (r) => r != ConnectivityResult.none,
+      orElse: () => ConnectivityResult.none,
+    );
+    _getNetType(representative);
+    // The connected verdict uses the WHOLE result list (D4/D5): every
+    // platform — Windows included — runs the same check, any non-none
+    // result counts as connected, and bluetooth is treated as connected.
+    _connected = isConnectedFromResults(result);
+    return _connected;
   }
 
   bool _getNetType(ConnectivityResult result) {
@@ -75,5 +83,22 @@ class NetUtil {
         break;
     }
     return _connected;
+  }
+
+  /// Pure connectivity decision extracted from [isConnectedNet].
+  ///
+  /// Returns `true` iff the device has at least one live connection. The
+  /// decision intentionally ignores `Platform.isWindows` (desktops are NOT
+  /// assumed online — see D4) and treats every result other than
+  /// [ConnectivityResult.none] — including bluetooth — as connected (D5).
+  ///
+  /// Extracted so the aggregation logic is unit-testable without a live
+  /// platform plugin or a mocked `dart.io Platform`.
+  @visibleForTesting
+  static bool isConnectedFromResults(List<ConnectivityResult> results) {
+    if (results.isEmpty) return false;
+    // Any live result keeps the device online; bluetooth counts as
+    // connected. Only an all-`none` (or empty) list is offline.
+    return results.any((r) => r != ConnectivityResult.none);
   }
 }
