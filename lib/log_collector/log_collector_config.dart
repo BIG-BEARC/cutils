@@ -31,6 +31,11 @@ class LogCollectorConfig {
   /// 内存中最大日志数量
   final int maxMemoryLogCount;
 
+  /// 待处理日志队列的最大长度
+  ///
+  /// 当输出较慢时，超出此长度的入队请求会被丢弃，避免内存无限增长。
+  final int maxQueueSize;
+
   /// 过滤的标签列表（空列表表示不过滤）
   final List<String> filterTags;
 
@@ -52,6 +57,7 @@ class LogCollectorConfig {
     this.enableFileStorage = true,
     this.enableMemoryStorage = true,
     this.maxMemoryLogCount = 1000,
+    this.maxQueueSize = 1000,
     this.filterTags = const [],
     this.enableCompression = false,
     this.logFormat,
@@ -96,6 +102,7 @@ class LogCollectorConfig {
     bool? enableFileStorage,
     bool? enableMemoryStorage,
     int? maxMemoryLogCount,
+    int? maxQueueSize,
     List<String>? filterTags,
     bool? enableCompression,
     String? logFormat,
@@ -110,6 +117,7 @@ class LogCollectorConfig {
       enableFileStorage: enableFileStorage ?? this.enableFileStorage,
       enableMemoryStorage: enableMemoryStorage ?? this.enableMemoryStorage,
       maxMemoryLogCount: maxMemoryLogCount ?? this.maxMemoryLogCount,
+      maxQueueSize: maxQueueSize ?? this.maxQueueSize,
       filterTags: filterTags ?? this.filterTags,
       enableCompression: enableCompression ?? this.enableCompression,
       logFormat: logFormat ?? this.logFormat,

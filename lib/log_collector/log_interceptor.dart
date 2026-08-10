@@ -89,12 +89,18 @@ class DebugPrintInterceptor extends LogInterceptor {
 
 /// 异常拦截器
 class ExceptionInterceptor extends LogInterceptor {
+  /// 启动前捕获的 [FlutterError.onError]，停止时恢复。
+  void Function(FlutterErrorDetails)? _previousOnError;
+
   @override
   Future<void> onStart() async {
-    // Flutter异常处理
+    // 捕获前一个处理器，避免直接调用 [FlutterError.presentError]：
+    // presentError 在部分 Flutter 版本中会再次派发到 FlutterError.onError，
+    // 造成无限递归；同时确保原始处理器（如默认控制台输出）不会被覆盖丢失。
+    _previousOnError = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
-      // 调用原始异常处理
-      FlutterError.presentError(details);
+      // 直接调用前一个处理器，禁止通过 FlutterError.presentError 回派。
+      _previousOnError?.call(details);
 
       // 收集异常日志
       collect(LogEntry(
@@ -127,8 +133,9 @@ class ExceptionInterceptor extends LogInterceptor {
 
   @override
   Future<void> onStop() async {
-    // 恢复默认异常处理
-    FlutterError.onError = FlutterError.presentError;
+    // 恢复原始异常处理
+    FlutterError.onError = _previousOnError;
+    _previousOnError = null;
     PlatformDispatcher.instance.onError = null;
   }
 }

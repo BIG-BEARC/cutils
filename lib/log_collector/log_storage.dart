@@ -31,6 +31,9 @@ class LogStorage {
   /// 当前日志文件
   File? _currentLogFile;
 
+  /// 定期清理过期日志的计时器，[dispose] 时需取消以避免泄漏。
+  Timer? _cleanupTimer;
+
   LogStorage({required this.config});
 
   /// 初始化存储
@@ -127,6 +130,19 @@ class LogStorage {
       return;
     }
 
+    // 先将当前文件重命名为归档文件（带时间戳后缀），确保新文件路径与之不同。
+    // 否则按日期命名的"新"文件会与旧文件路径相同，轮转变为空操作，旧文件
+    // 会被继续追加，永远超出 maxFileSize。
+    if (_currentLogFile != null && await _currentLogFile!.exists()) {
+      final archiveName = 'log_${_archiveSuffix(DateTime.now())}.json';
+      final archivePath = path.join(_storageDir!.path, archiveName);
+      try {
+        await _currentLogFile!.rename(archivePath);
+      } catch (e) {
+        debugPrint('LogStorage: Failed to archive log: $e');
+      }
+    }
+
     // 获取所有日志文件
     final logFiles = await _getLogFiles();
 
@@ -144,6 +160,14 @@ class LogStorage {
     // 创建新的日志文件
     final fileName = _getLogFileName(DateTime.now());
     _currentLogFile = File(path.join(_storageDir!.path, fileName));
+  }
+
+  /// 归档文件名的时间戳后缀（`yyyy-MM-dd_HHMMss`）。
+  String _archiveSuffix(DateTime date) {
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${date.year.toString().padLeft(4, '0')}'
+        '-${two(date.month)}-${two(date.day)}'
+        '_${two(date.hour)}${two(date.minute)}${two(date.second)}';
   }
 
   /// 获取所有日志文件
@@ -321,14 +345,17 @@ class LogStorage {
 
   /// 安排清理任务
   void _scheduleCleanup() {
-    // 每天清理一次
-    Timer.periodic(const Duration(days: 1), (timer) {
+    // 每天清理一次；保存 Timer 引用以便 [dispose] 取消，避免泄漏。
+    _cleanupTimer?.cancel();
+    _cleanupTimer = Timer.periodic(const Duration(days: 1), (timer) {
       cleanupExpiredLogs();
     });
   }
 
   /// 销毁存储
   Future<void> dispose() async {
+    _cleanupTimer?.cancel();
+    _cleanupTimer = null;
     _memoryStorage.clear();
     _currentLogFile = null;
     _storageDir = null;

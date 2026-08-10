@@ -51,6 +51,9 @@ class LogCollector {
   /// 是否已初始化
   bool _isInitialized = false;
 
+  /// 进行中的初始化 Future，用于消除并发 initialize 的竞态。
+  Future<void>? _initFuture;
+
   /// 初始化日志收集器
   /// [config] 日志收集配置
   /// [outputs] 日志输出器列表
@@ -63,29 +66,47 @@ class LogCollector {
     if (_isInitialized) {
       return;
     }
+    // 同步地缓存进行中的初始化 Future，确保并发调用者复用同一次初始化，
+    // 而不是双双穿过 `_isInitialized == false` 判断导致重复初始化。
+    return _initFuture ??= _initializeInternal(
+      config: config,
+      outputs: outputs,
+      interceptors: interceptors,
+    );
+  }
 
-    _config = config;
-    _storage = LogStorage(config: config);
+  Future<void> _initializeInternal({
+    required LogCollectorConfig config,
+    List<LogOutput>? outputs,
+    List<LogInterceptor>? interceptors,
+  }) async {
+    try {
+      _config = config;
+      _storage = LogStorage(config: config);
 
-    // 添加默认输出器
-    if (outputs != null && outputs.isNotEmpty) {
-      _outputs.addAll(outputs);
+      // 添加默认输出器
+      if (outputs != null && outputs.isNotEmpty) {
+        _outputs.addAll(outputs);
+      }
+
+      // 添加默认拦截器
+      if (interceptors != null && interceptors.isNotEmpty) {
+        _interceptors.addAll(interceptors);
+      }
+
+      // 初始化存储
+      await _storage?.initialize();
+
+      // 启动拦截器
+      for (final interceptor in _interceptors) {
+        await interceptor.start(this);
+      }
+
+      _isInitialized = true;
+    } finally {
+      // 允许 dispose 后再次初始化；若初始化抛错也允许重试。
+      _initFuture = null;
     }
-
-    // 添加默认拦截器
-    if (interceptors != null && interceptors.isNotEmpty) {
-      _interceptors.addAll(interceptors);
-    }
-
-    // 初始化存储
-    await _storage?.initialize();
-
-    // 启动拦截器
-    for (final interceptor in _interceptors) {
-      await interceptor.start(this);
-    }
-
-    _isInitialized = true;
   }
 
   /// 收集日志
@@ -103,6 +124,11 @@ class LogCollector {
     // 检查标签过滤
     if (_config!.filterTags.isNotEmpty &&
         !_config!.filterTags.contains(entry.tag)) {
+      return;
+    }
+
+    // 队列上限：当输出过慢时，丢弃新到的日志，避免内存无限增长。
+    if (_logQueue.length >= _config!.maxQueueSize) {
       return;
     }
 
@@ -210,6 +236,16 @@ class LogCollector {
     // 处理剩余的日志
     await _processLogQueue();
 
+    // 释放每个输出器（例如 BatchLogOutput.flush）。
+    // 拷贝一份再遍历，避免输出器在 dispose 过程中修改 _outputs。
+    for (final output in List<LogOutput>.of(_outputs)) {
+      try {
+        await output.dispose();
+      } catch (e) {
+        debugPrint('LogCollector: Output dispose error: $e');
+      }
+    }
+
     // 清理资源
     _outputs.clear();
     _interceptors.clear();
@@ -226,4 +262,7 @@ class LogCollector {
 
   /// 是否已初始化
   bool get isInitialized => _isInitialized;
+
+  /// 当前待处理的日志队列长度
+  int get pendingLogCount => _logQueue.length;
 }

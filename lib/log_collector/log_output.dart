@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'log_entry.dart';
 
 /// * @Author: chuxiong
@@ -29,14 +31,16 @@ class ConsoleLogOutput extends LogOutput {
     if (enableColor) {
       _printWithColor(entry);
     } else {
-      print(entry.toString());
+      // 使用 developer.log 而非 print，符合 CLAUDE.md 规范，
+      // 且避免被 debugPrint 拦截器再次捕获造成噪音/递归。
+      developer.log(entry.toString());
     }
   }
 
   void _printWithColor(LogEntry entry) {
     // 根据日志级别选择不同的颜色（在支持ANSI颜色的终端）
     final colorCode = _getColorCode(entry.level);
-    print('\x1B[${colorCode}m${entry.toString()}\x1B[0m');
+    developer.log('\x1B[${colorCode}m${entry.toString()}\x1B[0m');
   }
 
   int _getColorCode(LogLevel level) {
