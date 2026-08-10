@@ -19,7 +19,7 @@ class MoneyUtils {
   /// 分 转 元, format格式输出.
   String changeF2Y(int amount, {MoneyFormat format = MoneyFormat.NORMAL}) {
     String moneyTxt;
-    double yuan = numUtils.divideNum(amount, 100);
+    double yuan = NumUtils.divideNum(amount, 100);
     switch (format) {
       case MoneyFormat.NORMAL:
         moneyTxt = yuan.toStringAsFixed(2);
