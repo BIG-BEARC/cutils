@@ -36,11 +36,12 @@ class SpUtil {
   /// 封装 put 操作，自动检查初始化
   Future<bool> _put(String key, dynamic value) async {
     await ensureInitialized();
-    logger.i("_put key:$key value:$value");
+    // 仅记录 key，避免把敏感 value（token/PII）打入日志。
+    logger.i("_put key:$key");
     try {
       return _prefs?.setString(key, json.encode(value)) ?? Future.value(false);
     } catch (e) {
-      logger.e("SpUtil error _put for key '$key ,value:$value\n error:$e");
+      logger.e("SpUtil error _put for key '$key\n error:$e");
       return Future.value(false);
     }
   }
@@ -133,70 +134,70 @@ class SpUtil {
   /// 存储字符串
   Future<bool> putString(String key, String value) async {
     await ensureInitialized();
-    logger.i("putString key:$key value:$value");
+    logger.i("putString key:$key");
     return _prefs?.setString(key, value) ?? false;
   }
 
   /// 获取字符串
   String? getString(String key, {String? defValue = ''}) {
     var value = _prefs?.getString(key) ?? defValue;
-    logger.i("getString key:$key value:$value");
+    logger.i("getString key:$key");
     return value;
   }
 
   /// 存储布尔值
   Future<bool> putBool(String key, bool value) async {
     await ensureInitialized();
-    logger.i("putBool key:$key value:$value");
+    logger.i("putBool key:$key");
     return _prefs?.setBool(key, value) ?? false;
   }
 
   /// 获取布尔值
   bool? getBool(String key, {bool defValue = false}) {
     final value = _prefs?.getBool(key) ?? defValue;
-    logger.i("getBool key:$key value:$value");
+    logger.i("getBool key:$key");
     return value;
   }
 
   /// 存储整数
   Future<bool> putInt(String key, int value) async {
     await ensureInitialized();
-    logger.i("putInt key:$key value:$value");
+    logger.i("putInt key:$key");
     return _prefs?.setInt(key, value) ?? false;
   }
 
   /// 获取整数
   int? getInt(String key, {int defValue = 0}) {
     final value = _prefs?.getInt(key) ?? defValue;
-    logger.i("getInt key:$key value:$value");
+    logger.i("getInt key:$key");
     return value;
   }
 
   /// 存储浮点数
   Future<bool> putDouble(String key, double value) async {
     await ensureInitialized();
-    logger.i("putDouble key:$key value:$value");
+    logger.i("putDouble key:$key");
     return _prefs?.setDouble(key, value) ?? false;
   }
 
   /// 获取浮点数
   double? getDouble(String key, {double defValue = 0.0}) {
     final value = _prefs?.getDouble(key) ?? defValue;
-    logger.i("getDouble key:$key value:$value");
+    logger.i("getDouble key:$key");
     return value;
   }
 
   /// 存储字符串列表
   Future<bool> putStringList(String key, List<String> value) async {
     await ensureInitialized();
-    logger.i("putStringList key:$key value:$value");
+    logger.i("putStringList key:$key");
     return _prefs?.setStringList(key, value) ?? false;
   }
 
   /// 获取字符串列表
   List<String>? getStringList(String key, {List<String>? defValue = const []}) {
     final value = _prefs?.getStringList(key) ?? defValue;
-    logger.i("getStringList key:$key value:$value");
+    logger.i("getStringList key:$key");
     return value;
   }
 

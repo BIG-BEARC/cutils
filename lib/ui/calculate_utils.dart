@@ -20,8 +20,13 @@ class CalculateUtils {
         ),
       ),
     );
-    painter.layout(maxWidth: maxWidth);
-    return painter.height;
+    try {
+      painter.layout(maxWidth: maxWidth);
+      return painter.height;
+    } finally {
+      // 释放原生文本整形资源，避免每次调用泄漏。
+      painter.dispose();
+    }
   }
 
   /// 计算文本宽度
@@ -42,7 +47,12 @@ class CalculateUtils {
         ),
       ),
     );
-    painter.layout(maxWidth: maxWidth);
-    return painter.width;
+    try {
+      painter.layout(maxWidth: maxWidth);
+      return painter.width;
+    } finally {
+      // 释放原生文本整形资源，避免每次调用泄漏。
+      painter.dispose();
+    }
   }
 }
