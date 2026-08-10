@@ -7,17 +7,11 @@ import 'package:cutils/log/log.dart';
 /// * @Email:
 /// * description json转化工具类，主要是负责list，map，对象和json之间转化等
 
-final jsonUtil = JsonUtils();
-
 class JsonUtils {
   JsonUtils._();
 
-  static final _ins = JsonUtils._();
-
-  factory JsonUtils() => _ins;
-
   /// 打印 JSON 字符串（支持缩进）
-  void printJson(dynamic obj, {bool prettyPrint = true}) {
+  static void printJson(dynamic obj, {bool prettyPrint = true}) {
     try {
       if (prettyPrint) {
         const encoder = JsonEncoder.withIndent('  ');
@@ -31,7 +25,7 @@ class JsonUtils {
   }
 
   /// 将任意对象转为 JSON 字符串
-  String? encodeObj(dynamic value) {
+  static String? encodeObj(dynamic value) {
     if (value == null) return null;
     try {
       return json.encode(value);
@@ -42,7 +36,8 @@ class JsonUtils {
   }
 
   /// 将单个对象转为 JSON 字符串
-  String? encodeObject<T>(T? obj, Map<String, dynamic> Function(T) toJson) {
+  static String? encodeObject<T>(
+      T? obj, Map<String, dynamic> Function(T) toJson) {
     if (obj == null) return null;
     try {
       return json.encode(toJson(obj));
@@ -53,7 +48,7 @@ class JsonUtils {
   }
 
   /// JSON 字符串转为对象
-  T? fromJson<T>(
+  static T? fromJson<T>(
       String? jsonStr, T Function(Map<String, dynamic> map) fromMap) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
     try {
@@ -66,7 +61,7 @@ class JsonUtils {
     }
   }
 
-  String? encodeList(List<dynamic>? list) {
+  static String? encodeList(List<dynamic>? list) {
     if (list == null) return null;
     try {
       return json.encode(list);
@@ -76,7 +71,7 @@ class JsonUtils {
     }
   }
 
-  String? encodeObjectList<T>(
+  static String? encodeObjectList<T>(
       List<T>? list, Map<String, dynamic> Function(T) toJson) {
     if (list == null || list.isEmpty) return null;
     try {
@@ -89,7 +84,7 @@ class JsonUtils {
   }
 
   /// JSON 字符串或列表转为对象列表
-  List<T>? listFromJson<T>(
+  static List<T>? listFromJson<T>(
     dynamic source,
     T Function(Map<String, dynamic> map) fromMap,
   ) {
@@ -125,7 +120,7 @@ class JsonUtils {
   }
 
   /// JSON 字符串转为 Map
-  Map<String, dynamic>? toMap(String? jsonStr) {
+  static Map<String, dynamic>? toMap(String? jsonStr) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
     try {
       final decoded = json.decode(jsonStr);
@@ -137,7 +132,7 @@ class JsonUtils {
   }
 
   /// JSON 字符串转为 List<Map>
-  List<Map<String, dynamic>>? toMapList(String? jsonStr) {
+  static List<Map<String, dynamic>>? toMapList(String? jsonStr) {
     if (jsonStr == null || jsonStr.isEmpty) return null;
     try {
       final decoded = json.decode(jsonStr);

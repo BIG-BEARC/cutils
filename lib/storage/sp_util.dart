@@ -94,7 +94,7 @@ class SpUtil {
     try {
       final List<String> encodedList = list
           .map(
-            (e) => jsonUtil.encodeObj(e),
+            (e) => JsonUtils.encodeObj(e),
           )
           .where((e) => e != null)
           .cast<String>()
@@ -118,7 +118,7 @@ class SpUtil {
       if (encodedList == null || encodedList.isEmpty) return defValue;
 
       final List<T> decodedList = encodedList
-          .map((str) => jsonUtil.fromJson<T>(str, fromJson))
+          .map((str) => JsonUtils.fromJson<T>(str, fromJson))
           .whereType<T>()
           .toList();
 
