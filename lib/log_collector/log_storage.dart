@@ -1,5 +1,6 @@
 // Dart imports:
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -22,8 +23,8 @@ import 'log_entry.dart';
 class LogStorage {
   final LogCollectorConfig config;
 
-  /// 内存存储
-  final List<LogEntry> _memoryStorage = [];
+  /// 内存存储（Queue：队首丢弃 O(1)，避免 List.removeAt(0) 的 O(n) 开销）。
+  final Queue<LogEntry> _memoryStorage = Queue<LogEntry>();
 
   /// 存储目录
   Directory? _storageDir;
@@ -31,10 +32,29 @@ class LogStorage {
   /// 当前日志文件
   File? _currentLogFile;
 
+  /// 当前日志文件的持久化写入 sink。
+  ///
+  /// 避免每条日志 `writeAsString(flush: true)` 触发的 open/write/flush/close
+  /// 系统调用——写入缓冲区后由 [_flushTimer] 周期性 flush。
+  IOSink? _fileSink;
+
+  /// 当前日志文件的已知大小（字节），内存跟踪。
+  ///
+  /// 避免每次 store 调用 `exists()` + `length()` 两次 IO——仅在本类写入时
+  /// 累加，rotate 时归零，[_initializeFileStorage] 时从磁盘读取初始值。
+  int _currentFileSize = 0;
+
   /// 定期清理过期日志的计时器，[dispose] 时需取消以避免泄漏。
   Timer? _cleanupTimer;
 
+  /// 定期 flush 文件 sink 的计时器，[dispose] 时需取消以避免泄漏。
+  Timer? _flushTimer;
+
   LogStorage({required this.config});
+
+  /// 仅供测试观察：periodic flush 回调被触发的次数。
+  @visibleForTesting
+  int periodicFlushCount = 0;
 
   /// 初始化存储
   Future<void> initialize() async {
@@ -45,6 +65,10 @@ class LogStorage {
     if (config.autoCleanExpiredLogs) {
       _scheduleCleanup();
     }
+
+    // 定时 flush：即使没有新日志到来，缓冲区中的日志也会在 flushInterval
+    // 后落盘。文件存储关闭时回调为 no-op（_fileSink == null）。
+    _scheduleFlush();
   }
 
   /// 初始化文件存储
@@ -65,6 +89,14 @@ class LogStorage {
     // 创建当前日志文件
     final fileName = _getLogFileName(DateTime.now());
     _currentLogFile = File(path.join(_storageDir!.path, fileName));
+
+    // 如果文件已存在（例如今天早些时候写过），读取其大小作为初始值，
+    // 避免 size tracking 与磁盘实际大小脱节导致轮转失效。
+    if (await _currentLogFile!.exists()) {
+      _currentFileSize = await _currentLogFile!.length();
+    } else {
+      _currentFileSize = 0;
+    }
   }
 
   /// 获取日志文件名
@@ -88,12 +120,20 @@ class LogStorage {
 
   /// 内存存储
   void _storeInMemory(LogEntry entry) {
-    _memoryStorage.add(entry);
+    _memoryStorage.addLast(entry);
 
-    // 限制内存中的日志数量
+    // 限制内存中的日志数量（Queue.removeFirst O(1)）
     if (_memoryStorage.length > config.maxMemoryLogCount) {
-      _memoryStorage.removeAt(0);
+      _memoryStorage.removeFirst();
     }
+  }
+
+  /// 惰性打开持久化 IOSink
+  Future<void> _openSink() async {
+    if (_fileSink != null || _currentLogFile == null) {
+      return;
+    }
+    _fileSink = _currentLogFile!.openWrite(mode: FileMode.append);
   }
 
   /// 文件存储
@@ -103,23 +143,20 @@ class LogStorage {
     }
 
     try {
-      // 检查文件大小
-      if (await _currentLogFile!.exists()) {
-        final fileSize = await _currentLogFile!.length();
-        if (fileSize >= config.maxFileSize) {
-          await _rotateLogFile();
-        }
+      // 大小检查：基于内存跟踪的 [_currentFileSize]，不调用 exists()+length()。
+      if (_currentFileSize >= config.maxFileSize) {
+        await _rotateLogFile();
       }
 
-      // 追加日志
+      await _openSink();
+
+      // 追加日志（不 flush——由 [_flushTimer] 周期性 flush）
       final jsonStr = jsonEncode(entry.toJson());
-      await _currentLogFile!.writeAsString(
-        '$jsonStr\n',
-        mode: FileMode.append,
-        flush: true,
-      );
+      final line = '$jsonStr\n';
+      _fileSink!.write(line);
+      _currentFileSize += utf8.encode(line).length;
     } catch (e) {
-      // 存储失败，记录到内存
+      // 存储失败，记录到控制台
       debugPrint('LogStorage: Failed to store log: $e');
     }
   }
@@ -130,7 +167,12 @@ class LogStorage {
       return;
     }
 
-    // 先将当前文件重命名为归档文件（带时间戳后缀），确保新文件路径与之不同。
+    // 先 flush + close 旧 sink，确保缓冲数据落盘再 rename。
+    await _fileSink?.flush();
+    await _fileSink?.close();
+    _fileSink = null;
+
+    // 将当前文件重命名为归档文件（带时间戳后缀），确保新文件路径与之不同。
     // 否则按日期命名的"新"文件会与旧文件路径相同，轮转变为空操作，旧文件
     // 会被继续追加，永远超出 maxFileSize。
     if (_currentLogFile != null && await _currentLogFile!.exists()) {
@@ -160,6 +202,7 @@ class LogStorage {
     // 创建新的日志文件
     final fileName = _getLogFileName(DateTime.now());
     _currentLogFile = File(path.join(_storageDir!.path, fileName));
+    _currentFileSize = 0;
   }
 
   /// 归档文件名的时间戳后缀（`yyyy-MM-dd_HHMMss`）。
@@ -229,7 +272,10 @@ class LogStorage {
       ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
   }
 
-  /// 从文件获取日志
+  /// 从文件流式获取日志
+  ///
+  /// 使用 [File.openRead] + [LineSplitter] 逐行流式解码，逐行短路过滤——
+  /// 避免将整个文件读入内存再 split。内存占用仅与匹配结果集成正比。
   Future<List<LogEntry>> _getLogsFromFiles({
     DateTime? startTime,
     DateTime? endTime,
@@ -241,15 +287,20 @@ class LogStorage {
 
     for (final file in logFiles) {
       try {
-        final content = await file.readAsString();
-        final lines = content.split('\n').where((line) => line.isNotEmpty);
+        final lineStream = file
+            .openRead()
+            .transform(utf8.decoder)
+            .transform(const LineSplitter());
 
-        for (final line in lines) {
+        await for (final line in lineStream) {
+          if (line.isEmpty) {
+            continue;
+          }
           try {
             final json = jsonDecode(line) as Map<String, dynamic>;
             final entry = LogEntry.fromJson(json);
 
-            // 简单过滤
+            // 逐行短路过滤
             if (startTime != null && entry.timestamp.isBefore(startTime)) {
               continue;
             }
@@ -282,11 +333,23 @@ class LogStorage {
   Future<void> clear() async {
     _memoryStorage.clear();
 
+    // 关闭旧 sink 后再删除文件，避免文件被占用。
+    await _fileSink?.flush();
+    await _fileSink?.close();
+    _fileSink = null;
+
     if (_storageDir != null && await _storageDir!.exists()) {
       final logFiles = await _getLogFiles();
       for (final file in logFiles) {
         await file.delete();
       }
+    }
+    _currentFileSize = 0;
+
+    // 重建当前日志文件引用，使后续 store 可继续写入。
+    if (_storageDir != null) {
+      final fileName = _getLogFileName(DateTime.now());
+      _currentLogFile = File(path.join(_storageDir!.path, fileName));
     }
   }
 
@@ -352,11 +415,41 @@ class LogStorage {
     });
   }
 
+  /// 安排定时 flush 任务
+  void _scheduleFlush() {
+    _flushTimer?.cancel();
+    _flushTimer = Timer.periodic(config.flushInterval, (timer) {
+      performPeriodicFlush();
+    });
+  }
+
+  /// 周期性 flush 文件 sink。
+  ///
+  /// 拆分为独立方法以便测试观察触发次数（[periodicFlushCount]）。
+  @visibleForTesting
+  void performPeriodicFlush() {
+    periodicFlushCount++;
+    _fileSink?.flush();
+  }
+
+  /// 仅供测试：显式 flush 文件 sink，确保缓冲区内容落盘以便读取验证。
+  @visibleForTesting
+  Future<void> flushForTesting() async {
+    await _fileSink?.flush();
+  }
+
   /// 销毁存储
   Future<void> dispose() async {
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
+    _flushTimer?.cancel();
+    _flushTimer = null;
+    // flush + close sink，确保缓冲数据落盘。
+    await _fileSink?.flush();
+    await _fileSink?.close();
+    _fileSink = null;
     _memoryStorage.clear();
+    _currentFileSize = 0;
     _currentLogFile = null;
     _storageDir = null;
   }

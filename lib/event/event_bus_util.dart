@@ -7,17 +7,18 @@ final eventBus = EventBusUtil();
 abstract class Event {}
 
 class EventBusUtil {
-  static final EventBusUtil _singleton = EventBusUtil._internal();
+  static EventBusUtil _singleton = EventBusUtil._internal();
 
   factory EventBusUtil() => _singleton;
 
   EventBusUtil._internal();
 
   static EventBus get eventBus => _singleton._eventBus;
-  final _eventBus = EventBus();
+  EventBus _eventBus = EventBus();
 
-  //保存事件订阅者队列，key:事件名(id)，value: 对应事件的订阅者队列
-  // var _emap = new Map<Object, List<EventCallback>>();
+  /// 当前注册的订阅。用于 [dispose] 时统一取消，避免忘记 cancel 的监听器
+  /// 永久挂在单例广播流上造成泄漏。
+  final Set<StreamSubscription> _subscriptions = {};
 
   StreamSubscription<T> listen<T extends Event>(
     Function(T event) onData, {
@@ -25,12 +26,14 @@ class EventBusUtil {
     void Function()? onDone,
     bool? cancelOnError,
   }) {
-    return _eventBus.on<T>().listen(
+    final subscription = _eventBus.on<T>().listen(
           onData,
           onError: onError,
           onDone: onDone,
           cancelOnError: cancelOnError,
         );
+    _subscriptions.add(subscription);
+    return subscription;
   }
 
   void fire<T extends Event>(T e) {
@@ -38,5 +41,21 @@ class EventBusUtil {
       return;
     }
     _eventBus.fire(e);
+  }
+
+  /// 销毁事件总线：取消所有已注册的订阅并关闭控制器。
+  ///
+  /// 适用于宿主 App 在退出 / 重建时调用（per spec D3，eventBus 是应用级单例）。
+  /// 调用后单例会被重置为可用状态，以便测试或 App 重启后复用。
+  Future<void> dispose() async {
+    final subs = _subscriptions.toList();
+    _subscriptions.clear();
+    for (final sub in subs) {
+      await sub.cancel();
+    }
+    _eventBus.destroy();
+    // 重置内部 EventBus 与单例引用，使后续 listen/fire 恢复可用。
+    _eventBus = EventBus();
+    _singleton = this;
   }
 }

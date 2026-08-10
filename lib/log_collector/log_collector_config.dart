@@ -48,6 +48,13 @@ class LogCollectorConfig {
   /// 是否自动清理过期日志
   final bool autoCleanExpiredLogs;
 
+  /// 文件 sink 的定时 flush 间隔
+  ///
+  /// 日志写入持久化 [IOSink] 后不立即 flush（避免每行强制刷盘），而是由此
+  /// 定时器周期性 flush。即使流量停止，缓冲区中的日志也会在 [flushInterval]
+  /// 后落盘。
+  final Duration flushInterval;
+
   const LogCollectorConfig({
     this.minLevel = LogLevel.debug,
     this.storagePath,
@@ -62,6 +69,7 @@ class LogCollectorConfig {
     this.enableCompression = false,
     this.logFormat,
     this.autoCleanExpiredLogs = true,
+    this.flushInterval = const Duration(seconds: 5),
   });
 
   /// 默认配置
@@ -107,6 +115,7 @@ class LogCollectorConfig {
     bool? enableCompression,
     String? logFormat,
     bool? autoCleanExpiredLogs,
+    Duration? flushInterval,
   }) {
     return LogCollectorConfig(
       minLevel: minLevel ?? this.minLevel,
@@ -122,6 +131,7 @@ class LogCollectorConfig {
       enableCompression: enableCompression ?? this.enableCompression,
       logFormat: logFormat ?? this.logFormat,
       autoCleanExpiredLogs: autoCleanExpiredLogs ?? this.autoCleanExpiredLogs,
+      flushInterval: flushInterval ?? this.flushInterval,
     );
   }
 }

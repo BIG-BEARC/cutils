@@ -151,11 +151,17 @@ class LogCollector {
       while (_logQueue.isNotEmpty) {
         final entry = _logQueue.removeFirst();
 
-        // 存储日志
-        await _storage?.store(entry);
+        // 存储日志：即使存储抛出异常也不能中断队列的排空——否则后续条目
+        // 永远留在队列中无法输出。
+        try {
+          await _storage?.store(entry);
+        } catch (e) {
+          debugPrint('LogCollector: Storage error: $e');
+        }
 
-        // 输出日志
-        for (final output in _outputs) {
+        // 输出日志：遍历快照，避免 output.output() 内部调用 addOutput /
+        // removeOutput 触发 ConcurrentModificationError。
+        for (final output in List<LogOutput>.of(_outputs)) {
           try {
             await output.output(entry);
           } catch (e) {
@@ -265,4 +271,10 @@ class LogCollector {
 
   /// 当前待处理的日志队列长度
   int get pendingLogCount => _logQueue.length;
+
+  /// 仅供测试注入 [LogStorage] 子类（例如抛出异常的存储）。
+  @visibleForTesting
+  set storageForTesting(LogStorage? value) {
+    _storage = value;
+  }
 }

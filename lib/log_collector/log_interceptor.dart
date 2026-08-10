@@ -92,12 +92,20 @@ class ExceptionInterceptor extends LogInterceptor {
   /// 启动前捕获的 [FlutterError.onError]，停止时恢复。
   void Function(FlutterErrorDetails)? _previousOnError;
 
+  /// 启动前捕获的 [PlatformDispatcher.instance.onError]，停止时恢复。
+  ///
+  /// 注意：不能在 onStop 中直接置为 null——会丢弃宿主 App 已注册的处理器，
+  /// 必须还原 onStart 时捕获的原值。
+  bool Function(Object error, StackTrace stackTrace)? _previousPlatformOnError;
+
   @override
   Future<void> onStart() async {
     // 捕获前一个处理器，避免直接调用 [FlutterError.presentError]：
     // presentError 在部分 Flutter 版本中会再次派发到 FlutterError.onError，
     // 造成无限递归；同时确保原始处理器（如默认控制台输出）不会被覆盖丢失。
     _previousOnError = FlutterError.onError;
+    // 同样捕获 PlatformDispatcher 的原处理器，停止时还原而非置 null。
+    _previousPlatformOnError = PlatformDispatcher.instance.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
       // 直接调用前一个处理器，禁止通过 FlutterError.presentError 回派。
       _previousOnError?.call(details);
@@ -133,32 +141,10 @@ class ExceptionInterceptor extends LogInterceptor {
 
   @override
   Future<void> onStop() async {
-    // 恢复原始异常处理
+    // 恢复原始异常处理器（还原捕获的原值，而非置 null 丢弃宿主已注册的处理器）。
     FlutterError.onError = _previousOnError;
     _previousOnError = null;
-    PlatformDispatcher.instance.onError = null;
-  }
-}
-
-/// 文件日志监听拦截器
-/// 监听指定目录下的日志文件变化
-class FileLogInterceptor extends LogInterceptor {
-  final String logDirectory;
-  final List<String> filePatterns;
-
-  FileLogInterceptor({
-    required this.logDirectory,
-    this.filePatterns = const ['*.log'],
-  });
-
-  @override
-  Future<void> onStart() async {
-    // TODO: 实现文件监听逻辑
-    // 可以使用 path_provider 和 file 包来监听文件变化
-  }
-
-  @override
-  Future<void> onStop() async {
-    // TODO: 停止文件监听
+    PlatformDispatcher.instance.onError = _previousPlatformOnError;
+    _previousPlatformOnError = null;
   }
 }

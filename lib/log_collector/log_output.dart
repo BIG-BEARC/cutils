@@ -1,5 +1,11 @@
 import 'dart:developer' as developer;
 
+// Dart imports:
+import 'dart:async';
+
+// Flutter imports:
+import 'package:flutter/foundation.dart';
+
 import 'log_entry.dart';
 
 /// * @Author: chuxiong
@@ -61,7 +67,10 @@ class ConsoleLogOutput extends LogOutput {
   }
 }
 
-/// 文件输出器
+/// 文件输出器（尚未实现——占位类）
+///
+/// ⚠️ 当前为 TODO 占位类，直接构造会抛出 [UnimplementedError]，避免被当作
+/// 空操作（no-op）静默使用导致日志丢失。后续实现完成后移除此抛出。
 class FileLogOutput extends LogOutput {
   final String filePath;
   final int maxFileSize;
@@ -71,7 +80,12 @@ class FileLogOutput extends LogOutput {
     required this.filePath,
     this.maxFileSize = 10 * 1024 * 1024, // 10MB
     this.maxFileCount = 10,
-  });
+  }) {
+    throw UnimplementedError(
+      'FileLogOutput 尚未实现，请勿直接实例化（当前为占位类，'
+      'output 为空操作会导致日志静默丢失）。',
+    );
+  }
 
   @override
   Future<void> output(LogEntry entry) async {
@@ -85,7 +99,9 @@ class FileLogOutput extends LogOutput {
   }
 }
 
-/// 网络输出器
+/// 网络输出器（尚未实现——占位类）
+///
+/// ⚠️ 参见 [FileLogOutput]——直接构造会抛出 [UnimplementedError]。
 class NetworkLogOutput extends LogOutput {
   final String endpoint;
   final Map<String, String>? headers;
@@ -95,7 +111,12 @@ class NetworkLogOutput extends LogOutput {
     required this.endpoint,
     this.headers,
     this.timeout = const Duration(seconds: 30),
-  });
+  }) {
+    throw UnimplementedError(
+      'NetworkLogOutput 尚未实现，请勿直接实例化（当前为占位类，'
+      'output 为空操作会导致日志静默丢失）。',
+    );
+  }
 
   @override
   Future<void> output(LogEntry entry) async {
@@ -114,11 +135,27 @@ class BatchLogOutput extends LogOutput {
   final List<LogEntry> _buffer = [];
   DateTime? _lastFlushTime;
 
+  /// 定时 flush 计时器：当缓冲区有日志但未达到 [batchSize] 时，保证在
+  /// [batchInterval] 后仍会触发 flush，避免流量停止后缓冲日志无限期等待。
+  Timer? _flushTimer;
+
   BatchLogOutput({
     required this.delegate,
     this.batchSize = 100,
     this.batchInterval = const Duration(seconds: 5),
   });
+
+  /// 如果尚无挂起的 flush 计时器，则启动一个 [batchInterval] 后触发的
+  /// 单次 flush。
+  void _armFlushTimer() {
+    if (_flushTimer != null) {
+      return;
+    }
+    _flushTimer = Timer(batchInterval, () {
+      _flushTimer = null;
+      flush();
+    });
+  }
 
   @override
   Future<void> output(LogEntry entry) async {
@@ -131,6 +168,9 @@ class BatchLogOutput extends LogOutput {
 
     if (shouldFlush) {
       await flush();
+    } else {
+      // 即使后续没有新日志到来，定时器也会在 batchInterval 后触发 flush。
+      _armFlushTimer();
     }
   }
 
@@ -139,17 +179,29 @@ class BatchLogOutput extends LogOutput {
       return;
     }
 
+    // 取消挂起的定时器——本次 flush 已经负责清空缓冲区。
+    _flushTimer?.cancel();
+    _flushTimer = null;
+
     final entries = List<LogEntry>.from(_buffer);
     _buffer.clear();
     _lastFlushTime = DateTime.now();
 
+    // 每条 delegate.output 独立 try/catch：单条失败不影响其它条目的输出，
+    // 也不会因为一条异常中断整个 flush 循环。
     for (final entry in entries) {
-      await delegate.output(entry);
+      try {
+        await delegate.output(entry);
+      } catch (e) {
+        debugPrint('BatchLogOutput: delegate.output error: $e');
+      }
     }
   }
 
   @override
   Future<void> dispose() async {
+    _flushTimer?.cancel();
+    _flushTimer = null;
     await flush();
     await delegate.dispose();
   }
