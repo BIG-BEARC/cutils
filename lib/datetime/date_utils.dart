@@ -106,7 +106,13 @@ class DateTimeUtils {
     format = _comFormat(dateTime.hour, format, 'H', 'HH');
     format = _comFormat(dateTime.minute, format, 'm', 'mm');
     format = _comFormat(dateTime.second, format, 's', 'ss');
-    format = _comFormat(dateTime.millisecond, format, 'S', 'SSS');
+    // Milliseconds: SSS must always be exactly 3 digits (005, 050, 123).
+    if (format.contains('SSS')) {
+      format = format.replaceAll(
+          'SSS', dateTime.millisecond.toString().padLeft(3, '0'));
+    } else if (format.contains('S')) {
+      format = format.replaceAll('S', dateTime.millisecond.toString());
+    }
 
     return format;
   }
@@ -205,7 +211,7 @@ class DateTimeUtils {
         DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: isUtc);
     DateTime now;
     if (locMs != null) {
-      now = getDateTimeByMs(locMs);
+      now = getDateTimeByMs(locMs, isUtc: isUtc);
     } else {
       now = isUtc ? DateTime.now().toUtc() : DateTime.now().toLocal();
     }
