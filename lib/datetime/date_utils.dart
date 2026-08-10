@@ -4,18 +4,12 @@ import 'data_formats.dart';
 /// * @Created at: 23-07-2025 16:58
 /// * @Email:
 /// * description
-final dateTimeUtils = DateTimeUtils();
-
 class DateTimeUtils {
   DateTimeUtils._();
 
-  static final DateTimeUtils _instance = DateTimeUtils._();
-
-  factory DateTimeUtils() => _instance;
-
   /// get DateTime By DateStr.
   /// 将字符串时间转化为DateTime
-  DateTime? getDateTime(String dateStr, {bool? isUtc}) {
+  static DateTime? getDateTime(String dateStr, {bool? isUtc}) {
     DateTime? dateTime = DateTime.tryParse(dateStr);
     if (isUtc != null) {
       if (isUtc) {
@@ -29,36 +23,36 @@ class DateTimeUtils {
 
   /// get DateTime By Milliseconds.
   /// 将毫秒时间转化为DateTime
-  DateTime getDateTimeByMs(int ms, {bool isUtc = false}) {
+  static DateTime getDateTimeByMs(int ms, {bool isUtc = false}) {
     return DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc);
   }
 
   /// get DateMilliseconds By DateStr.
   /// 将字符串时间转化为毫秒值
-  int? getDateMsByTimeStr(String dateStr, {bool? isUtc}) {
+  static int? getDateMsByTimeStr(String dateStr, {bool? isUtc}) {
     DateTime? dateTime = getDateTime(dateStr, isUtc: isUtc);
     return dateTime?.millisecondsSinceEpoch;
   }
 
   /// get Now Date Milliseconds.
   /// 获取当前毫秒值
-  int getNowDateMs() {
+  static int getNowDateMs() {
     return DateTime.now().millisecondsSinceEpoch;
   }
 
   /// get Now Date Str.(yyyy-MM-dd HH:mm:ss)
   ///  获取现在日期字符串，默认是：yyyy-MM-dd HH:mm:ss
-  String getNowDateStr() {
+  static String getNowDateStr() {
     return formatDate(DateTime.now());
   }
 
   /// 获取当前日期返回DateTime(utc)
-  DateTime getNowUtcDateTime() {
+  static DateTime getNowUtcDateTime() {
     return DateTime.now().toUtc();
   }
 
   /// 获取昨天日期返回DateTime
-  DateTime getYesterday() {
+  static DateTime getYesterday() {
     var dateTime = DateTime.fromMillisecondsSinceEpoch(
       DateTime.now().millisecondsSinceEpoch - 24 * 60 * 60 * 1000,
     );
@@ -67,25 +61,25 @@ class DateTimeUtils {
 
   /// format date by milliseconds.
   /// 格式化日期毫秒时间
-  String formatDateMs(int ms, {bool isUtc = false, String? format}) {
+  static String formatDateMs(int ms, {bool isUtc = false, String? format}) {
     return formatDate(getDateTimeByMs(ms, isUtc: isUtc), format: format);
   }
 
   /// 获取当前日期，返回指定格式
-  String getNowDateTimeFormat(String outFormat) {
+  static String getNowDateTimeFormat(String outFormat) {
     var formatResult = formatDate(DateTime.now(), format: outFormat);
     return formatResult;
   }
 
   /// 获取当前日期，返回指定格式
-  String getUtcDateTimeFormat(String outFormat) {
+  static String getUtcDateTimeFormat(String outFormat) {
     var formatResult = formatDate(getNowUtcDateTime(), format: outFormat);
     return formatResult;
   }
 
   /// format date by date str.
   /// dateStr 日期字符串
-  String formatDateStr(String dateStr, {bool? isUtc, String? format}) {
+  static String formatDateStr(String dateStr, {bool? isUtc, String? format}) {
     return formatDate(getDateTime(dateStr, isUtc: isUtc), format: format);
   }
 
@@ -94,7 +88,7 @@ class DateTimeUtils {
   /// 格式要求
   /// year -> yyyy/yy   month -> MM/M    day -> dd/d
   /// hour -> HH/H      minute -> mm/m   second -> ss/s
-  String formatDate(DateTime? dateTime, {String? format}) {
+  static String formatDate(DateTime? dateTime, {String? format}) {
     if (dateTime == null) return '';
     format = format ?? DateFormats.FULL;
     if (format.contains('yy')) {
@@ -118,7 +112,8 @@ class DateTimeUtils {
   }
 
   /// com format.
-  String _comFormat(int value, String format, String single, String full) {
+  static String _comFormat(
+      int value, String format, String single, String full) {
     if (format.contains(single)) {
       if (format.contains(full)) {
         format =
@@ -135,7 +130,7 @@ class DateTimeUtils {
   /// isUtc
   /// languageCode zh or en
   /// short
-  String getWeekday(DateTime? dateTime,
+  static String getWeekday(DateTime? dateTime,
       {String languageCode = 'en', bool short = false}) {
     if (dateTime == null) return "";
     String weekday = "";
@@ -171,7 +166,7 @@ class DateTimeUtils {
 
   /// get WeekDay By Milliseconds.
   /// 获取毫秒值对应是星期几
-  String getWeekdayByMs(
+  static String getWeekdayByMs(
     int milliseconds, {
     bool isUtc = false,
     String languageCode = 'en',
@@ -183,7 +178,7 @@ class DateTimeUtils {
 
   /// get day of year.
   /// 在今年的第几天.
-  int getDayOfYear(DateTime dateTime) {
+  static int getDayOfYear(DateTime dateTime) {
     int year = dateTime.year;
     int month = dateTime.month;
     int days = dateTime.day;
@@ -198,13 +193,13 @@ class DateTimeUtils {
 
   /// get day of year.
   /// 在今年的第几天.
-  int getDayOfYearByMs(int ms, {bool isUtc = false}) {
+  static int getDayOfYearByMs(int ms, {bool isUtc = false}) {
     return getDayOfYear(DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc));
   }
 
   /// is today.
   /// 是否是当天.
-  bool isToday(int? milliseconds, {bool isUtc = false, int? locMs}) {
+  static bool isToday(int? milliseconds, {bool isUtc = false, int? locMs}) {
     if (milliseconds == null || milliseconds == 0) return false;
     DateTime old =
         DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: isUtc);
@@ -219,7 +214,7 @@ class DateTimeUtils {
 
   /// is yesterday by dateTime.
   /// 是否是昨天.
-  bool isYesterday(DateTime dateTime, DateTime locDateTime) {
+  static bool isYesterday(DateTime dateTime, DateTime locDateTime) {
     if (yearIsEqual(dateTime, locDateTime)) {
       int spDay = getDayOfYear(locDateTime) - getDayOfYear(dateTime);
       return spDay == 1;
@@ -234,14 +229,14 @@ class DateTimeUtils {
 
   /// is yesterday by millis.
   /// 是否是昨天.
-  bool isYesterdayByMs(int ms, int locMs) {
+  static bool isYesterdayByMs(int ms, int locMs) {
     return isYesterday(DateTime.fromMillisecondsSinceEpoch(ms),
         DateTime.fromMillisecondsSinceEpoch(locMs));
   }
 
   /// is Week.
   /// 是否是本周.
-  bool isWeek(int? ms, {bool isUtc = false, int? locMs}) {
+  static bool isWeek(int? ms, {bool isUtc = false, int? locMs}) {
     if (ms == null || ms <= 0) {
       return false;
     }
@@ -264,43 +259,43 @@ class DateTimeUtils {
 
   /// year is equal.
   /// 是否同年.
-  bool yearIsEqual(DateTime dateTime, DateTime locDateTime) {
+  static bool yearIsEqual(DateTime dateTime, DateTime locDateTime) {
     return dateTime.year == locDateTime.year;
   }
 
   /// year is equal.
   /// 是否同年.
-  bool yearIsEqualByMs(int ms, int locMs) {
+  static bool yearIsEqualByMs(int ms, int locMs) {
     return yearIsEqual(DateTime.fromMillisecondsSinceEpoch(ms),
         DateTime.fromMillisecondsSinceEpoch(locMs));
   }
 
   /// Return whether it is leap year.
   /// 是否是闰年
-  bool isLeapYear(DateTime dateTime) {
+  static bool isLeapYear(DateTime dateTime) {
     return isLeapYearByYear(dateTime.year);
   }
 
   /// Return whether it is leap year.
   /// 是否是闰年
-  bool isLeapYearByMilliseconds(int milliseconds) {
+  static bool isLeapYearByMilliseconds(int milliseconds) {
     var dateTime = getDateTimeByMs(milliseconds);
     return isLeapYearByYear(dateTime.year);
   }
 
   /// Return whether it is leap year.
   /// 是否是闰年
-  bool isLeapYearByYear(int year) {
+  static bool isLeapYearByYear(int year) {
     return year % 4 == 0 && year % 100 != 0 || year % 400 == 0;
   }
 
   ///判断a和b两个时间是否是同一天
-  bool isSameDay(DateTime a, DateTime b) {
+  static bool isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
   /// Returns a number of the next month.
-  int nextMonth(DateTime date) {
+  static int nextMonth(DateTime date) {
     final month = date.month;
     return month == DateTime.monthsPerYear ? 1 : month + 1;
   }
@@ -308,27 +303,27 @@ class DateTimeUtils {
   /// Returns [DateTime] for the beginning of the day (00:00:00).
   ///
   /// (2020, 4, 9, 16, 50) -> (2020, 4, 9, 0, 0)
-  DateTime startOfDay(DateTime dateTime) =>
+  static DateTime startOfDay(DateTime dateTime) =>
       _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day);
 
   /// Returns [DateTime] for the beginning of the next day (00:00:00).
   ///
   /// (2020, 4, 9, 16, 50) -> (2020, 4, 10, 0, 0)
-  DateTime startOfNextDay(DateTime dateTime) =>
+  static DateTime startOfNextDay(DateTime dateTime) =>
       _date(dateTime.isUtc, dateTime.year, dateTime.month, dateTime.day + 1);
 
   /// Returns [DateTime] for the beginning of today (00:00:00).
-  DateTime startOfToday() => startOfDay(DateTime.now());
+  static DateTime startOfToday() => startOfDay(DateTime.now());
 
   /// Creates a copy of [date] but with time replaced with the new values.
-  DateTime setTime(DateTime date, int hours, int minutes,
+  static DateTime setTime(DateTime date, int hours, int minutes,
           [int seconds = 0, int milliseconds = 0, int microseconds = 0]) =>
       _date(date.isUtc, date.year, date.month, date.day, hours, minutes,
           seconds, milliseconds, microseconds);
 
   /// Creates a copy of [date] but with the given fields
   /// replaced with the new values.
-  DateTime copyWith(DateTime date,
+  static DateTime copyWith(DateTime date,
           {int? year,
           int? month,
           int? day,
@@ -358,7 +353,7 @@ class DateTimeUtils {
   /// For example:
   /// (2020, 12, 31) -> add 2 months -> (2021, 2, 28).
   /// (2020, 12, 31) -> add 1 month -> (2021, 1, 31).
-  DateTime addMonths(DateTime date, int months) {
+  static DateTime addMonths(DateTime date, int months) {
     var res = copyWith(date, month: date.month + months);
     if (date.day != res.day) res = copyWith(res, day: 0);
     return res;
@@ -378,7 +373,8 @@ class DateTimeUtils {
   /// [DateTime.monday], ..., [DateTime.sunday].
   ///
   /// By default it's [DateTime.monday].
-  int getWeekNumber(DateTime date, {int firstWeekday = DateTime.monday}) {
+  static int getWeekNumber(DateTime date,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     if (isWeekInYear(date, date.year, firstWeekday)) {
@@ -405,7 +401,7 @@ class DateTimeUtils {
   /// By default it's [DateTime.monday].
   ///
   /// See [getWeekNumber].
-  int getLastWeekNumber(int year, {int firstWeekday = DateTime.monday}) {
+  static int getLastWeekNumber(int year, {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     final start = firstDayOfFirstWeek(year, firstWeekday: firstWeekday);
@@ -426,7 +422,8 @@ class DateTimeUtils {
   ///
   /// By default it's [DateTime.monday].
   ///
-  int getDayNumberInWeek(DateTime date, {int firstWeekday = DateTime.monday}) {
+  static int getDayNumberInWeek(DateTime date,
+      {int firstWeekday = DateTime.monday}) {
     var res = date.weekday - (firstWeekday) + 1;
     if (res <= 0) res += DateTime.daysPerWeek;
 
@@ -436,13 +433,13 @@ class DateTimeUtils {
   /// Returns number of the day in year.
   ///
   /// Starting with 1.
-  int getDayNumberInYear(DateTime date) {
+  static int getDayNumberInYear(DateTime date) {
     final firstDayOfYear = DateTime(date.year, DateTime.january, 1);
     return getDaysDifference(date, firstDayOfYear) + 1;
   }
 
   /// Returns the number of days in a given year.
-  int getDaysInYear(int year) {
+  static int getDaysInYear(int year) {
     final lastDayOfYear = DateTime(year, DateTime.december, 31);
     return getDayNumberInYear(lastDayOfYear);
   }
@@ -456,7 +453,7 @@ class DateTimeUtils {
   /// Use this method for count days instead of
   /// `a.difference(b).inDays`, since it can return
   /// some unexpected result, because of daylight saving hour.
-  int getDaysDifference(DateTime a, DateTime b) {
+  static int getDaysDifference(DateTime a, DateTime b) {
     final straight = a.isBefore(b);
     final start = startOfDay(straight ? a : b);
     final end = startOfDay(straight ? b : a).add(const Duration(hours: 12));
@@ -471,7 +468,8 @@ class DateTimeUtils {
   /// [DateTime.monday], ..., [DateTime.sunday].
   ///
   /// By default it's [DateTime.monday].
-  bool isFirstDayOfWeek(DateTime day, {int firstWeekday = DateTime.monday}) {
+  static bool isFirstDayOfWeek(DateTime day,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     return isSameDay(firstDayOfWeek(day, firstWeekday: firstWeekday), day);
@@ -485,19 +483,20 @@ class DateTimeUtils {
   ///
   /// By default it's [DateTime.monday],
   /// so the last day will be [DateTime.sunday].
-  bool isLastDayOfWeek(DateTime day, {int firstWeekday = DateTime.monday}) {
+  static bool isLastDayOfWeek(DateTime day,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     return isSameDay(lastDayOfWeek(day, firstWeekday: firstWeekday), day);
   }
 
   /// Checks if [day] is in the first day of a month.
-  bool isFirstDayOfMonth(DateTime day) {
+  static bool isFirstDayOfMonth(DateTime day) {
     return day.day == 1;
   }
 
   /// Checks if [day] is in the last day of a month.
-  bool isLastDayOfMonth(DateTime day) {
+  static bool isLastDayOfMonth(DateTime day) {
     return nextDay(day).month != day.month;
   }
 
@@ -510,7 +509,7 @@ class DateTimeUtils {
   /// [DateTime.monday], ..., [DateTime.sunday].
   ///
   /// By default it's [DateTime.monday].
-  DateTime firstDayOfWeek(DateTime dateTime,
+  static DateTime firstDayOfWeek(DateTime dateTime,
       {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
@@ -532,7 +531,8 @@ class DateTimeUtils {
   /// By default it's [DateTime.monday].
   ///
   /// See [getWeekNumber].
-  DateTime firstDayOfFirstWeek(int year, {int firstWeekday = DateTime.monday}) {
+  static DateTime firstDayOfFirstWeek(int year,
+      {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
     final startOfYear = DateTime(year);
@@ -549,7 +549,7 @@ class DateTimeUtils {
   /// parameter [firstWeekday]. It should be one of the constant values
   /// [DateTime.monday], ..., [DateTime.sunday].
   /// By default it's [DateTime.monday].
-  DateTime firstDayOfNextWeek(DateTime dateTime,
+  static DateTime firstDayOfNextWeek(DateTime dateTime,
       {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
@@ -569,7 +569,7 @@ class DateTimeUtils {
   ///
   /// By default it's [DateTime.monday],
   /// so the last day will be [DateTime.sunday].
-  DateTime lastDayOfWeek(DateTime dateTime,
+  static DateTime lastDayOfWeek(DateTime dateTime,
       {int firstWeekday = DateTime.monday}) {
     assert(firstWeekday > 0 && firstWeekday < 8);
 
@@ -584,7 +584,7 @@ class DateTimeUtils {
   /// of the first day of the month containing [date].
   ///
   /// Example: (2020, 4, 9, 15, 16) -> (2020, 4, 1, 0, 0, 0, 0).
-  DateTime firstDayOfMonth(DateTime date) {
+  static DateTime firstDayOfMonth(DateTime date) {
     return _date(date.isUtc, date.year, date.month);
   }
 
@@ -592,7 +592,7 @@ class DateTimeUtils {
   /// of the first day of the next month.
   ///
   /// Example: (2020, 4, 9, 15, 16) -> (2020, 5, 1, 0, 0, 0, 0).
-  DateTime firstDayOfNextMonth(DateTime dateTime) {
+  static DateTime firstDayOfNextMonth(DateTime dateTime) {
     final month = dateTime.month;
     final year = dateTime.year;
     final nextMonthStart = (month < DateTime.monthsPerYear)
@@ -605,7 +605,7 @@ class DateTimeUtils {
   /// of the last day of the month containing [date].
   ///
   /// Example: (2020, 4, 9, 15, 16) -> (2020, 4, 30, 0, 0, 0, 0).
-  DateTime lastDayOfMonth(DateTime dateTime) {
+  static DateTime lastDayOfMonth(DateTime dateTime) {
     return previousDay(firstDayOfNextMonth(dateTime));
   }
 
@@ -613,7 +613,7 @@ class DateTimeUtils {
   /// of the first day of the year containing [date].
   ///
   /// Example: (2020, 3, 9, 15, 16) -> (2020, 1, 1, 0, 0, 0, 0).
-  DateTime firstDayOfYear(DateTime dateTime) {
+  static DateTime firstDayOfYear(DateTime dateTime) {
     return _date(dateTime.isUtc, dateTime.year, 1, 1);
   }
 
@@ -621,7 +621,7 @@ class DateTimeUtils {
   /// of the first day of the next year.
   ///
   /// Example: (2020, 3, 9, 15, 16) -> (2021, 1, 1, 0, 0, 0, 0).
-  DateTime firstDayOfNextYear(DateTime dateTime) {
+  static DateTime firstDayOfNextYear(DateTime dateTime) {
     return _date(dateTime.isUtc, dateTime.year + 1, 1, 1);
   }
 
@@ -629,40 +629,40 @@ class DateTimeUtils {
   /// of the last day of the year containing [date].
   ///
   /// Example: (2020, 4, 9, 15, 16) -> (2020, 12, 31, 0, 0, 0, 0).
-  DateTime lastDayOfYear(DateTime dateTime) {
+  static DateTime lastDayOfYear(DateTime dateTime) {
     return _date(dateTime.isUtc, dateTime.year, DateTime.december, 31);
   }
 
   /// Проверяет является ли заданная дата текущей.
-  bool isCurrentDate(DateTime date) {
+  static bool isCurrentDate(DateTime date) {
     final now = DateTime.now();
     return isSameDay(date, now);
   }
 
   /// Returns number of days in the [month] of the [year].
-  int getDaysInMonth(int year, int monthNum) {
+  static int getDaysInMonth(int year, int monthNum) {
     assert(monthNum > 0);
     assert(monthNum <= 12);
     return DateTime(year, monthNum + 1, 0).day;
   }
 
   /// Returns same time in the next day.
-  DateTime nextDay(DateTime d) {
+  static DateTime nextDay(DateTime d) {
     return copyWith(d, day: d.day + 1);
   }
 
   /// Returns same time in the previous day.
-  DateTime previousDay(DateTime d) {
+  static DateTime previousDay(DateTime d) {
     return copyWith(d, day: d.day - 1);
   }
 
   /// Returns same date in the next year.
-  DateTime nextYear(DateTime d) {
+  static DateTime nextYear(DateTime d) {
     return _date(d.isUtc, d.year + 1, d.month, d.day);
   }
 
   /// Returns same date in the previous year.
-  DateTime previousYear(DateTime d) {
+  static DateTime previousYear(DateTime d) {
     return _date(d.isUtc, d.year - 1, d.month, d.day);
   }
 
@@ -675,7 +675,8 @@ class DateTimeUtils {
   /// If [start] less than [end], than empty interable will be returned.
   ///
   /// [DateTime] in result uses [start] timezone.
-  Iterable<DateTime> generateWithDayStep(DateTime start, DateTime end) sync* {
+  static Iterable<DateTime> generateWithDayStep(
+      DateTime start, DateTime end) sync* {
     if (end.isBefore(start)) return;
 
     var date = start;
@@ -686,7 +687,7 @@ class DateTimeUtils {
   }
 
   /// Checks if week, that contains [date] is in [year].
-  bool isWeekInYear(DateTime date, int year, int firstWeekday) {
+  static bool isWeekInYear(DateTime date, int year, int firstWeekday) {
     const requiredDaysInYear = 4;
     final startWeekDate = firstDayOfWeek(date, firstWeekday: firstWeekday);
     final endWeekDate = lastDayOfWeek(date, firstWeekday: firstWeekday);
@@ -707,7 +708,7 @@ class DateTimeUtils {
     }
   }
 
-  DateTime _date(bool utc, int year,
+  static DateTime _date(bool utc, int year,
           [int month = 1,
           int day = 1,
           int hour = 0,

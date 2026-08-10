@@ -493,7 +493,7 @@ class FileUtils {
   // link：链接文件
   // notFound：未知
   void cleanExpiredLog(String logPath, int retentionTime) async {
-    final curTime = dateTimeUtils.getNowDateMs();
+    final curTime = DateTimeUtils.getNowDateMs();
     // 根据路径字符串创建目录对象
     // recursive是否递归列出子目录 followLinks是否允许link
     Directory(logPath).list(followLinks: false).forEach((file) {
