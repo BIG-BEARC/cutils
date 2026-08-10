@@ -19,19 +19,25 @@ import 'package:cutils/log_collector/log_interceptor.dart';
 import 'package:cutils/log_collector/log_output.dart';
 import 'package:cutils/log_collector/log_storage.dart';
 
-/// A [LogOutput] that counts calls, optionally delays, and records whether
+/// A [LogOutput] that counts calls, optionally blocks, and records whether
 /// [dispose] was invoked.
 class _CountingOutput extends LogOutput {
   int outputCalls = 0;
-  final Duration delay;
+
+  /// If set, each [output] call awaits this future before incrementing
+  /// [outputCalls]. Tests pass a never-completing future (or a
+  /// [Completer]-controlled one) to simulate a slow output without sleeping
+  /// real wall-clock time.
+  final Future<void>? hangOn;
+
   bool disposeWasCalled = false;
 
-  _CountingOutput({this.delay = Duration.zero});
+  _CountingOutput({this.hangOn});
 
   @override
   Future<void> output(LogEntry entry) async {
-    if (delay != Duration.zero) {
-      await Future.delayed(delay);
+    if (hangOn != null) {
+      await hangOn;
     }
     outputCalls++;
   }
@@ -212,7 +218,10 @@ void main() {
 
     test('does not let the in-flight queue exceed maxQueueSize', () async {
       const cap = 5;
-      final slow = _CountingOutput(delay: const Duration(milliseconds: 5));
+      // A Completer-controlled gate keeps the slow output's `output()`
+      // pending until the test releases it — no real wall-clock delay.
+      final gate = Completer<void>();
+      final slow = _CountingOutput(hangOn: gate.future);
       await logCollector.initialize(
         config: const LogCollectorConfig(
           enableFileStorage: false,
@@ -238,6 +247,15 @@ void main() {
         lessThanOrEqualTo(cap),
         reason: 'Queue must be bounded by maxQueueSize.',
       );
+
+      // Release the gate and pump until the in-flight `_processLogQueue`
+      // drains and resets `_isProcessing`. Without this, the singleton
+      // leaks `_isProcessing == true` into sibling tests (e.g. B6) that
+      // reuse `logCollector`, breaking their collect() path.
+      gate.complete();
+      for (var i = 0; i < 200 && logCollector.pendingLogCount > 0; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
     });
   });
 
@@ -269,8 +287,12 @@ void main() {
           LogEntry(level: LogLevel.info, message: 'x'),
         ),
       );
-      // Pump the event loop so the queued entry is processed.
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      // Drain the event queue with zero-delay macrotasks until the single
+      // entry has been forwarded to the output — deterministic, no real
+      // wall-clock delay.
+      for (var i = 0; i < 100 && counter.outputCalls < 1; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       expect(
         counter.outputCalls,

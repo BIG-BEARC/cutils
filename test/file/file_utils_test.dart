@@ -138,8 +138,14 @@ void main() {
 
       // retentionTime is in milliseconds; 2 days.
       fileUtils.cleanExpiredLog(logDir.path, 2 * 24 * 60 * 60 * 1000);
-      // Allow the (currently unawaited) iteration to drain; A3 fixes this.
-      await Future<void>.delayed(const Duration(milliseconds: 200));
+      // cleanExpiredLog is `void ... async` (signature locked) and iterates
+      // the directory via an `await for` stream, so its side effect is not
+      // directly awaitable. Pump zero-delay macrotasks until oldFile is gone
+      // — the bounded loop drains the event queue deterministically without
+      // sleeping real time.
+      for (var i = 0; i < 200 && oldFile.existsSync(); i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
 
       expect(oldFile.existsSync(), isFalse,
           reason: 'old file past retention should be deleted');
@@ -186,16 +192,25 @@ void main() {
       old1.setLastModifiedSync(fiveDaysAgo);
       old2.setLastModifiedSync(fiveDaysAgo);
 
-      // deleteLog is `void ... async` (signature locked), so we cannot await
-      // it directly; pump the event loop to let its body (sync list/delete)
-      // run to completion.
+      // deleteLog is `void ... async` (signature locked): it awaits a single
+      // platform path lookup then runs the list/filter/delete synchronously.
+      // We cannot await it directly, so we deterministically drain the event
+      // queue with zero-delay macrotasks and observe the side effect.
       fileUtils.deleteLog(saveDays: 10);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      // saveDays=10 must keep the 5-day-old file; the deletion never happens,
+      // so there is no condition to poll on — pump a bounded number of
+      // turns to let the awaited path lookup resolve and the sync body run.
+      for (var i = 0; i < 100; i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
       expect(old1.existsSync(), isTrue,
           reason: '5-day-old file must remain when saveDays=10');
 
       fileUtils.deleteLog(saveDays: 2);
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      // saveDays=2 must delete the 5-day-old file; poll until it is gone.
+      for (var i = 0; i < 200 && old2.existsSync(); i++) {
+        await Future<void>.delayed(Duration.zero);
+      }
       expect(old2.existsSync(), isFalse,
           reason: '5-day-old file must be deleted when saveDays=2');
     });
