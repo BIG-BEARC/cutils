@@ -58,26 +58,64 @@ class NumUtils {
 
   /// add (without loosing precision).
   /// 两个数相加（防止精度丢失）
+  ///
+  /// Throws [ArgumentError] if either operand cannot be parsed as a
+  /// precise [Decimal] (e.g. non-finite doubles). The silent `0.0`
+  /// fallback is intentionally removed so misuse surfaces.
   static double addNum(num a, num b) {
-    return addDec(a, b)?.toDouble() ?? 0.0;
+    final result = addDec(a, b);
+    if (result == null) {
+      throw ArgumentError(
+        'addNum: operands must be finite numbers (a=$a, b=$b)',
+      );
+    }
+    return result.toDouble();
   }
 
   /// subtract (without loosing precision).
   /// 两个数相减（防止精度丢失）
+  ///
+  /// Throws [ArgumentError] if either operand cannot be parsed as a
+  /// precise [Decimal] (e.g. non-finite doubles).
   static double subtractNum(num a, num b) {
-    return subtractDec(a, b)?.toDouble() ?? 0.0;
+    final result = subtractDec(a, b);
+    if (result == null) {
+      throw ArgumentError(
+        'subtractNum: operands must be finite numbers (a=$a, b=$b)',
+      );
+    }
+    return result.toDouble();
   }
 
   /// multiply (without loosing precision).
   /// 两个数相乘（防止精度丢失）
+  ///
+  /// Throws [ArgumentError] if either operand cannot be parsed as a
+  /// precise [Decimal] (e.g. non-finite doubles).
   static double multiplyNum(num a, num b) {
-    return multiplyDec(a, b)?.toDouble() ?? 0.0;
+    final result = multiplyDec(a, b);
+    if (result == null) {
+      throw ArgumentError(
+        'multiplyNum: operands must be finite numbers (a=$a, b=$b)',
+      );
+    }
+    return result.toDouble();
   }
 
   /// divide (without loosing precision).
   /// 两个数相除（防止精度丢失）
+  ///
+  /// Throws [ArgumentError] if either operand cannot be parsed as a
+  /// precise [Decimal] (e.g. non-finite doubles), or if [b] is zero.
   static double divideNum(num a, num b) {
-    return divideDec(a, b)?.toDouble() ?? 0.0;
+    final result = divideDec(a, b);
+    if (result == null) {
+      throw ArgumentError(
+        'divideNum: operands must be finite numbers and divisor non-zero '
+        '(a=$a, b=$b)',
+      );
+    }
+    return result.toDouble();
   }
 
   /// 加 (精确相加,防止精度丢失).
@@ -163,13 +201,17 @@ class NumUtils {
   }
 
   /// 除
+  ///
+  /// Non-terminating quotients (e.g. `1/3`) are truncated to 20
+  /// significant decimal places via `scaleOnInfinitePrecision` so the
+  /// precise API returns a finite [Decimal] instead of throwing.
   static Decimal? divideDecString(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
     if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) {
       return null;
     }
-    return (aDecimal / bDecimal).toDecimal();
+    return (aDecimal / bDecimal).toDecimal(scaleOnInfinitePrecision: 20);
   }
 
   /// 余数

@@ -34,9 +34,15 @@ extension DoubleFormating on double? {
   }
 
   // 千分位格式化
+  //
+  // The sign is stripped first and the magnitude is formatted, then `-`
+  // is prepended for negatives. Otherwise the leading `-` is treated as
+  // a digit group and yields output like `-,123.00`.
   String get thousandSeparated {
     final value = safeValue;
-    final numStr = value.toStringAsFixed(2);
+    final isNegative = value.isNegative;
+    final magnitude = isNegative ? -value : value;
+    final numStr = magnitude.toStringAsFixed(2);
     final parts = numStr.split('.');
     String integerPart = parts[0];
     String decimalPart = '.${parts[1]}';
@@ -49,7 +55,8 @@ extension DoubleFormating on double? {
       result += integerPart[i];
     }
 
-    return '$result$decimalPart';
+    final sign = isNegative ? '-' : '';
+    return '$sign$result$decimalPart';
   }
 
   // 数值比较

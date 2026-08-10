@@ -44,10 +44,19 @@ class MoneyUtils {
 
   /// fen str to yuan, format & unit  output.
   /// 分字符串 转 元, format 与 unit 格式 输出.
+  ///
+  /// Throws [ArgumentError] (rather than a bare [FormatException]) when
+  /// [amountStr] is empty, non-numeric, or overflows `int`.
   String changeFStr2YWithUnit(String amountStr,
       {MoneyFormat format = MoneyFormat.NORMAL,
       MoneyUnit unit = MoneyUnit.NORMAL}) {
-    int amount = int.parse(amountStr);
+    final amount = int.tryParse(amountStr);
+    if (amount == null) {
+      throw ArgumentError(
+        'changeFStr2YWithUnit: amountStr must be a valid integer fen '
+        'value (got: "$amountStr")',
+      );
+    }
     return changeF2YWithUnit(amount, format: format, unit: unit);
   }
 
