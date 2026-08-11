@@ -4,16 +4,13 @@
 /// * @Company: 嘉联支付
 /// * description 拓展函数
 library;
+
 export "bool_ext.dart";
 export "double_ext.dart";
 export "int_ext.dart";
 export "object_ext.dart";
 export "string_ext.dart";
 export "widget_ext.dart";
-
-
-
-
 
 // ///泛型扩展：
 // extension AllExt<T> on T {
@@ -26,6 +23,3 @@ export "widget_ext.dart";
 //     return f(this);
 //   }
 // }
-
-
-

@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description
-///widget扩展：
+/// Widget 扩展：用链式调用包一层手势 / 内边距，减少嵌套。
 extension WidgetExt on Widget {
+  /// 用 [Padding] 包裹本组件，等价于 `Padding(padding: padding, child: this)`。
   Widget padding(EdgeInsetsGeometry padding) {
     return Padding(
       padding: padding,
@@ -14,7 +15,7 @@ extension WidgetExt on Widget {
     );
   }
 
-  ///添加水波纹
+  /// 用带水波纹的 [Material] + [InkWell] 包裹本组件，常用于圆形可点击区域。
   Material gestureWithInkWellCircle({
     GestureTapCallback? onTap,
     GestureTapCallback? onDoubleTap,
@@ -33,7 +34,7 @@ extension WidgetExt on Widget {
     );
   }
 
-  ///
+  /// 用 [GestureDetector]（无水波纹）包裹本组件，支持单击 / 双击 / 长按。
   Widget gesture({
     GestureTapCallback? onTap,
     GestureTapCallback? onDoubleTap,
@@ -47,5 +48,4 @@ extension WidgetExt on Widget {
       child: this,
     );
   }
-
 }

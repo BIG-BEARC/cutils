@@ -10,13 +10,29 @@ import 'package:dartx/dartx.dart';
 // Flutter imports:
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-import 'package:cutils/date/date_utils.dart';
+import 'package:cutils/datetime/date_utils.dart';
 import 'package:cutils/log/log.dart';
 
 /// * @Author: chuxiong
 /// * @Created at: 2022/10/31 11:02 上午
 /// * @Email:
 /// * description 文件工具类
+///
+/// 封装各平台目录定位、文件读写、目录创建、日志清理与压缩、base64 与文件互转。
+/// 单例（`FileUtils()`）。
+
+/// Thrown when [FileUtils.createFileFromBase64] receives a string that
+/// cannot be decoded as valid base64, replacing the raw [FormatException].
+class InvalidBase64Exception implements Exception {
+  const InvalidBase64Exception(this.message, {this.inner});
+
+  final String message;
+  final Object? inner;
+
+  @override
+  String toString() => 'InvalidBase64Exception: $message';
+}
+
 class FileUtils {
   factory FileUtils() {
     return _ins;
@@ -28,9 +44,9 @@ class FileUtils {
   final String TAG = "FileUtils";
 
   /// 获取文档目录文件,用于存储只能由该应用访问的文件，系统不会清除该目录，只有在删除应用时才会消失。
-  Future<File?> getLocalDocumentFile({required String fileName, String? filePath}) async {
+  Future<File?> getLocalDocumentFile(
+      {required String fileName, String? filePath}) async {
     try {
-
       final dir = await getApplicationDocumentsDirectory();
       return _getFile(dir, filePath, fileName);
     } catch (e) {
@@ -38,6 +54,7 @@ class FileUtils {
       return null;
     }
   }
+
   /// 获取应用程序的目录，用于存储只有它可以访问的文件。只有当应用程序被删除时，系统才会清除目录。
   /// 在iOS上，它使用“NSDocumentDirectory”API。如果数据不是用户生成的，请考虑使用[GetApplicationSupportDirectory]。
   /// 在Android上，这在上下文中使用了“getDataDirectory”API。如果数据对用户可见，请考虑改用getExternalStorageDirectory。
@@ -51,6 +68,7 @@ class FileUtils {
       return null;
     }
   }
+
   /// 获取临时目录文件,只能由该应用访问，系统可随时清除的临时目录（缓存）
   /// 指向设备上临时目录的路径，该目录没有备份，适合存储下载文件的缓存。
   /// 此目录中的文件可以随时清除。这不会返回一个新的临时目录。
@@ -58,7 +76,8 @@ class FileUtils {
   /// 在iOS上，它使用“NSCachesDirectory”API。
   /// 在Android上，它在上下文中使用“getCacheDir”API。
   ///  临时目录: /data/user/0/com.xx.xxx/cache
-  Future<File?> getLocalTemporaryFile({required String fileName, String? filePath}) async {
+  Future<File?> getLocalTemporaryFile(
+      {required String fileName, String? filePath}) async {
     try {
       final dir = await getTemporaryDirectory();
       return _getFile(dir, filePath, fileName);
@@ -67,6 +86,7 @@ class FileUtils {
       return null;
     }
   }
+
   /// 获取本地临时文件路径
   Future<String?> getLocalTemporaryDir() async {
     try {
@@ -77,6 +97,7 @@ class FileUtils {
       return null;
     }
   }
+
   /// 获取应用程序支持目录,只能由该应用访问，用于不想向用户公开的文件，也就是你不想给用户看到的文件可放置在该目录中，
   /// 系统不会清除该目录，只有在删除应用时才会消失。
   /// 应用程序可以放置应用程序支持文件的目录的路径。
@@ -84,7 +105,8 @@ class FileUtils {
   /// 在iOS上，它使用“NSApplicationSupportDirectory”API。如果此目录不存在，则自动创建。
   /// 在Android上，此函数抛出一个[UnsupportedError]。
   /// windows 和sp 同目录
-  Future<File?> getLocalSupportFile({required String fileName, String? filePath}) async {
+  Future<File?> getLocalSupportFile(
+      {required String fileName, String? filePath}) async {
     if (Platform.isAndroid) {
       return null;
     }
@@ -108,12 +130,12 @@ class FileUtils {
     }
   }
 
-
   ///外部存储目录,Android 特有，删除应用不会删除该目录
   /// 应用程序可以访问顶层存储的目录的路径。在发出这个函数调用之前，应该确定当前操作系统，因为这个功能只在Android上可用。
   /// 在iOS上，这个函数抛出一个[UnsupportedError]，因为它不可能访问应用程序的沙箱之外。
   /// 在Android上，它使用“getExternalStorageDirectory”API。
-  Future<File?> getExternalStorageFile({required String fileName, String? filePath}) async {
+  Future<File?> getExternalStorageFile(
+      {required String fileName, String? filePath}) async {
     if (!Platform.isAndroid) {
       return null;
     }
@@ -130,17 +152,29 @@ class FileUtils {
   }
 
   File _getFile(Directory dir, String? filePath, String fileName) {
-    if (filePath.isNullOrEmpty) {
-      return File('${dir.path}/$fileName');
-    } else {
-      return File('${dir.path}/$filePath/$fileName');
+    _validatePathSegment(fileName);
+    if (filePath == null || filePath.isEmpty) {
+      return File(path.join(dir.path, fileName));
+    }
+    _validatePathSegment(filePath);
+    return File(path.join(dir.path, filePath, fileName));
+  }
+
+  /// Rejects caller-supplied path segments that could escape the base
+  /// directory: absolute paths and any component equal to `..`.
+  void _validatePathSegment(String segment) {
+    if (path.isAbsolute(segment)) {
+      throw ArgumentError.value(segment, 'path', 'must not be absolute');
+    }
+    for (final part in path.split(segment)) {
+      if (part == '..' || part == '/') {
+        throw ArgumentError.value(
+            segment, 'path', 'must not contain parent-directory traversal');
+      }
     }
   }
 
-
-
-
-  /// 同步创建文件
+  /// 同步创建目录（[path] 为空返回 null；已存在则直接返回）。
   Directory? createDir(String path) {
     if (path.isEmpty) {
       return null;
@@ -151,11 +185,12 @@ class FileUtils {
     }
     return dir;
   }
-  /// 异步创建文件
-   Future<Directory?> createDirSync(String path) async {
-     if (path.isEmpty) {
-       return null;
-     }
+
+  /// 异步创建目录（命名带 Sync 后缀但实为 async；[path] 为空返回 null）。
+  Future<Directory?> createDirSync(String path) async {
+    if (path.isEmpty) {
+      return null;
+    }
     Directory dir = Directory(path);
     bool exist = await dir.exists();
     if (!exist) {
@@ -163,6 +198,7 @@ class FileUtils {
     }
     return dir;
   }
+
   ///为文件创建一个IOSink,使用结束需要释放资源
   ///mode: FileMode.append,// 写入的模式
   ///append(追加写入，如果文件存在在末尾追加，如果文件不存在创建)
@@ -188,7 +224,9 @@ class FileUtils {
     }
   }
 
-  Future<IOSink?> getWriteIoSink({required File file, FileMode? fileMode}) async {
+  /// 获取一个可写的 [IOSink]（不存在则先创建文件）。调用方负责 close。
+  Future<IOSink?> getWriteIoSink(
+      {required File file, FileMode? fileMode}) async {
     try {
       //检查文件是否存在 existsSync() 同步检查文件是否存在
       final fileExists = await file.exists();
@@ -205,7 +243,8 @@ class FileUtils {
   }
 
   ///文件是否存在
-  Future<bool> fileExist({required String fileName, String? filePath, FileMode? fileMode}) async {
+  Future<bool> fileExist(
+      {required String fileName, String? filePath, FileMode? fileMode}) async {
     // create({bool recursive: false})创建文件
     // createSync({bool recursive: false}) 同步创建文件
     // 可选命名参数:recursive 默认false,
@@ -214,16 +253,20 @@ class FileUtils {
     try {
       File? file;
       if (Platform.isWindows) {
-        file = await getLocalSupportFile(fileName: fileName, filePath: filePath);
+        file =
+            await getLocalSupportFile(fileName: fileName, filePath: filePath);
       } else if (Platform.isAndroid) {
-        final exFile = await getExternalStorageFile(fileName: fileName, filePath: filePath);
+        final exFile = await getExternalStorageFile(
+            fileName: fileName, filePath: filePath);
         if (exFile == null) {
-          file = await getLocalTemporaryFile(fileName: fileName, filePath: filePath);
+          file = await getLocalTemporaryFile(
+              fileName: fileName, filePath: filePath);
         } else {
           file = exFile;
         }
       } else {
-        file = await getLocalDocumentFile(fileName: fileName, filePath: filePath);
+        file =
+            await getLocalDocumentFile(fileName: fileName, filePath: filePath);
       }
       if (file == null) {
         return false;
@@ -234,8 +277,10 @@ class FileUtils {
     }
   }
 
-  ///文件是否存在
-  Future<File?> getFile({required String fileName, String? filePath, FileMode? fileMode}) async {
+  /// 按平台规则定位文件，不存在则创建后返回；定位失败返回 null。
+  /// （注：返回的是 [File] 而非存在性 bool，存在性判断请用 [fileExist]。）
+  Future<File?> getFile(
+      {required String fileName, String? filePath, FileMode? fileMode}) async {
     // create({bool recursive: false})创建文件
     // createSync({bool recursive: false}) 同步创建文件
     // 可选命名参数:recursive 默认false,
@@ -244,16 +289,20 @@ class FileUtils {
     try {
       File? file;
       if (Platform.isWindows) {
-        file = await getLocalSupportFile(fileName: fileName, filePath: filePath);
+        file =
+            await getLocalSupportFile(fileName: fileName, filePath: filePath);
       } else if (Platform.isAndroid) {
-        final exFile = await getExternalStorageFile(fileName: fileName, filePath: filePath);
+        final exFile = await getExternalStorageFile(
+            fileName: fileName, filePath: filePath);
         if (exFile == null) {
-          file = await getLocalTemporaryFile(fileName: fileName, filePath: filePath);
+          file = await getLocalTemporaryFile(
+              fileName: fileName, filePath: filePath);
         } else {
           file = exFile;
         }
       } else {
-        file = await getLocalDocumentFile(fileName: fileName, filePath: filePath);
+        file =
+            await getLocalDocumentFile(fileName: fileName, filePath: filePath);
       }
       if (file == null) {
         return null;
@@ -270,7 +319,11 @@ class FileUtils {
   }
 
   /// 写入数据
-  Future<File?> writeString({required String str, required String fileName, String? filePath, FileMode? fileMode}) async {
+  Future<File?> writeString(
+      {required String str,
+      required String fileName,
+      String? filePath,
+      FileMode? fileMode}) async {
     // create({bool recursive: false})创建文件
     // createSync({bool recursive: false}) 同步创建文件
     // 可选命名参数:recursive 默认false,
@@ -280,9 +333,11 @@ class FileUtils {
     if (Platform.isWindows) {
       file = await getLocalSupportFile(fileName: fileName, filePath: filePath);
     } else if (Platform.isAndroid) {
-      final exFile = await getExternalStorageFile(fileName: fileName, filePath: filePath);
+      final exFile =
+          await getExternalStorageFile(fileName: fileName, filePath: filePath);
       if (exFile == null) {
-        file = await getLocalTemporaryFile(fileName: fileName, filePath: filePath);
+        file =
+            await getLocalTemporaryFile(fileName: fileName, filePath: filePath);
       } else {
         file = exFile;
       }
@@ -315,7 +370,8 @@ class FileUtils {
   }
 
   /// 写入数据
-  Future<void> writeBytes(List<int> bytes, File file, FileMode? fileMode) async {
+  Future<void> writeBytes(
+      List<int> bytes, File file, FileMode? fileMode) async {
     // create({bool recursive: false})创建文件
     // createSync({bool recursive: false}) 同步创建文件
     // 可选命名参数:recursive 默认false,
@@ -328,7 +384,9 @@ class FileUtils {
     //写入字节数组
     await file.writeAsBytes(bytes,
         flush: true, // 如果flush设置为`true` 则写入的数据将在返回之前刷新到文件系统
-        mode: fileMode ?? FileMode.append); // 写入的模式 append(追加写入) read(只读) write(读写) writeOnly(只写)  writeOnlyAppend(只追加)
+        mode: fileMode ??
+            FileMode
+                .append); // 写入的模式 append(追加写入) read(只读) write(读写) writeOnly(只写)  writeOnlyAppend(只追加)
   }
 
   /// 以字节形式读取   readAsBytesSync() 同步读取
@@ -368,27 +426,26 @@ class FileUtils {
 
   ///以流的方式读取文件
   Future<String> readBySink(File file, FileMode? fileMode) async {
-    String content = "";
     //检查文件是否存在 existsSync() 同步检查文件是否存在
     final fileExists = await file.exists();
 
     ///如果文件不存在，创建文件
     if (!fileExists) {
-      return content;
+      return "";
     }
     final StringBuffer buffer = StringBuffer();
     final Stream<List<int>> inputStream = file.openRead();
-
-    inputStream.transform(utf8.decoder).transform(const LineSplitter()).listen((data) {
-      buffer.write(data);
-    }, onDone: () {
-      content = buffer.toString();
-      logger.d(content);
-    }, onError: (e) {
-      content = "";
+    try {
+      await for (final chunk in inputStream
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())) {
+        buffer.write(chunk);
+      }
+    } catch (e) {
       logger.e(tag: TAG, e);
-    });
-    return content;
+      return "";
+    }
+    return buffer.toString();
   }
 
   ///获取平台默认存储路径
@@ -419,7 +476,7 @@ class FileUtils {
   Future<bool> deleteFileData(String filePath) async {
     try {
       final file = readFile(filePath);
-      file.delete();
+      await file.delete();
       return true;
     } catch (err) {
       logger.e(err, tag: TAG);
@@ -467,20 +524,21 @@ class FileUtils {
   // link：链接文件
   // notFound：未知
   void cleanExpiredLog(String logPath, int retentionTime) async {
-    final curTime = dateUtils.getNowDateMs();
+    final curTime = DateTimeUtils.getNowDateMs();
     // 根据路径字符串创建目录对象
     // recursive是否递归列出子目录 followLinks是否允许link
-    Directory(logPath).list(followLinks: false).forEach((file) {
+    await for (final file in Directory(logPath).list(followLinks: false)) {
       final FileSystemEntityType type = FileSystemEntity.typeSync(file.path);
       if (type == FileSystemEntityType.file) {
         final lastModified = (file as File).lastModifiedSync();
-        if (curTime - lastModified.millisecond > retentionTime) {
-          file.delete();
+        if (curTime - lastModified.millisecondsSinceEpoch > retentionTime) {
+          await file.delete();
         }
       }
-    });
+    }
   }
 
+  /// 获取当前平台存储目录下、3 天内的 `.log` / `.dmp` 文件列表（按修改时间升序）。
   Future<List<File>> getFileList() async {
     final List<File> listFile = [];
     final String? dir;
@@ -503,7 +561,8 @@ class FileUtils {
 
     final list = Directory(dir).listSync(followLinks: false);
     final filterLogList = list.filter((fileSystemEntity) {
-      if (fileSystemEntity.path.contains(".log") || fileSystemEntity.path.contains(".dmp")) {
+      if (fileSystemEntity.path.contains(".log") ||
+          fileSystemEntity.path.contains(".dmp")) {
         final fileDateTime = FileStat.statSync(fileSystemEntity.path).changed;
         final differDays = DateTime.now().difference(fileDateTime).inDays;
         if (differDays > 3) {
@@ -519,7 +578,8 @@ class FileUtils {
       final timeB = FileStat.statSync(b.path).changed.millisecondsSinceEpoch;
       return timeA.compareTo(timeB);
     });
-    final iterable = filterLogList.map((fileSystemEntity) => File(fileSystemEntity.path));
+    final iterable =
+        filterLogList.map((fileSystemEntity) => File(fileSystemEntity.path));
     listFile.addAll(iterable);
     return listFile;
   }
@@ -568,6 +628,7 @@ class FileUtils {
     }
   }
 
+  /// 清除当前平台存储目录下所有 `.log` / `.dmp` 文件。
   void cleanLog() async {
     // final dir = await getLocalSupportDir();
     final String? dir;
@@ -587,11 +648,12 @@ class FileUtils {
     if (dir == null) {
       return;
     }
-    Directory(dir).list(followLinks: false).forEach((file) {
-      if (path.extension(file.path) == ".log" || path.extension(file.path) == ".dmp") {
-        file.delete();
+    await for (final file in Directory(dir).list(followLinks: false)) {
+      if (path.extension(file.path) == ".log" ||
+          path.extension(file.path) == ".dmp") {
+        await file.delete();
       }
-    });
+    }
   }
 
   /// 删除日志 默认保留3天
@@ -615,10 +677,11 @@ class FileUtils {
         return;
       }
       Directory(dir).listSync(followLinks: false).forEach((fileSystemEntity) {
-        if (fileSystemEntity.path.contains(".log") || fileSystemEntity.path.contains(".dmp")) {
-          final fileDateTime = FileStat.statSync(fileSystemEntity.path).changed;
+        if (fileSystemEntity.path.contains(".log") ||
+            fileSystemEntity.path.contains(".dmp")) {
+          final fileDateTime = File(fileSystemEntity.path).lastModifiedSync();
           final differDays = DateTime.now().difference(fileDateTime).inDays;
-          if (differDays > 3) {
+          if (differDays > saveDays) {
             fileSystemEntity.deleteSync();
           }
         }
@@ -628,23 +691,35 @@ class FileUtils {
     }
   }
 
+  /// 从路径取文件名（去掉目录与扩展名）。
   String getFileName(String path) {
     final split = path.split("/");
     final fileName = split.last.split(".").first;
     return fileName;
   }
 
-  // base64转本地图片
+  /// base64 字符串转本地图片文件（写入临时目录，扩展名 `.jpg`）。
+  ///
+  /// 非法 base64 抛 [InvalidBase64Exception]（而非原始 [FormatException]）。
   Future<File> createFileFromBase64(String base64Str) async {
-    final Uint8List bytes = const Base64Decoder().convert(base64Str);
+    final Uint8List bytes;
+    try {
+      bytes = const Base64Decoder().convert(base64Str);
+    } on FormatException catch (e) {
+      throw InvalidBase64Exception(
+        'Input is not valid base64',
+        inner: e,
+      );
+    }
     final tempDir = await getTemporaryDirectory();
-    final targetPath = "${tempDir.absolute.path}/temp_${DateTime.now().microsecondsSinceEpoch}_base64.jpg";
+    final targetPath =
+        "${tempDir.absolute.path}/temp_${DateTime.now().microsecondsSinceEpoch}_base64.jpg";
     File file = File(targetPath);
     file = await file.writeAsBytes(bytes);
     return file;
   }
 
-  // 本地图片转base64
+  /// 本地图片文件转 base64 字符串。
   Future<String> createBase64FromFile(File file) async {
     final List<int> bytes = await file.readAsBytes();
     final String base64 = base64Encode(bytes);

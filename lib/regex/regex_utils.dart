@@ -11,32 +11,31 @@ import 'regex_constants.dart';
 class RegexUtils {
   RegexUtils._();
 
-  static final _ins = RegexUtils._();
-
-  factory RegexUtils() => _ins;
-  final Map<String, String> cityMap = {};
+  /// 身份证前两位省份代码字典（懒加载，供 [isIDCard18Exact] 校验使用）。
+  /// 改为静态后所有调用共享同一份缓存，行为与原单例一致。
+  static final Map<String, String> cityMap = {};
 
   /// Return whether input matches regex of simple mobile.
   /// 判断输入字符串是否符合手机号
-  bool isMobileSimple(String input) {
+  static bool isMobileSimple(String input) {
     return matches(RegexConstants.REGEX_MOBILE_SIMPLE, input);
   }
 
   /// Return whether input matches regex of exact mobile.
   /// 精确验证是否是手机号
-  bool isMobileExact(String input) {
+  static bool isMobileExact(String input) {
     return matches(RegexConstants.REGEX_MOBILE_EXACT, input);
   }
 
   /// Return whether input matches regex of telephone number.
   /// 判断返回输入是否匹配电话号码的正则表达式
-  bool isTel(String input) {
+  static bool isTel(String input) {
     return matches(RegexConstants.REGEX_TEL, input);
   }
 
   /// Return whether input matches regex of id card number.
   /// 返回输入是否匹配身份证号码的正则表达式。
-  bool isIDCard(String input) {
+  static bool isIDCard(String input) {
     if (input.length == 15) {
       return isIDCard15(input);
     }
@@ -48,22 +47,34 @@ class RegexUtils {
 
   /// Return whether input matches regex of id card number which length is 15.
   /// 返回输入是否匹配长度为15的身份证号码的正则表达式。
-  bool isIDCard15(String input) {
+  static bool isIDCard15(String input) {
     return matches(RegexConstants.REGEX_ID_CARD15, input);
   }
 
   /// Return whether input matches regex of id card number which length is 18.
   /// 返回输入是否匹配长度为18的身份证号码的正则表达式。
-  bool isIDCard18(String input) {
+  static bool isIDCard18(String input) {
     return matches(RegexConstants.REGEX_ID_CARD18, input);
   }
 
   /// Return whether input matches regex of exact id card number which length is 18.
   /// 返回输入是否匹配长度为18的id卡号的正则表达式。
-  bool isIDCard18Exact(String input) {
+  static bool isIDCard18Exact(String input) {
     if (isIDCard18(input)) {
       List<int> factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
-      List<String> suffix = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2'];
+      List<String> suffix = [
+        '1',
+        '0',
+        'X',
+        '9',
+        '8',
+        '7',
+        '6',
+        '5',
+        '4',
+        '3',
+        '2'
+      ];
       if (cityMap.isEmpty) {
         List<String> list = ID_CARD_PROVINCE_DICT;
         List<MapEntry<String, String>> mapEntryList = [];
@@ -80,7 +91,10 @@ class RegexUtils {
           weightSum += (input.codeUnitAt(i) - '0'.codeUnitAt(0)) * factor[i];
         }
         int idCardMod = weightSum % 11;
-        String idCardLast = String.fromCharCode(input.codeUnitAt(17));
+        // [REGEX_ID_CARD18] allows a case-insensitive trailing `X`; normalize
+        // it before comparing against the uppercase suffix table.
+        final String idCardLast =
+            String.fromCharCode(input.codeUnitAt(17)).toUpperCase();
         return idCardLast == suffix[idCardMod];
       }
     }
@@ -88,59 +102,64 @@ class RegexUtils {
   }
 
   /// Return whether input matches regex of email.
-  /// 返回输入是否匹配电子邮件的正则表达式。
-  bool isEmail(String input) {
+  ///
+  /// Uses the non-backtracking [RegexConstants.REGEX_EMAIL] pattern and caps
+  /// the input at 254 characters per RFC 5321 to bound the work for
+  /// pathological inputs. The pattern is intentionally permissive about the
+  /// local part (any non-space, non-`@` character is allowed).
+  static bool isEmail(String input) {
+    if (input.length > 254) return false;
     return matches(RegexConstants.REGEX_EMAIL, input);
   }
 
   /// Return whether input matches regex of url.
   /// 返回输入是否匹配url的正则表达式。
-  bool isURL(String input) {
+  static bool isURL(String input) {
     return matches(RegexConstants.REGEX_URL, input);
   }
 
   /// Return whether input matches regex of Chinese character.
   /// 返回输入是否匹配汉字的正则表达式。
-  bool isZh(String input) {
+  static bool isZh(String input) {
     return '〇' == input || matches(RegexConstants.REGEX_ZH, input);
   }
 
   /// Return whether input matches regex of date which pattern is 'yyyy-MM-dd'.
   /// 返回输入是否匹配样式为'yyyy-MM-dd'的日期的正则表达式。
-  bool isDate(String input) {
+  static bool isDate(String input) {
     return matches(RegexConstants.REGEX_DATE, input);
   }
 
   /// Return whether input matches regex of ip address.
   /// 返回输入是否匹配ip地址的正则表达式。
-  bool isIP(String input) {
+  static bool isIP(String input) {
     return matches(RegexConstants.REGEX_IP, input);
   }
 
   /// Return whether input matches regex of username.
   /// 返回输入是否匹配用户名的正则表达式。
-  bool isUserName(String input, {String regex = RegexConstants.REGEX_USERNAME}) {
+  static bool isUserName(String input,
+      {String regex = RegexConstants.REGEX_USERNAME}) {
     return matches(regex, input);
   }
 
   /// Return whether input matches regex of QQ.
   /// 返回是否匹配QQ的正则表达式。
-  bool isQQ(String input) {
+  static bool isQQ(String input) {
     return matches(RegexConstants.REGEX_QQ_NUM, input);
   }
 
   /// Return whether input matches the regex.
   /// 返回输入是否匹配正则表达式。
-  bool matches(String regex, String input) {
+  static bool matches(String regex, String input) {
     if (input.isEmpty) {
       return false;
     }
     return RegExp(regex).hasMatch(input);
   }
 
-
   /// 判断内容是否符合正则（支持Pattern类型参数）
-  bool hasMatch(String? s, Pattern pattern) {
+  static bool hasMatch(String? s, Pattern pattern) {
     if (s == null) return false;
 
     if (pattern is RegExp) {
@@ -150,43 +169,47 @@ class RegexUtils {
     }
     return false;
   }
-  /// 验证是否为纯数字（整数或小数）
-  bool isNumeric(String? s) {
+
+  /// 验证是否为纯数字（整数或小数）。
+  ///
+  /// 允许的形式：`123`、`-123`、`12.3`、`-12.3`、`.5`、`0.0`。
+  /// 小数点后必须紧跟至少一位数字，因此 `"123."`（末尾孤立的小数点）会被拒绝。
+  static bool isNumeric(String? s) {
     if (s == null || s.isEmpty) return false;
-    const pattern = r'^-?(?:\d+\.?\d*|\.\d+)$';
+    const pattern = r'^-?(?:\d+(?:\.\d+)?|\.\d+)$';
     return hasMatch(s, pattern);
   }
 
   /// 验证是否为整数
-  bool isInteger(String? s) {
+  static bool isInteger(String? s) {
     if (s == null || s.isEmpty) return false;
     const pattern = r'^-?\d+$';
     return hasMatch(s, pattern);
   }
 
   /// 验证是否为正整数
-  bool isPositiveInteger(String? s) {
+  static bool isPositiveInteger(String? s) {
     if (s == null || s.isEmpty) return false;
     const pattern = r'^[1-9]\d*$';
     return hasMatch(s, pattern);
   }
 
   /// 验证是否为纯字母
-  bool isAlphabetic(String? s) {
+  static bool isAlphabetic(String? s) {
     if (s == null || s.isEmpty) return false;
     const pattern = r'^[a-zA-Z]+$';
     return hasMatch(s, pattern);
   }
 
   /// 验证是否为字母和数字的组合
-  bool isAlphanumeric(String? s) {
+  static bool isAlphanumeric(String? s) {
     if (s == null || s.isEmpty) return false;
     const pattern = r'^[a-zA-Z0-9]+$';
     return hasMatch(s, pattern);
   }
 
   /// 验证密码强度（至少8位，包含大小写字母、数字和特殊字符）
-  bool isStrongPassword(String? password) {
+  static bool isStrongPassword(String? password) {
     if (password == null || password.length < 8) return false;
 
     final hasUpper = hasMatch(password, r'[A-Z]');
@@ -198,57 +221,66 @@ class RegexUtils {
   }
 
   /// 验证邮政编码（中国）
-  bool isPostalCode(String? code) {
+  static bool isPostalCode(String? code) {
     const pattern = r'^\d{6}$';
     return hasMatch(code, pattern);
   }
 
   /// 验证IP地址（IPv4）
-  bool isIPv4(String? ip) {
-    const pattern = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
+  static bool isIPv4(String? ip) {
+    const pattern =
+        r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$';
     return hasMatch(ip, pattern);
   }
 
   /// 验证IPv6地址
-  bool isIPv6(String? ip) {
-    const pattern = r'^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$';
+  static bool isIPv6(String? ip) {
+    const pattern =
+        r'^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$';
     return hasMatch(ip, pattern);
   }
 
   /// 验证MAC地址
-  bool isMACAddress(String? mac) {
+  static bool isMACAddress(String? mac) {
     const pattern = r'^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$';
     return hasMatch(mac, pattern);
   }
 
-
   /// 验证时间格式 (HH:MM:SS)
-  bool isTime(String? time) {
+  static bool isTime(String? time) {
     const pattern = r'^([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]$';
     return hasMatch(time, pattern);
   }
 
   /// 验证十六进制颜色值 (#RGB, #RGBA, #RRGGBB, #RRGGBBAA)
-  bool isHexColor(String? color) {
-    const pattern = r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8}|[A-Fa-f0-9]{4})$';
+  static bool isHexColor(String? color) {
+    const pattern =
+        r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3}|[A-Fa-f0-9]{8}|[A-Fa-f0-9]{4})$';
     return hasMatch(color, pattern);
   }
 
-  /// 验证是否为有效的JSON格式
-  bool isJSON(String? str) {
+  /// 验证是否为有效的 JSON 格式。
+  ///
+  /// 仅当输入能解析为 JSON **对象**（`Map`）或 **数组**（`List`）时返回 `true`。
+  /// 这是 `isJSON` 最常见的使用场景（校验接口返回体等结构化数据）。
+  ///
+  /// 一致地拒绝所有 JSON 标量：数字 / 布尔 / 字符串 / `null`。早期实现把
+  /// `"123"` 当成合法 JSON（`json.decode` 得到非 null 的 `int`），却把
+  /// `"null"` 当成非法（因为 `json.decode("null") == null`），语义不一致；
+  /// 现统一为「只接受对象/数组」。
+  static bool isJSON(String? str) {
     if (str == null || str.isEmpty) return false;
     try {
       final parsed = json.decode(str);
-      return parsed != null;
+      return parsed is Map || parsed is List;
     } catch (e) {
       return false;
     }
   }
-
 }
 
 /// id card province dict.
-List<String> ID_CARD_PROVINCE_DICT = [
+final List<String> ID_CARD_PROVINCE_DICT = [
   '11=北京',
   '12=天津',
   '13=河北',

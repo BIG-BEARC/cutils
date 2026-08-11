@@ -1,7 +1,5 @@
-
 /// 正则表达式的常量，参考AndroidUtils：https://github.com/Blankj/AndroidUtilCode
-class RegexConstants{
-
+class RegexConstants {
   ///Regex of simple mobile.
   ///简单移动电话的正则表达式
   static const String REGEX_MOBILE_SIMPLE = "^[1]\\d{10}\$";
@@ -13,43 +11,50 @@ class RegexConstants{
   ///  <p>china broadcasting: 192</p>
   ///  <p>global star: 1349</p>
   ///  <p>virtual operator: 170, 171</p>
-  static const String REGEX_MOBILE_EXACT  =
+  static const String REGEX_MOBILE_EXACT =
       "^((13[0-9])|(14[579])|(15[0-35-9])|(16[2567])|(17[0-35-8])|(18[0-9])|(19[0-35-9]))\\d{8}\$";
 
   /// Regex of telephone number.
-  static const String REGEX_TEL           =
-      "^0\\d{2,3}[- ]?\\d{7,8}\$";
+  static const String REGEX_TEL = "^0\\d{2,3}[- ]?\\d{7,8}\$";
 
   /// Regex of id card number which length is 15.
   static const String regexIdCard15 =
-      '^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}\$';
+      '^[1-9]\\d{7}((0\\d)|(1[0-2]))(([012]\\d)|3[0-1])\\d{3}\$';
 
   /// Regex of id card number which length is 15.
-  static const String REGEX_ID_CARD15     =
-      "^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}\$";
+  static const String REGEX_ID_CARD15 =
+      "^[1-9]\\d{7}((0\\d)|(1[0-2]))(([012]\\d)|3[0-1])\\d{3}\$";
 
   /// Regex of id card number which length is 18.
-  static const String REGEX_ID_CARD18     =
-      "^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{3}([0-9Xx])\$";
+  static const String REGEX_ID_CARD18 =
+      "^[1-9]\\d{5}[1-9]\\d{3}((0\\d)|(1[0-2]))(([012]\\d)|3[0-1])\\d{3}([0-9Xx])\$";
 
   ///Regex of email.
-  static const String REGEX_EMAIL         =
-      "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*\\.\\w+([-.]\\w+)*\$";
+  ///
+  /// Non-backtracking, intentionally permissive form: any non-space, non-`@`
+  /// run, then `@`, then a non-space, non-`@` run containing at least one dot.
+  /// This is more permissive than the previous `\w+([-+.]\w+)*` local part
+  /// (which rejected characters like `!`, `#`, `$`, `%`, ... that are legal in
+  /// RFC 5321 local parts). The total length is capped in [RegexUtils.isEmail]
+  /// per RFC 5321 (254 octets).
+  static const String REGEX_EMAIL = r"^[^\s@]+@[^\s@]+\.[^\s@]+$";
 
   ///Regex of url.
-  static const String REGEX_URL           =
-      "[a-zA-z]+://[^\\s]*";
+  ///
+  /// Fully anchored (`^...$`) so the WHOLE input must be a URL — a substring
+  /// embedded in surrounding text (e.g. `"blah http://x blah"`) is rejected.
+  /// Note: the leading class is `[a-zA-Z]` (the original `[a-zA-z]` had a
+  /// typo'd lowercase `z`).
+  static const String REGEX_URL = r"^[a-zA-Z]+://\S*$";
 
   ///Regex of Chinese character.
-  static const String REGEX_ZH            =
-      "^[\\u4e00-\\u9fa5]+\$";
+  static const String REGEX_ZH = "^[\\u4e00-\\u9fa5]+\$";
 
   /// Regex of username.
   /// <p>scope for "a-z", "A-Z", "0-9", "_", "Chinese character"</p>
   /// <p>can't end with "_"</p>
   /// <p>length is between 6 to 20</p>
-  static const String REGEX_USERNAME      =
-      "^[\\w\\u4e00-\\u9fa5]{6,20}(?<!_)\$";
+  static const String REGEX_USERNAME = "^[\\w\\u4e00-\\u9fa5]{6,20}(?<!_)\$";
 
   /// must contain letters and numbers, 6 ~ 18.
   /// 必须包含字母和数字, 6~18.
@@ -67,133 +72,84 @@ class RegexConstants{
       '^(?![0-9]+\$)(?![a-zA-Z]+\$)(?![0-9a-zA-Z]+\$)(?![0-9\\W]+\$)(?![a-zA-Z\\W]+\$)[0-9A-Za-z\\W]{6,18}\$';
 
   /// Regex of date which pattern is "yyyy-MM-dd".
-  static const String REGEX_DATE          =
+  static const String REGEX_DATE =
       "^(?:(?!0000)[0-9]{4}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)-02-29)\$";
 
   /// Regex of ip address.
-  static const String REGEX_IP            =
-      "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)";
+  ///
+  /// Fully anchored (`^...$`) so the WHOLE input must be an IPv4 address — a
+  /// substring embedded in surrounding text (e.g. `"ip is 1.2.3.4 here"`) is
+  /// rejected.
+  static const String REGEX_IP =
+      r"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$";
 
   ///////////////////////////////////////////////////////////////////////////
   // The following come from http://tool.oschina.net/regex
   ///////////////////////////////////////////////////////////////////////////
 
   /// Regex of double-byte characters.
-  static const String REGEX_DOUBLE_BYTE_CHAR     =
-      "[^\\x00-\\xff]";
+  static const String REGEX_DOUBLE_BYTE_CHAR = "[^\\x00-\\xff]";
 
   /// Regex of blank line.
-  static const String REGEX_BLANK_LINE           =
-      "\\n\\s*\\r";
+  static const String REGEX_BLANK_LINE = "\\n\\s*\\r";
 
   /// Regex of QQ number.
-  static const String REGEX_QQ_NUM               =
-      "[1-9][0-9]{4,}";
+  static const String REGEX_QQ_NUM = "[1-9][0-9]{4,}";
 
   /// Regex of postal code in China.
-  static const String REGEX_CHINA_POSTAL_CODE    =
-      "[1-9]\\d{5}(?!\\d)";
+  static const String REGEX_CHINA_POSTAL_CODE = "[1-9]\\d{5}(?!\\d)";
 
   /// Regex of integer.
-  static const String REGEX_INTEGER              =
-      "^(-?[1-9]\\d*)|0\$";
+  static const String REGEX_INTEGER = "^(?:-?[1-9]\\d*|0)\$";
 
   /// Regex of positive integer.
-  static const String REGEX_POSITIVE_INTEGER     =
-      "^[1-9]\\d*\$";
+  static const String REGEX_POSITIVE_INTEGER = "^[1-9]\\d*\$";
 
   /// Regex of negative integer.
-  static const String REGEX_NEGATIVE_INTEGER     =
-      "^-[1-9]\\d*\$";
+  static const String REGEX_NEGATIVE_INTEGER = "^-[1-9]\\d*\$";
 
   /// Regex of non-negative integer.
-  static const String REGEX_NOT_NEGATIVE_INTEGER =
-      "^[1-9]\\d*|0\$";
+  static const String REGEX_NOT_NEGATIVE_INTEGER = "^(?:[1-9]\\d*|0)\$";
 
   /// Regex of non-positive integer.
-  static const String REGEX_NOT_POSITIVE_INTEGER =
-      "^-[1-9]\\d*|0\$";
+  static const String REGEX_NOT_POSITIVE_INTEGER = "^(?:-[1-9]\\d*|0)\$";
+
+  /// Regex of float.
+  static const String REGEX_FLOAT =
+      "^(?:-?(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0))\$";
 
   /// Regex of positive float.
-  static const String REGEX_FLOAT                =
-      "^-?([1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0)\$";
-
-  /// Regex of positive float.
-  static const String REGEX_POSITIVE_FLOAT       =
-      "^[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*\$";
+  static const String REGEX_POSITIVE_FLOAT =
+      "^(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*)\$";
 
   /// Regex of negative float.
-  static const String REGEX_NEGATIVE_FLOAT       =
-      "^-[1-9]\\d*\\.\\d*|-0\\.\\d*[1-9]\\d*\$";
+  static const String REGEX_NEGATIVE_FLOAT =
+      "^(?:-[1-9]\\d*\\.\\d*|-0\\.\\d*[1-9]\\d*)\$";
 
-  /// Regex of positive float.
-  static const String REGEX_NOT_NEGATIVE_FLOAT   =
-      "^[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0\$";
+  /// Regex of non-negative float.
+  static const String REGEX_NOT_NEGATIVE_FLOAT =
+      "^(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*|0?\\.0+|0)\$";
 
-  ///Regex of negative float.
+  ///Regex of non-positive float.
   ///
-  static const String REGEX_NOT_POSITIVE_FLOAT   =
-      "^(-([1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*))|0?\\.0+|0\$";
+  static const String REGEX_NOT_POSITIVE_FLOAT =
+      "^(?:-(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*)|0?\\.0+|0)\$";
 
-  /// Email regex
-  /// email正则表达式
-  static Pattern email =
-      r'^[a-z0-9]+([-+._][a-z0-9]+){0,2}@.*?(\.(a(?:[cdefgilmnoqrstuwxz]|ero|(?:rp|si)a)|b(?:[abdefghijmnorstvwyz]iz)|c(?:[acdfghiklmnoruvxyz]|at|o(?:m|op))|d[ejkmoz]|e(?:[ceghrstu]|du)|f[ijkmor]|g(?:[abdefghilmnpqrstuwy]|ov)|h[kmnrtu]|i(?:[delmnoqrst]|n(?:fo|t))|j(?:[emop]|obs)|k[eghimnprwyz]|l[abcikrstuvy]|m(?:[acdeghklmnopqrstuvwxyz]|il|obi|useum)|n(?:[acefgilopruz]|ame|et)|o(?:m|rg)|p(?:[aefghklmnrstwy]|ro)|qa|r[eosuw]|s[abcdeghijklmnortuvyz]|t(?:[cdfghjklmnoprtvwz]|(?:rav)?el)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])\b){1,2}$';
-
-  /// URL regex
-  /// Eg:
-  /// - https://medium.com/@diegoveloper/flutter-widget-size-and-position-b0a9ffed9407
-  /// - https://www.youtube.com/watch?v=COYFmbVEH0k
-  /// - https://stackoverflow.com/questions/53913192/flutter-change-the-width-of-an-alertdialog/57688555
-  static Pattern url =
-      r"^((((H|h)(T|t)|(F|f))(T|t)(P|p)((S|s)?))\://)?(www.|[a-zA-Z0-9].)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,6}(\:[0-9]{1,5})*(/($|[a-zA-Z0-9\.\,\;\?\'\\\+&amp;%\$#\=~_\-@]+))*$";
-
-  /// Hexadecimal regex
-  static Pattern hexadecimal = r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$';
-
-  /// Image vector regex
-  /// 图像向量正则表达式
-  static Pattern vector = r'.(svg)$';
-
-  /// Image regex
-  /// 图像正则表达式
-  static Pattern image = r'.(jpeg|jpg|gif|png|bmp)$';
-
-  /// Audio regex
-  /// 音频正则表达式
-  static Pattern audio = r'.(mp3|wav|wma|amr|ogg)$';
-
-  /// Video regex
-  /// 视频正则表达式
-  static Pattern video = r'.(mp4|avi|wmv|rmvb|mpg|mpeg|3gp)$';
-
-  /// Txt regex
-  /// 文本正则表达式
-  static Pattern txt = r'.txt$';
-
-  /// Document regex
-  /// word正则表达式
-  static Pattern doc = r'.(doc|docx)$';
-
-  /// Excel regex
-  /// Excel正则表达式
-  static Pattern excel = r'.(xls|xlsx)$';
-
-  /// PPT regex
-  /// ppt正则表达式
-  static Pattern ppt = r'.(ppt|pptx)$';
-
-  /// Document regex
-  /// apk正则表达式
-  static Pattern apk = r'.apk$';
-
-  /// PDF regex
-  /// pdf正则表达式
-  static Pattern pdf = r'.pdf$';
-
-  /// HTML regex
-  /// html正则表达式
-  static Pattern html = r'.html$';
+  // -------------------------------------------------------------------------
+  // BREAKING (Wave C2): the lowercase duplicate regex set was REMOVED.
+  //
+  // The following public `Pattern` symbols have been deleted because they
+  // were UNUSED across lib/example/test, overlapped/conflicted with the
+  // `REGEX_*` set above, contained unescaped `.` (matched any char), and
+  // were case-sensitive (`FILE.PNG` failed):
+  //   email, url, hexadecimal,
+  //   vector, image, audio, video, txt, doc, excel, ppt, apk, pdf, html.
+  //
+  // Callers should use the `REGEX_*` constants above or the typed helpers on
+  // `RegexUtils` (isEmail / isURL / isHexColor / isIPv4 ...). Downstream code
+  // that referenced a deleted symbol will get a compile-time error — this is
+  // intentional; the old patterns were buggy.
+  // -------------------------------------------------------------------------
 
   /// DateTime regex (UTC)
   /// 时间正则表达式
@@ -295,5 +251,4 @@ class RegexConstants{
   /// Minimum character: 8
   static Pattern passwordHardAllowedWhitespace =
       r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[\S ]{8,}$';
-
 }

@@ -1,6 +1,3 @@
-// Flutter imports:
-import 'package:flutter/foundation.dart';
-
 import 'log_collector.dart';
 import 'log_collector_config.dart';
 import 'log_entry.dart';
@@ -18,10 +15,8 @@ class LogCollectorHelper {
 
   /// 获取日志收集器实例
   static LogCollector get instance {
-    if (_instance == null) {
-      _instance = LogCollector();
-    }
-    return _instance!;
+    final inst = _instance ??= LogCollector();
+    return inst;
   }
 
   /// 快速初始化（使用默认配置）

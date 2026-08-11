@@ -1,27 +1,17 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
+// Flutter imports:
 import 'package:flutter_test/flutter_test.dart';
 
+// Project imports:
 import 'package:cutils_example/main.dart';
 
 void main() {
-  testWidgets('Verify Platform version', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+  testWidgets('首页渲染演示分类入口', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
-    // Verify that platform version is retrieved.
-    expect(
-      find.byWidgetPredicate(
-        (Widget widget) => widget is Text &&
-                           widget.data!.startsWith('Running on:'),
-      ),
-      findsOneWidget,
-    );
+    // AppBar 标题。
+    expect(find.text('cutils 演示'), findsOneWidget);
+    // ListView 首项必然在视口内。
+    expect(find.text('数值与金额'), findsOneWidget);
+    expect(find.text('NumUtils / MoneyUtils / int_ext'), findsOneWidget);
   });
 }

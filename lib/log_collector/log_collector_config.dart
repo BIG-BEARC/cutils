@@ -5,6 +5,10 @@ import 'log_entry.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description 日志收集器配置
+///
+/// 不可变配置对象，控制日志级别过滤、存储路径与轮转、内存上限、队列上限、
+/// flush 间隔等。提供 [defaultConfig] / [development] / [production] 三个
+/// 预设工厂，以及 [copyWith] 用于微调。
 
 class LogCollectorConfig {
   /// 最小日志级别
@@ -31,6 +35,11 @@ class LogCollectorConfig {
   /// 内存中最大日志数量
   final int maxMemoryLogCount;
 
+  /// 待处理日志队列的最大长度
+  ///
+  /// 当输出较慢时，超出此长度的入队请求会被丢弃，避免内存无限增长。
+  final int maxQueueSize;
+
   /// 过滤的标签列表（空列表表示不过滤）
   final List<String> filterTags;
 
@@ -43,6 +52,13 @@ class LogCollectorConfig {
   /// 是否自动清理过期日志
   final bool autoCleanExpiredLogs;
 
+  /// 文件 sink 的定时 flush 间隔
+  ///
+  /// 日志写入持久化 [IOSink] 后不立即 flush（避免每行强制刷盘），而是由此
+  /// 定时器周期性 flush。即使流量停止，缓冲区中的日志也会在 [flushInterval]
+  /// 后落盘。
+  final Duration flushInterval;
+
   const LogCollectorConfig({
     this.minLevel = LogLevel.debug,
     this.storagePath,
@@ -52,10 +68,12 @@ class LogCollectorConfig {
     this.enableFileStorage = true,
     this.enableMemoryStorage = true,
     this.maxMemoryLogCount = 1000,
+    this.maxQueueSize = 1000,
     this.filterTags = const [],
     this.enableCompression = false,
     this.logFormat,
     this.autoCleanExpiredLogs = true,
+    this.flushInterval = const Duration(seconds: 5),
   });
 
   /// 默认配置
@@ -96,10 +114,12 @@ class LogCollectorConfig {
     bool? enableFileStorage,
     bool? enableMemoryStorage,
     int? maxMemoryLogCount,
+    int? maxQueueSize,
     List<String>? filterTags,
     bool? enableCompression,
     String? logFormat,
     bool? autoCleanExpiredLogs,
+    Duration? flushInterval,
   }) {
     return LogCollectorConfig(
       minLevel: minLevel ?? this.minLevel,
@@ -110,11 +130,12 @@ class LogCollectorConfig {
       enableFileStorage: enableFileStorage ?? this.enableFileStorage,
       enableMemoryStorage: enableMemoryStorage ?? this.enableMemoryStorage,
       maxMemoryLogCount: maxMemoryLogCount ?? this.maxMemoryLogCount,
+      maxQueueSize: maxQueueSize ?? this.maxQueueSize,
       filterTags: filterTags ?? this.filterTags,
       enableCompression: enableCompression ?? this.enableCompression,
       logFormat: logFormat ?? this.logFormat,
-      autoCleanExpiredLogs:
-          autoCleanExpiredLogs ?? this.autoCleanExpiredLogs,
+      autoCleanExpiredLogs: autoCleanExpiredLogs ?? this.autoCleanExpiredLogs,
+      flushInterval: flushInterval ?? this.flushInterval,
     );
   }
 }

@@ -7,6 +7,8 @@ import 'package:cutils/log/log.dart';
 /// * @Created at: 30-07-2025 17:47
 /// * @Email:
 /// * description
+/// 系统工具：屏幕方向、系统 UI（状态栏 / 导航栏）显隐与样式、屏幕尺寸与密度、
+/// 剪贴板读写、软键盘显隐。单例（`SystemUtils()`）。
 class SystemUtils {
   SystemUtils._();
 
@@ -57,10 +59,11 @@ class SystemUtils {
             statusBarColor: statusBarColor ?? Colors.transparent,
             statusBarIconBrightness: statusBarIconBrightness ?? Brightness.dark,
             systemNavigationBarIconBrightness:
-            systemNavigationBarIconBrightness ?? Brightness.dark,
+                systemNavigationBarIconBrightness ?? Brightness.dark,
           ),
     );
   }
+
   /// 隐藏状态栏和导航栏
   Future<void> hideSystemUI() async {
     await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
@@ -74,7 +77,9 @@ class SystemUtils {
   /// 获取设备像素密度
   double get devicePixelRatio {
     // 使用 PlatformDispatcher 替代 window
-    return WidgetsBinding.instance.platformDispatcher.implicitView?.devicePixelRatio ?? 1.0;
+    return WidgetsBinding
+            .instance.platformDispatcher.implicitView?.devicePixelRatio ??
+        1.0;
   }
 
   /// 获取屏幕尺寸
@@ -99,10 +104,30 @@ class SystemUtils {
   double get navigationBarHeight {
     final view = WidgetsBinding.instance.platformDispatcher.implicitView;
     if (view != null) {
-      final padding = view.padding;
-      return (padding.bottom - padding.top) / view.devicePixelRatio;
+      // view.padding is a dart:ui ViewPadding (physical pixels); wrap its
+      // bottom/top into an EdgeInsets so the pure helper stays testable.
+      final padding = EdgeInsets.fromLTRB(
+        view.padding.left,
+        view.padding.top,
+        view.padding.right,
+        view.padding.bottom,
+      );
+      return navBarHeightFrom(padding, view.devicePixelRatio);
     }
     return 0.0;
+  }
+
+  /// Computes the navigation-bar height from a padding inset and device
+  /// pixel ratio.
+  ///
+  /// Extracted from [navigationBarHeight] so the math is unit-testable
+  /// without a live [MediaQuery] / platform view. Only the bottom inset
+  /// (the navigation-bar gesture area) is divided by [dpr]; subtracting the
+  /// status-bar inset, as the old formula did, yields a wrong — often
+  /// negative — value.
+  @visibleForTesting
+  static double navBarHeightFrom(EdgeInsets padding, double dpr) {
+    return padding.bottom / dpr;
   }
 
   /// 拷贝文本内容到剪切板
@@ -113,12 +138,12 @@ class SystemUtils {
   /// [context] 上下文，用于显示SnackBar提示
   /// [duration] 提示持续时间，默认为1秒
   Future<void> copyToClipboard(
-      String text, {
-        String? successMessage,
-        String? errorMessage,
-        BuildContext? context,
-        Duration duration = const Duration(seconds: 1),
-      }) async {
+    String text, {
+    String? successMessage,
+    String? errorMessage,
+    BuildContext? context,
+    Duration duration = const Duration(seconds: 1),
+  }) async {
     if (text.isNullOrEmpty) {
       return;
     }
@@ -134,6 +159,7 @@ class SystemUtils {
       _showSnackBar(context, errorSnackBarMsg, duration);
     }
   }
+
   /// 显示SnackBar提示
   ///
   /// [context] 上下文
@@ -142,12 +168,12 @@ class SystemUtils {
   /// [actionLabel] 动作按钮标签
   /// [onActionPressed] 动作按钮点击回调
   void _showSnackBar(
-      BuildContext? context,
-      String message,
-      Duration duration, {
-        String? actionLabel,
-        VoidCallback? onActionPressed,
-      }) {
+    BuildContext? context,
+    String message,
+    Duration duration, {
+    String? actionLabel,
+    VoidCallback? onActionPressed,
+  }) {
     if (context != null && context.mounted) {
       final snackBar = SnackBar(
         duration: duration,
@@ -155,19 +181,20 @@ class SystemUtils {
         behavior: SnackBarBehavior.floating,
         action: actionLabel != null && onActionPressed != null
             ? SnackBarAction(
-          label: actionLabel,
-          onPressed: onActionPressed,
-        )
+                label: actionLabel,
+                onPressed: onActionPressed,
+              )
             : SnackBarAction(
-          label: 'close',
-          onPressed: () {
-            ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          },
-        ),
+                label: 'close',
+                onPressed: () {
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                },
+              ),
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
+
   /// 从剪贴板获取文本内容
   ///
   /// 返回剪贴板中的文本内容，如果出错则返回空字符串
@@ -176,10 +203,12 @@ class SystemUtils {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       return clipboardData?.text ?? '';
     } catch (e, stackTrace) {
-      logger.e("get clipboard text error: $e", error: e, stackTrace: stackTrace);
+      logger.e("get clipboard text error: $e",
+          error: e, stackTrace: stackTrace);
       return '';
     }
   }
+
   /// 隐藏软键盘，具体可看：TextInputChannel
   void hideKeyboard() {
     SystemChannels.textInput.invokeMethod('TextInput.hide');

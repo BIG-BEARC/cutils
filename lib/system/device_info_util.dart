@@ -4,49 +4,62 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:cutils/log/log.dart';
+import 'package:flutter/foundation.dart';
 
 /// * @Author: chuxiong
 /// * @Created at: 10-06-2025 17:40
 /// * @Email:
 /// * description
+/// 设备信息工具（基于 `device_info_plus`）。app 启动调用 [init] 后，
+/// 通过 [osVersion] / [deviceType] / [androidSdkInt] / [serialNumber] 等
+/// getter 读取缓存值；Windows 平台可调用 [winUniqueIdentifier] 取机器码。
 
+/// 全局 [DeviceInfoUtil] 单例。
 final deviceInfo = DeviceInfoUtil();
 
+/// 设备信息读取工具（单例）。
 class DeviceInfoUtil {
   DeviceInfoUtil._();
 
   static final DeviceInfoUtil _instance = DeviceInfoUtil._();
 
   factory DeviceInfoUtil() => _instance;
-  String _osVersion = "unKnow";
-  String _deviceType = "unKnow";
+  String _osVersion = "unknown";
+  String _deviceType = "unknown";
   int _androidSdkInt = 16;
 
   String _deviceInfo = "";
 
+  /// 设备完整信息（插件原始 toString）。
   String get deviceInfo => _deviceInfo;
 
   String _serialNumber = "";
 
+  /// 设备序列号 / 唯一标识（各平台语义不同，见 [init]）。
   String get serialNumber => _serialNumber;
 
+  /// 操作系统版本字符串。
   String get osVersion => _osVersion;
 
+  /// 设备型号 / 制造商（Android 为 manufacturer，iOS 为 utsname.machine）。
   String get deviceType => _deviceType;
 
+  /// Android SDK 版本号（非 Android 返回默认 16）。
   int get androidSdkInt => _androidSdkInt;
 
+  /// 初始化：按当前平台（Android / iOS / Windows / macOS）读取并缓存设备信息。
+  /// 任何平台异常都吞掉并返回 `false`，便于调用方在无插件环境降级。
   Future<bool> init() async {
     try {
-      final deviceInfo = DeviceInfoPlugin();
+      final plugin = DeviceInfoPlugin();
       if (Platform.isAndroid) {
-        await _getAndroidInfo(deviceInfo);
+        await _getAndroidInfo(plugin);
       } else if (Platform.isIOS) {
-        await _getIosInfo(deviceInfo);
+        await _getIosInfo(plugin);
       } else if (Platform.isWindows) {
-        await _getWindowsInfo(deviceInfo);
+        await _getWindowsInfo(plugin);
       } else if (Platform.isMacOS) {
-        await _getMacOsInfo(deviceInfo);
+        await _getMacOsInfo(plugin);
       }
     } catch (e) {
       return false;
@@ -54,8 +67,8 @@ class DeviceInfoUtil {
     return true;
   }
 
-  Future<void> _getAndroidInfo(DeviceInfoPlugin deviceInfo) async {
-    final androidInfo = await deviceInfo.androidInfo;
+  Future<void> _getAndroidInfo(DeviceInfoPlugin plugin) async {
+    final androidInfo = await plugin.androidInfo;
     _androidSdkInt = androidInfo.version.sdkInt;
     _osVersion = _androidSdkInt.toString();
     if (androidInfo.serialNumber.isNotEmpty) {
@@ -69,17 +82,17 @@ class DeviceInfoUtil {
     _deviceInfo = androidInfo.toString();
   }
 
-  Future<void> _getIosInfo(DeviceInfoPlugin deviceInfo) async {
-    final iosInfo = await deviceInfo.iosInfo;
+  Future<void> _getIosInfo(DeviceInfoPlugin plugin) async {
+    final iosInfo = await plugin.iosInfo;
     _osVersion = iosInfo.systemVersion;
     _deviceType = iosInfo.utsname.machine;
     _serialNumber = iosInfo.identifierForVendor ?? "";
     _deviceInfo = iosInfo.toString();
   }
 
-  Future<void> _getWindowsInfo(DeviceInfoPlugin deviceInfo) async {
+  Future<void> _getWindowsInfo(DeviceInfoPlugin plugin) async {
     try {
-      final windowsInfo = await deviceInfo.windowsInfo;
+      final windowsInfo = await plugin.windowsInfo;
       _osVersion = windowsInfo.productName;
       _deviceType = windowsInfo.productId;
       _serialNumber = windowsInfo.deviceId;
@@ -93,15 +106,14 @@ class DeviceInfoUtil {
     //" userName: ${windowsInfo.userName}\n"///用户名
   }
 
-  Future<void> _getMacOsInfo(DeviceInfoPlugin deviceInfo) async {
+  Future<void> _getMacOsInfo(DeviceInfoPlugin plugin) async {
     try {
-      final macOsDeviceInfo = await deviceInfo.macOsInfo;
+      final macOsDeviceInfo = await plugin.macOsInfo;
       _osVersion = macOsDeviceInfo.osRelease;
       _deviceInfo = macOsDeviceInfo.toString();
     } catch (e) {
       logger.e("_getMacOsInfo异常:${e.toString()}");
     }
-
   }
 
   /// A unique device identifier.
@@ -115,14 +127,27 @@ class DeviceInfoUtil {
       final processorID = await _winProcessorID();
       final diskDriveID = await _winDiskDrive();
       final osNumber = await _winOSNumber();
-      // md5 generates a unique id, using String.hashCode directly is too easy to collide
-      final all = baseBoardID + biosID + processorID + diskDriveID + osNumber + DateTime.now().toString();
-      final uID = md5.convert(utf8.encode(all)).toString();
-      return uID;
+      // Only stable hardware ids are hashed — never wall-clock time, or the
+      // identifier would change on every call.
+      return buildWinUniqueId(
+        [baseBoardID, biosID, processorID, diskDriveID, osNumber],
+      );
     } catch (e) {
       logger.e('uniqueIdentifier$e');
       return '';
     }
+  }
+
+  /// Builds the md5 device identifier from a set of stable hardware ids.
+  ///
+  /// Extracted from [winUniqueIdentifier] so the hashing logic is unit-
+  /// testable without spawning `wmic` processes. Only stable hardware ids
+  /// may be supplied — never wall-clock time, or the identifier will change
+  /// on every call.
+  @visibleForTesting
+  static String buildWinUniqueId(Iterable<String> ids) {
+    final all = ids.join();
+    return md5.convert(utf8.encode(all)).toString();
   }
 
   /// windows `Win32_BaseBoard::SerialNumber`
@@ -194,7 +219,7 @@ class DeviceInfoUtil {
         mode: ProcessStartMode.detachedWithStdio,
       );
       final result = await process.stdout.transform(utf8.decoder).toList();
-      for (var element in result) {
+      for (final element in result) {
         final item = element.toLowerCase().replaceAll(
               RegExp('\r|\n|\\s|$regExpSource'),
               '',
