@@ -74,13 +74,11 @@ class TimerUtil {
   void startCountDown() {
     if (_isActive || mInterval <= 0 || mTotalTime <= 0) return;
     _isActive = true;
-    final DateTime endTime =
-        now().add(Duration(milliseconds: mTotalTime));
+    final DateTime endTime = now().add(Duration(milliseconds: mTotalTime));
     Duration duration = Duration(milliseconds: mInterval);
     _doCallback(mTotalTime);
     _mTimer = Timer.periodic(duration, (Timer timer) {
-      final int remaining =
-          endTime.difference(now()).inMilliseconds;
+      final int remaining = endTime.difference(now()).inMilliseconds;
       if (remaining >= mInterval) {
         _doCallback(remaining);
       } else if (remaining <= 0) {
@@ -105,10 +103,24 @@ class TimerUtil {
     }
   }
 
-  /// update countdown totalTime.
-  /// 重设倒计时总时间.
+  /// Update countdown totalTime as a PURE setter.
+  ///
+  /// 只更新 [mTotalTime]，**不**取消或重启正在运行的倒计时。若正在倒计时，
+  /// 其 `endTime`（启动时已固定）不受影响；如需让新总数生效，请用 [restart]。
+  ///
+  /// BREAKING: 旧实现会 `cancel() → set → startCountDown()` 隐式重启。
   void updateTotalTime(int totalTime) {
+    if (totalTime <= 0) return;
+    mTotalTime = totalTime;
+  }
+
+  /// Restart the countdown with a new totalTime.
+  ///
+  /// 取消当前计时（如有）并以 [totalTime] 为新总数重新启动倒计时。等价于旧的
+  /// `updateTotalTime` 组合行为（cancel + set + start）。
+  void restart(int totalTime) {
     cancel();
+    if (totalTime <= 0) return;
     mTotalTime = totalTime;
     startCountDown();
   }
@@ -128,6 +140,13 @@ class TimerUtil {
     _mTailTimer = null;
     _isActive = false;
   }
+
+  /// Releases resources by cancelling the underlying [Timer]s.
+  ///
+  /// 生命周期约定：持有 [TimerUtil] 的对象在销毁时应调用 [dispose]（或
+  /// [cancel]）以释放底层 `dart:async` [Timer]，避免回调泄漏。本方法等价于
+  /// [cancel]，提供与有状态组件（`State.dispose`）一致的命名。
+  void dispose() => cancel();
 
   /// set timer callback.
   void setOnTimerTickCallback(OnTimerTickCallback callback) {

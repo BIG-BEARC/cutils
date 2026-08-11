@@ -51,12 +51,17 @@ class DateTimeUtils {
     return DateTime.now().toUtc();
   }
 
-  /// 获取昨天日期返回DateTime
-  static DateTime getYesterday() {
-    var dateTime = DateTime.fromMillisecondsSinceEpoch(
-      DateTime.now().millisecondsSinceEpoch - 24 * 60 * 60 * 1000,
-    );
-    return dateTime;
+  /// 获取昨天日期返回DateTime。
+  ///
+  /// 按日历日回退（`DateTime(now.year, now.month, now.day - 1, ...)`），
+  /// 由 DateTime 构造器跨月/年/DST 归一化，避免减固定 `24*60*60*1000` 毫秒在
+  /// DST 边界（一天可能是 23/25 小时）造成的跨日错误。
+  ///
+  /// 可选 [now] 用于注入基准时刻（测试用），默认 [DateTime.now]。
+  static DateTime getYesterday({DateTime? now}) {
+    final n = now ?? DateTime.now();
+    return _date(n.isUtc, n.year, n.month, n.day - 1, n.hour, n.minute,
+        n.second, n.millisecond, n.microsecond);
   }
 
   /// format date by milliseconds.
@@ -184,15 +189,16 @@ class DateTimeUtils {
 
   /// get day of year.
   /// 在今年的第几天.
+  ///
+  /// 用 `DateTime(year, i+1, 0).day` 取各月最后一天（自动按 [dateTime.year]
+  /// 判定闰年），不再依赖全局可变的 `MONTH_DAY` 表。
   static int getDayOfYear(DateTime dateTime) {
     int year = dateTime.year;
     int month = dateTime.month;
     int days = dateTime.day;
     for (int i = 1; i < month; i++) {
-      days = days + MONTH_DAY[i]!;
-    }
-    if (isLeapYearByYear(year) && month > 2) {
-      days = days + 1;
+      // DateTime(year, i+1, 0) 是 i 月的最后一天（day=0 回退到上月末日）。
+      days = days + DateTime(year, i + 1, 0).day;
     }
     return days;
   }
@@ -205,8 +211,11 @@ class DateTimeUtils {
 
   /// is today.
   /// 是否是当天.
+  ///
+  /// 只有 [null] 表示缺失值；epoch 0（1970-01-01）是合法时间戳，不再被
+  /// `== 0` 守卫误判为"无值"。
   static bool isToday(int? milliseconds, {bool isUtc = false, int? locMs}) {
-    if (milliseconds == null || milliseconds == 0) return false;
+    if (milliseconds == null) return false;
     DateTime old =
         DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: isUtc);
     DateTime now;
@@ -220,6 +229,8 @@ class DateTimeUtils {
 
   /// is yesterday by dateTime.
   /// 是否是昨天.
+  ///
+  /// 两边按同一时区归一化（[isUtc]）后再比日历日，避免 UTC/local 混用。
   static bool isYesterday(DateTime dateTime, DateTime locDateTime) {
     if (yearIsEqual(dateTime, locDateTime)) {
       int spDay = getDayOfYear(locDateTime) - getDayOfYear(dateTime);
@@ -235,15 +246,18 @@ class DateTimeUtils {
 
   /// is yesterday by millis.
   /// 是否是昨天.
-  static bool isYesterdayByMs(int ms, int locMs) {
-    return isYesterday(DateTime.fromMillisecondsSinceEpoch(ms),
-        DateTime.fromMillisecondsSinceEpoch(locMs));
+  static bool isYesterdayByMs(int ms, int locMs, {bool isUtc = false}) {
+    return isYesterday(DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc),
+        DateTime.fromMillisecondsSinceEpoch(locMs, isUtc: isUtc));
   }
 
   /// is Week.
   /// 是否是本周.
+  ///
+  /// 只有 [null] 表示缺失值；epoch 0 及负时间戳是合法值，不再被 `<= 0`
+  /// 守卫误判。
   static bool isWeek(int? ms, {bool isUtc = false, int? locMs}) {
-    if (ms == null || ms <= 0) {
+    if (ms == null) {
       return false;
     }
     DateTime old0 = DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc);
@@ -271,9 +285,9 @@ class DateTimeUtils {
 
   /// year is equal.
   /// 是否同年.
-  static bool yearIsEqualByMs(int ms, int locMs) {
-    return yearIsEqual(DateTime.fromMillisecondsSinceEpoch(ms),
-        DateTime.fromMillisecondsSinceEpoch(locMs));
+  static bool yearIsEqualByMs(int ms, int locMs, {bool isUtc = false}) {
+    return yearIsEqual(DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc),
+        DateTime.fromMillisecondsSinceEpoch(locMs, isUtc: isUtc));
   }
 
   /// Return whether it is leap year.
@@ -300,11 +314,14 @@ class DateTimeUtils {
     return a.year == b.year && a.month == b.month && a.day == b.day;
   }
 
-  /// Returns a number of the next month.
-  static int nextMonth(DateTime date) {
-    final month = date.month;
-    return month == DateTime.monthsPerYear ? 1 : month + 1;
-  }
+  /// Returns same date in the next month as a [DateTime].
+  ///
+  /// 与 [nextDay]/[previousDay]/[nextYear]/[previousYear] 保持一致返回
+  /// [DateTime]。月末溢出时按下月末日收敛（委托 [addMonths]，例如 1-31 → 2-28）。
+  ///
+  /// BREAKING: 旧实现返回 `int`（仅月份编号 1-12）。如需旧的月份编号请用
+  /// `date.month == 12 ? 1 : date.month + 1`。
+  static DateTime nextMonth(DateTime date) => addMonths(date, 1);
 
   /// Returns [DateTime] for the beginning of the day (00:00:00).
   ///
@@ -392,8 +409,9 @@ class DateTimeUtils {
       // first of the next year
       return 1;
     } else {
-      // last of the previous year
-      return getWeekNumber(DateTime(date.year - 1, DateTime.december, 31),
+      // last of the previous year —— 保持与 [date] 相同时区，避免 UTC/local 混用。
+      return getWeekNumber(
+          _date(date.isUtc, date.year - 1, DateTime.december, 31),
           firstWeekday: firstWeekday);
     }
   }

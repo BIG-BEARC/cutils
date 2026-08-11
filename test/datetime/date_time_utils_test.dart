@@ -55,8 +55,7 @@ void main() {
       // Reference: same zone (UTC) comparison via DateTime directly.
       final nowUtc = DateTime.fromMillisecondsSinceEpoch(utcMs, isUtc: true);
       final oldUtc = DateTime.fromMillisecondsSinceEpoch(utcMs, isUtc: true);
-      final reference =
-          nowUtc.year == oldUtc.year &&
+      final reference = nowUtc.year == oldUtc.year &&
           nowUtc.month == oldUtc.month &&
           nowUtc.day == oldUtc.day;
 
@@ -64,7 +63,8 @@ void main() {
       expect(isUtcToday, reference);
     });
 
-    test('local (isUtc:false) locMs branch still works for a local instant', () {
+    test('local (isUtc:false) locMs branch still works for a local instant',
+        () {
       final localMs = DateTime(2026, 8, 7, 12, 0).millisecondsSinceEpoch;
       expect(
         DateTimeUtils.isToday(localMs, isUtc: false, locMs: localMs),

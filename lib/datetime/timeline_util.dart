@@ -15,9 +15,10 @@ Map<String, TimelineInfo> _timelineInfoMap = {
 };
 
 /// add custom configuration.
+///
+/// [locale] / [timelineInfo] 为非空类型（sound null-safety 下编译期保证）；
+/// 不再使用 `ArgumentError.checkNotNull`（该 API 已废弃且在空安全下是死代码）。
 void setLocaleInfo(String locale, TimelineInfo timelineInfo) {
-  ArgumentError.checkNotNull(locale, '[locale] must not be null');
-  ArgumentError.checkNotNull(timelineInfo, '[timelineInfo] must not be null');
   _timelineInfoMap[locale] = timelineInfo;
 }
 
@@ -27,6 +28,7 @@ class TimelineUtil {
   /// dateTime
   /// locDateTime: current time or schedule time.
   /// locale: output key.
+  /// isUtc: 是否按 UTC 解读毫秒（线程到日历比较/格式化，默认 false=local）。
   static String formatByDateTime(
     DateTime dateTime, {
     DateTime? locDateTime,
@@ -38,6 +40,7 @@ class TimelineUtil {
       locTimeMs: locDateTime?.millisecondsSinceEpoch,
       locale: locale,
       dayFormat: dayFormat,
+      isUtc: dateTime.isUtc,
     );
   }
 
@@ -45,11 +48,13 @@ class TimelineUtil {
   /// dateTime : millis.
   /// locDateTime: current time or schedule time. millis.
   /// locale: output key.
+  /// isUtc: 是否按 UTC 解读 [ms]/[locTimeMs]（影响日历日判定与格式化输出）。
   static String format(
     int ms, {
     int? locTimeMs,
     String? locale,
     DayFormat? dayFormat,
+    bool isUtc = false,
   }) {
     int nowMs = locTimeMs ?? DateTime.now().millisecondsSinceEpoch;
     String useLocale = locale ?? 'en';
@@ -57,8 +62,11 @@ class TimelineUtil {
     DayFormat useDayFormat = dayFormat ?? DayFormat.common;
 
     int elapsed = nowMs - ms;
+    // 方向由 elapsed 符号决定，不靠 suffixAgo()==suffixAfter() 字符串比较
+    // （某些 locale 两者相等会导致判定漏判）。
+    final bool isFuture = elapsed < 0;
     String suffix;
-    if (elapsed < 0) {
+    if (isFuture) {
       suffix = info.suffixAfter();
       // suffix after is empty. user just now.
       if (suffix.isNotEmpty) {
@@ -73,12 +81,12 @@ class TimelineUtil {
 
     String timeline;
     if (info.customYesterday().isNotEmpty &&
-        DateTimeUtils.isYesterdayByMs(ms, nowMs)) {
-      return _getYesterday(ms, info, useDayFormat);
+        DateTimeUtils.isYesterdayByMs(ms, nowMs, isUtc: isUtc)) {
+      return _getYesterday(ms, info, useDayFormat, isUtc: isUtc);
     }
 
-    if (!DateTimeUtils.yearIsEqualByMs(ms, nowMs)) {
-      timeline = _getYear(ms, useDayFormat);
+    if (!DateTimeUtils.yearIsEqualByMs(ms, nowMs, isUtc: isUtc)) {
+      timeline = _getYear(ms, useDayFormat, isUtc: isUtc);
       if (timeline.isNotEmpty) return timeline;
     }
 
@@ -89,7 +97,8 @@ class TimelineUtil {
 
     if (seconds < 90) {
       timeline = info.oneMinute(1);
-      if (suffix != info.suffixAfter() &&
+      // 过去近况（非未来）才可能显示 "刚刚/just now"。
+      if (!isFuture &&
           info.lessThanOneMinute().isNotEmpty &&
           seconds < info.maxJustNowSecond()) {
         timeline = info.lessThanOneMinute();
@@ -106,7 +115,8 @@ class TimelineUtil {
           (days.round() == 2 && info.keepTwoDays() == true)) {
         useDayFormat = DayFormat.simple;
       }
-      timeline = _formatDays(ms, days.round(), info, useDayFormat);
+      timeline =
+          _formatDays(ms, days.round(), info, useDayFormat, isUtc: isUtc);
       suffix = (useDayFormat == DayFormat.simple ? suffix : '');
     }
     return timeline + suffix;
@@ -118,6 +128,12 @@ class TimelineUtil {
   /// yesterday (昨天;Yesterday)
   /// this week (星期一,周一;Monday,Mon)
   /// others (yyyy-MM-dd)
+  ///
+  /// 未来日期（[ms] > 当前）：按 [formatToday]（默认 `HH:mm`）格式化返回，
+  /// 即使该未来日期不是"今天"。这是既有约定行为（文档化，非变更）。
+  ///
+  /// [isUtc] 是否按 UTC 解读 [ms]/[locMs]（线程到 isToday/isYesterdayByMs/
+  /// isWeek/formatDateMs，默认 false=local）。
   static String formatA(
     int ms, {
     int? locMs,
@@ -125,27 +141,29 @@ class TimelineUtil {
     String format = 'yyyy-MM-dd',
     String languageCode = 'en',
     bool short = false,
+    bool isUtc = false,
   }) {
     int locTimeMs = locMs ?? DateTime.now().millisecondsSinceEpoch;
     int elapsed = locTimeMs - ms;
     if (elapsed < 0) {
-      return DateTimeUtils.formatDateMs(ms, format: formatToday);
+      // 文档化：未来日期返回 formatToday（HH:mm），即使不是今天。
+      return DateTimeUtils.formatDateMs(ms, format: formatToday, isUtc: isUtc);
     }
 
-    if (DateTimeUtils.isToday(ms, locMs: locTimeMs)) {
-      return DateTimeUtils.formatDateMs(ms, format: formatToday);
+    if (DateTimeUtils.isToday(ms, isUtc: isUtc, locMs: locTimeMs)) {
+      return DateTimeUtils.formatDateMs(ms, format: formatToday, isUtc: isUtc);
     }
 
-    if (DateTimeUtils.isYesterdayByMs(ms, locTimeMs)) {
+    if (DateTimeUtils.isYesterdayByMs(ms, locTimeMs, isUtc: isUtc)) {
       return languageCode == 'zh' ? '昨天' : 'Yesterday';
     }
 
-    if (DateTimeUtils.isWeek(ms, locMs: locTimeMs)) {
+    if (DateTimeUtils.isWeek(ms, isUtc: isUtc, locMs: locTimeMs)) {
       return DateTimeUtils.getWeekdayByMs(ms,
-          languageCode: languageCode, short: short);
+          languageCode: languageCode, short: short, isUtc: isUtc);
     }
 
-    return DateTimeUtils.formatDateMs(ms, format: format);
+    return DateTimeUtils.formatDateMs(ms, format: format, isUtc: isUtc);
   }
 
   /// get Yesterday.
@@ -153,11 +171,12 @@ class TimelineUtil {
   static String _getYesterday(
     int ms,
     TimelineInfo info,
-    DayFormat dayFormat,
-  ) {
+    DayFormat dayFormat, {
+    bool isUtc = false,
+  }) {
     return info.customYesterday() +
         (dayFormat == DayFormat.full
-            ? (' ${DateTimeUtils.formatDateMs(ms, format: 'HH:mm')}')
+            ? (' ${DateTimeUtils.formatDateMs(ms, format: 'HH:mm', isUtc: isUtc)}')
             : '');
   }
 
@@ -165,13 +184,15 @@ class TimelineUtil {
   /// 获取非今年信息.
   static String _getYear(
     int ms,
-    DayFormat dayFormat,
-  ) {
+    DayFormat dayFormat, {
+    bool isUtc = false,
+  }) {
     if (dayFormat != DayFormat.simple) {
       return DateTimeUtils.formatDateMs(ms,
           format: (dayFormat == DayFormat.common
               ? 'yyyy-MM-dd'
-              : 'yyyy-MM-dd HH:mm'));
+              : 'yyyy-MM-dd HH:mm'),
+          isUtc: isUtc);
     }
     return '';
   }
@@ -181,8 +202,9 @@ class TimelineUtil {
     int ms,
     num days,
     TimelineInfo info,
-    DayFormat dayFormat,
-  ) {
+    DayFormat dayFormat, {
+    bool isUtc = false,
+  }) {
     String timeline;
     switch (dayFormat) {
       case DayFormat.simple:
@@ -193,10 +215,12 @@ class TimelineUtil {
             : info.days(days.round()));
         break;
       case DayFormat.common:
-        timeline = DateTimeUtils.formatDateMs(ms, format: 'MM-dd');
+        timeline =
+            DateTimeUtils.formatDateMs(ms, format: 'MM-dd', isUtc: isUtc);
         break;
       case DayFormat.full:
-        timeline = DateTimeUtils.formatDateMs(ms, format: 'MM-dd HH:mm');
+        timeline =
+            DateTimeUtils.formatDateMs(ms, format: 'MM-dd HH:mm', isUtc: isUtc);
         break;
     }
     return timeline;
