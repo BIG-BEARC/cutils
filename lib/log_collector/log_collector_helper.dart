@@ -15,8 +15,8 @@ class LogCollectorHelper {
 
   /// 获取日志收集器实例
   static LogCollector get instance {
-    _instance ??= LogCollector();
-    return _instance!;
+    final inst = _instance ??= LogCollector();
+    return inst;
   }
 
   /// 快速初始化（使用默认配置）

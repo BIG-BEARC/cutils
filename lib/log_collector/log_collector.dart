@@ -112,23 +112,24 @@ class LogCollector {
   /// 收集日志
   /// [entry] 日志条目
   Future<void> collect(LogEntry entry) async {
-    if (!_isInitialized || _config == null) {
+    final config = _config;
+    if (!_isInitialized || config == null) {
       return;
     }
 
     // 检查日志级别过滤
-    if (entry.level.index < _config!.minLevel.index) {
+    if (entry.level.index < config.minLevel.index) {
       return;
     }
 
     // 检查标签过滤
-    if (_config!.filterTags.isNotEmpty &&
-        !_config!.filterTags.contains(entry.tag)) {
+    if (config.filterTags.isNotEmpty &&
+        !config.filterTags.contains(entry.tag)) {
       return;
     }
 
     // 队列上限：当输出过慢时，丢弃新到的日志，避免内存无限增长。
-    if (_logQueue.length >= _config!.maxQueueSize) {
+    if (_logQueue.length >= config.maxQueueSize) {
       return;
     }
 

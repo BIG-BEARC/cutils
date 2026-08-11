@@ -7,7 +7,7 @@ import 'en_normal_info.dart';
 import 'zh_info.dart';
 import 'zh_normal_info.dart';
 
-Map<String, TimelineInfo> _timelineInfoMap = {
+final Map<String, TimelineInfo> _timelineInfoMap = {
   'zh': ZhInfo(),
   'en': EnInfo(),
   'zh_normal': ZhNormalInfo(), //keepTwoDays() => false
@@ -111,8 +111,8 @@ class TimelineUtil {
     } else if (hours < 24) {
       timeline = info.hours(hours.round());
     } else {
-      if ((days.round() == 1 && info.keepOneDay() == true) ||
-          (days.round() == 2 && info.keepTwoDays() == true)) {
+      if ((days.round() == 1 && info.keepOneDay()) ||
+          (days.round() == 2 && info.keepTwoDays())) {
         useDayFormat = DayFormat.simple;
       }
       timeline =

@@ -14,7 +14,7 @@ class NumUtils {
     if (s.isNull) {
       return false;
     }
-    var parseNum = num.tryParse(s);
+    final parseNum = num.tryParse(s);
     if (parseNum.isNull) {
       return false;
     }

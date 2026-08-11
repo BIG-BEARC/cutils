@@ -19,8 +19,8 @@ class DeviceInfoUtil {
   static final DeviceInfoUtil _instance = DeviceInfoUtil._();
 
   factory DeviceInfoUtil() => _instance;
-  String _osVersion = "unKnow";
-  String _deviceType = "unKnow";
+  String _osVersion = "unknown";
+  String _deviceType = "unknown";
   int _androidSdkInt = 16;
 
   String _deviceInfo = "";
@@ -39,15 +39,15 @@ class DeviceInfoUtil {
 
   Future<bool> init() async {
     try {
-      final deviceInfo = DeviceInfoPlugin();
+      final plugin = DeviceInfoPlugin();
       if (Platform.isAndroid) {
-        await _getAndroidInfo(deviceInfo);
+        await _getAndroidInfo(plugin);
       } else if (Platform.isIOS) {
-        await _getIosInfo(deviceInfo);
+        await _getIosInfo(plugin);
       } else if (Platform.isWindows) {
-        await _getWindowsInfo(deviceInfo);
+        await _getWindowsInfo(plugin);
       } else if (Platform.isMacOS) {
-        await _getMacOsInfo(deviceInfo);
+        await _getMacOsInfo(plugin);
       }
     } catch (e) {
       return false;
@@ -55,8 +55,8 @@ class DeviceInfoUtil {
     return true;
   }
 
-  Future<void> _getAndroidInfo(DeviceInfoPlugin deviceInfo) async {
-    final androidInfo = await deviceInfo.androidInfo;
+  Future<void> _getAndroidInfo(DeviceInfoPlugin plugin) async {
+    final androidInfo = await plugin.androidInfo;
     _androidSdkInt = androidInfo.version.sdkInt;
     _osVersion = _androidSdkInt.toString();
     if (androidInfo.serialNumber.isNotEmpty) {
@@ -70,17 +70,17 @@ class DeviceInfoUtil {
     _deviceInfo = androidInfo.toString();
   }
 
-  Future<void> _getIosInfo(DeviceInfoPlugin deviceInfo) async {
-    final iosInfo = await deviceInfo.iosInfo;
+  Future<void> _getIosInfo(DeviceInfoPlugin plugin) async {
+    final iosInfo = await plugin.iosInfo;
     _osVersion = iosInfo.systemVersion;
     _deviceType = iosInfo.utsname.machine;
     _serialNumber = iosInfo.identifierForVendor ?? "";
     _deviceInfo = iosInfo.toString();
   }
 
-  Future<void> _getWindowsInfo(DeviceInfoPlugin deviceInfo) async {
+  Future<void> _getWindowsInfo(DeviceInfoPlugin plugin) async {
     try {
-      final windowsInfo = await deviceInfo.windowsInfo;
+      final windowsInfo = await plugin.windowsInfo;
       _osVersion = windowsInfo.productName;
       _deviceType = windowsInfo.productId;
       _serialNumber = windowsInfo.deviceId;
@@ -94,9 +94,9 @@ class DeviceInfoUtil {
     //" userName: ${windowsInfo.userName}\n"///用户名
   }
 
-  Future<void> _getMacOsInfo(DeviceInfoPlugin deviceInfo) async {
+  Future<void> _getMacOsInfo(DeviceInfoPlugin plugin) async {
     try {
-      final macOsDeviceInfo = await deviceInfo.macOsInfo;
+      final macOsDeviceInfo = await plugin.macOsInfo;
       _osVersion = macOsDeviceInfo.osRelease;
       _deviceInfo = macOsDeviceInfo.toString();
     } catch (e) {
@@ -207,7 +207,7 @@ class DeviceInfoUtil {
         mode: ProcessStartMode.detachedWithStdio,
       );
       final result = await process.stdout.transform(utf8.decoder).toList();
-      for (var element in result) {
+      for (final element in result) {
         final item = element.toLowerCase().replaceAll(
               RegExp('\r|\n|\\s|$regExpSource'),
               '',

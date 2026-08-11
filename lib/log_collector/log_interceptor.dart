@@ -62,8 +62,9 @@ class DebugPrintInterceptor extends LogInterceptor {
     _originalDebugPrint = debugPrint;
     debugPrint = (String? message, {int? wrapWidth}) {
       // 调用原始debugPrint
-      if (_originalDebugPrint != null) {
-        _originalDebugPrint!(message, wrapWidth: wrapWidth);
+      final original = _originalDebugPrint;
+      if (original != null) {
+        original(message, wrapWidth: wrapWidth);
       }
 
       // 收集日志
@@ -80,8 +81,9 @@ class DebugPrintInterceptor extends LogInterceptor {
 
   @override
   Future<void> onStop() async {
-    if (_originalDebugPrint != null) {
-      debugPrint = _originalDebugPrint!;
+    final original = _originalDebugPrint;
+    if (original != null) {
+      debugPrint = original;
       _originalDebugPrint = null;
     }
   }

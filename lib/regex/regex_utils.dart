@@ -281,7 +281,7 @@ class RegexUtils {
 }
 
 /// id card province dict.
-List<String> ID_CARD_PROVINCE_DICT = [
+final List<String> ID_CARD_PROVINCE_DICT = [
   '11=北京',
   '12=天津',
   '13=河北',

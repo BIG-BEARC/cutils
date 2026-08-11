@@ -162,9 +162,9 @@ class BatchLogOutput extends LogOutput {
     _buffer.add(entry);
 
     final now = DateTime.now();
+    final lastFlush = _lastFlushTime;
     final shouldFlush = _buffer.length >= batchSize ||
-        (_lastFlushTime != null &&
-            now.difference(_lastFlushTime!) >= batchInterval);
+        (lastFlush != null && now.difference(lastFlush) >= batchInterval);
 
     if (shouldFlush) {
       await flush();

@@ -73,27 +73,27 @@ class LogStorage {
 
   /// 初始化文件存储
   Future<void> _initializeFileStorage() async {
-    String storagePath;
-    if (config.storagePath != null) {
-      storagePath = config.storagePath!;
-    } else {
-      final appDir = await getApplicationSupportDirectory();
-      storagePath = path.join(appDir.path, 'log_collector');
-    }
+    final storagePath = config.storagePath ??
+        path.join(
+          (await getApplicationSupportDirectory()).path,
+          'log_collector',
+        );
 
-    _storageDir = Directory(storagePath);
-    if (!await _storageDir!.exists()) {
-      await _storageDir!.create(recursive: true);
+    final dir = Directory(storagePath);
+    _storageDir = dir;
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
     }
 
     // 创建当前日志文件
     final fileName = _getLogFileName(DateTime.now());
-    _currentLogFile = File(path.join(_storageDir!.path, fileName));
+    final logFile = File(path.join(dir.path, fileName));
+    _currentLogFile = logFile;
 
     // 如果文件已存在（例如今天早些时候写过），读取其大小作为初始值，
     // 避免 size tracking 与磁盘实际大小脱节导致轮转失效。
-    if (await _currentLogFile!.exists()) {
-      _currentFileSize = await _currentLogFile!.length();
+    if (await logFile.exists()) {
+      _currentFileSize = await logFile.length();
     } else {
       _currentFileSize = 0;
     }
@@ -130,10 +130,11 @@ class LogStorage {
 
   /// 惰性打开持久化 IOSink
   Future<void> _openSink() async {
-    if (_fileSink != null || _currentLogFile == null) {
+    final file = _currentLogFile;
+    if (_fileSink != null || file == null) {
       return;
     }
-    _fileSink = _currentLogFile!.openWrite(mode: FileMode.append);
+    _fileSink = file.openWrite(mode: FileMode.append);
   }
 
   /// 文件存储
@@ -153,8 +154,11 @@ class LogStorage {
       // 追加日志（不 flush——由 [_flushTimer] 周期性 flush）
       final jsonStr = jsonEncode(entry.toJson());
       final line = '$jsonStr\n';
-      _fileSink!.write(line);
-      _currentFileSize += utf8.encode(line).length;
+      final sink = _fileSink;
+      if (sink != null) {
+        sink.write(line);
+        _currentFileSize += utf8.encode(line).length;
+      }
     } catch (e) {
       // 存储失败，记录到控制台
       debugPrint('LogStorage: Failed to store log: $e');
@@ -163,7 +167,8 @@ class LogStorage {
 
   /// 轮转日志文件
   Future<void> _rotateLogFile() async {
-    if (_storageDir == null) {
+    final dir = _storageDir;
+    if (dir == null) {
       return;
     }
 
@@ -175,11 +180,12 @@ class LogStorage {
     // 将当前文件重命名为归档文件（带时间戳后缀），确保新文件路径与之不同。
     // 否则按日期命名的"新"文件会与旧文件路径相同，轮转变为空操作，旧文件
     // 会被继续追加，永远超出 maxFileSize。
-    if (_currentLogFile != null && await _currentLogFile!.exists()) {
+    final currentFile = _currentLogFile;
+    if (currentFile != null && await currentFile.exists()) {
       final archiveName = 'log_${_archiveSuffix(DateTime.now())}.json';
-      final archivePath = path.join(_storageDir!.path, archiveName);
+      final archivePath = path.join(dir.path, archiveName);
       try {
-        await _currentLogFile!.rename(archivePath);
+        await currentFile.rename(archivePath);
       } catch (e) {
         debugPrint('LogStorage: Failed to archive log: $e');
       }
@@ -201,7 +207,7 @@ class LogStorage {
 
     // 创建新的日志文件
     final fileName = _getLogFileName(DateTime.now());
-    _currentLogFile = File(path.join(_storageDir!.path, fileName));
+    _currentLogFile = File(path.join(dir.path, fileName));
     _currentFileSize = 0;
   }
 
@@ -215,12 +221,13 @@ class LogStorage {
 
   /// 获取所有日志文件
   Future<List<File>> _getLogFiles() async {
-    if (_storageDir == null || !await _storageDir!.exists()) {
+    final dir = _storageDir;
+    if (dir == null || !await dir.exists()) {
       return [];
     }
 
     final files = <File>[];
-    await for (final entity in _storageDir!.list()) {
+    await for (final entity in dir.list()) {
       if (entity is File && entity.path.endsWith('.json')) {
         files.add(entity);
       }
@@ -338,7 +345,8 @@ class LogStorage {
     await _fileSink?.close();
     _fileSink = null;
 
-    if (_storageDir != null && await _storageDir!.exists()) {
+    final dir = _storageDir;
+    if (dir != null && await dir.exists()) {
       final logFiles = await _getLogFiles();
       for (final file in logFiles) {
         await file.delete();
@@ -347,9 +355,9 @@ class LogStorage {
     _currentFileSize = 0;
 
     // 重建当前日志文件引用，使后续 store 可继续写入。
-    if (_storageDir != null) {
+    if (dir != null) {
       final fileName = _getLogFileName(DateTime.now());
-      _currentLogFile = File(path.join(_storageDir!.path, fileName));
+      _currentLogFile = File(path.join(dir.path, fileName));
     }
   }
 
@@ -391,7 +399,8 @@ class LogStorage {
 
   /// 清理过期日志
   Future<void> cleanupExpiredLogs() async {
-    if (_storageDir == null || !await _storageDir!.exists()) {
+    final dir = _storageDir;
+    if (dir == null || !await dir.exists()) {
       return;
     }
 

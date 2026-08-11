@@ -7,48 +7,55 @@ import 'package:decimal/decimal.dart';
 /// * description
 ///String扩展：
 extension StringExt on String? {
-  bool get isNullOrEmpty => this == null || this!.isEmpty;
+  bool get isNullOrEmpty => this == null || (this?.isEmpty ?? true);
 
   double? toDouble() {
-    if (isNullOrEmpty) return null;
-    return double.tryParse(this!);
+    final s = this;
+    if (s == null) return null;
+    return double.tryParse(s);
   }
 
   int? toInt() {
-    if (isNullOrEmpty) return null;
-    return int.tryParse(this!);
+    final s = this;
+    if (s == null) return null;
+    return int.tryParse(s);
   }
 
   String substringSafe(int start, [int? end]) {
-    if (isNullOrEmpty) return '';
-    final length = this!.length;
+    final s = this;
+    if (s == null || s.isEmpty) return '';
+    final length = s.length;
     final safeStart = start.clamp(0, length);
     final safeEnd = end?.clamp(safeStart, length) ?? length;
-    return this!.substring(safeStart, safeEnd);
+    return s.substring(safeStart, safeEnd);
   }
 
   int get parseIntWithDefault {
-    if (isNullOrEmpty) return 0;
-    final parseInt = int.tryParse(this!);
+    final s = this;
+    if (s == null) return 0;
+    final parseInt = int.tryParse(s);
     return parseInt ?? 0;
   }
 
   // 空值处理
   String defaultStrWithEmpty({String? emptyStr}) {
-    if (isNullOrEmpty) {
+    final s = this;
+    if (s == null || s.isEmpty) {
       return emptyStr ?? "--";
     }
-    return this!;
+    return s;
   }
 
   String get defaultString {
-    if (isNullOrEmpty) return "--";
-    return this!;
+    final s = this;
+    if (s == null || s.isEmpty) return "--";
+    return s;
   }
 
   String get defaultMoneyStr {
-    if (isNullOrEmpty) return "0.00";
-    return this!;
+    final s = this;
+    if (s == null || s.isEmpty) return "0.00";
+    return s;
   }
 
   /// 金额格式化。
@@ -61,8 +68,9 @@ extension StringExt on String? {
   /// 而非旧行为的 `"1.0"`），因为 [Decimal] 不会合成不存在的小数位。
   /// 非整元结果与旧实现一致。
   String get formatMoney {
-    if (isNullOrEmpty) return "--";
-    final dec = Decimal.tryParse(this!);
+    final s = this;
+    if (s == null || s.isEmpty) return "--";
+    final dec = Decimal.tryParse(s);
     if (dec == null) return "--";
     return dec.shift(-2).toString();
   }
@@ -73,8 +81,9 @@ extension StringExt on String? {
   /// 当 [autoMoneyUnit] 为 true 且金额 >= 10000 元（即 >= 1000000 分）时，
   /// 自动折算为「万」单位输出，例如 `12345678` 分 → `"12.35万"`。
   String moneyFormatWithUnit(bool autoMoneyUnit) {
-    if (isNullOrEmpty) return "0.00";
-    final money = double.tryParse(this!) ?? 0.0;
+    final s = this;
+    if (s == null || s.isEmpty) return "0.00";
+    final money = double.tryParse(s) ?? 0.0;
 
     if (autoMoneyUnit && money >= 1000000) {
       return "${(money / 1000000).toStringAsFixed(2)}万";
@@ -86,11 +95,11 @@ extension StringExt on String? {
   //千分位数字字符串
   // "123456789.01".thousandSeparated → "123,456,789.01"
   String get thousandSeparated {
-    if (isNullOrEmpty) return '';
-    final numStr = this!;
-    if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(numStr)) return numStr;
+    final s = this;
+    if (s == null || s.isEmpty) return '';
+    if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(s)) return s;
 
-    final parts = numStr.split('.');
+    final parts = s.split('.');
     String integerPart = parts[0];
     String decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
 
@@ -108,53 +117,59 @@ extension StringExt on String? {
   //星号脱敏中间四位
   //"13812345678".maskMobile → "138****5678"
   String get maskMobile {
-    if (isNullOrEmpty) return this ?? '';
-    final str = this!;
+    final str = this;
+    if (str == null || str.isEmpty) return '';
     if (str.length != 11) return str;
     return '${str.substring(0, 3)}****${str.substring(7)}';
   }
 
   //判断是否为中国大陆手机号（优化正则）
   bool get isValidChineseMobile {
-    if (isNullOrEmpty) return false;
+    final s = this;
+    if (s == null || s.isEmpty) return false;
     final pattern = r'^1[3-9]\d{9}$';
-    return RegExp(pattern).hasMatch(this!);
+    return RegExp(pattern).hasMatch(s);
   }
 
   ///字符串匹配/搜索,忽略大小写
   bool containsIgnoreCase(String other) {
-    if (isNullOrEmpty) return false;
-    return this!.toLowerCase().contains(other.toLowerCase());
+    final s = this;
+    if (s == null || s.isEmpty) return false;
+    return s.toLowerCase().contains(other.toLowerCase());
   }
 
   // URL 处理
   bool get isUrl {
-    if (isNullOrEmpty) return false;
+    final s = this;
+    if (s == null || s.isEmpty) return false;
     final urlPattern =
         r'(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?';
-    return RegExp(urlPattern).hasMatch(this!);
+    return RegExp(urlPattern).hasMatch(s);
   }
 
   String removeUrlProtocol() {
-    if (isNullOrEmpty) return this ?? '';
-    return this!.replaceFirst(RegExp(r'https?:\/\/'), '');
+    final s = this;
+    if (s == null || s.isEmpty) return s ?? '';
+    return s.replaceFirst(RegExp(r'https?:\/\/'), '');
   }
 
   // 默认非空字符串
   String get notNullStr {
-    if (isNullOrEmpty) return "";
-    return this!;
+    final s = this;
+    if (s == null || s.isEmpty) return "";
+    return s;
   }
 
   /// 字符串全角转半角
   String get fullToHalf {
-    if (this == null || this!.isEmpty) {
+    final s = this;
+    if (s == null || s.isEmpty) {
       return "";
     }
 
     final StringBuffer buffer = StringBuffer();
-    for (int i = 0; i < this!.length; i++) {
-      final int code = this!.codeUnitAt(i);
+    for (int i = 0; i < s.length; i++) {
+      final int code = s.codeUnitAt(i);
       // 全角空格转换为半角空格
       if (code == 12288) {
         buffer.writeCharCode(32);
@@ -214,12 +229,12 @@ extension StringExt on String? {
 
   /// 比较两个长度一样的字符串有几个字符不同。
   int hammingDistance(String other) {
-    final s = this!;
-    if (s.length != other.length) {
+    final s = this;
+    if (s == null || s.length != other.length) {
       throw FormatException('Strings must have the same length');
     }
-    var l1 = s.runes.toList();
-    var l2 = other.runes.toList();
+    final l1 = s.runes.toList();
+    final l2 = other.runes.toList();
     var distance = 0;
     for (var i = 0; i < l1.length; i++) {
       if (l1[i] != l2[i]) {
@@ -231,7 +246,9 @@ extension StringExt on String? {
 
   /// 每隔 x 位加 pattern。比如用来格式化银行卡。
   String formatDigitPattern({int digit = 4, String pattern = ' '}) {
-    var text = this!.replaceAllMapped(RegExp('(.{$digit})'), (Match match) {
+    final s = this;
+    if (s == null) return '';
+    var text = s.replaceAllMapped(RegExp('(.{$digit})'), (Match match) {
       return '${match.group(0)}$pattern';
     });
     if (text.endsWith(pattern)) {
@@ -242,7 +259,8 @@ extension StringExt on String? {
 
   /// 每隔 x 位加 pattern，从末尾开始。
   String formatDigitPatternEnd({int digit = 4, String pattern = ' '}) {
-    final s = this!;
+    final s = this;
+    if (s == null) return '';
     String temp = s.reverse();
     temp = temp.formatDigitPattern(digit: digit, pattern: pattern);
     temp = temp.reverse();
@@ -256,18 +274,20 @@ extension StringExt on String? {
 
   /// 隐藏手机号中间 n 位。
   String hideNumber({int start = 3, int end = 7, String replacement = '****'}) {
-    return this!.replaceRange(start, end, replacement);
+    final s = this;
+    if (s == null) return '';
+    return s.replaceRange(start, end, replacement);
   }
 
   /// 反转字符串。
   String reverse() {
-    if (isNullOrEmpty) {
+    final s = this;
+    if (s == null || s.isEmpty) {
       return '';
     }
-    final s = this!;
-    StringBuffer sb = StringBuffer();
+    final sb = StringBuffer();
     for (int i = s.length - 1; i >= 0; i--) {
-      var codeUnitAt = s.codeUnitAt(i);
+      final codeUnitAt = s.codeUnitAt(i);
       sb.writeCharCode(codeUnitAt);
     }
     return sb.toString();

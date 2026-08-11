@@ -29,13 +29,4 @@ extension BoolExt on bool {
   int get toInt => this ? 1 : 0;
 
   String get toStringVal => this ? 'true' : 'false';
-
-  // 链式判断
-  // 相当于：(value > 10 && value < 20 && value % 2 == 0)
-  bool then(bool Function() action) {
-    if (this) {
-      return action();
-    }
-    return this;
-  }
 }

@@ -42,7 +42,5 @@ class ZhInfo implements TimelineInfo {
   String oneDay(int days) => '$days天';
 
   @override
-  String weeks(int week) => ''; //x week(星期x).
-  @override
   String days(int days) => '$days天';
 }

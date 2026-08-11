@@ -10,8 +10,8 @@ class CryptoUtils {
 
   /// md5 加密字符串
   static String encodeMd5(String data) {
-    var content = Utf8Encoder().convert(data);
-    var digest = md5.convert(content);
+    final content = Utf8Encoder().convert(data);
+    final digest = md5.convert(content);
     return hex.encode(digest.bytes);
   }
 
@@ -20,8 +20,8 @@ class CryptoUtils {
   /// 以原始字节计算哈希（不经过字符串解码），保证二进制文件（含非 UTF-8 字节）
   /// 的哈希正确，且不被 UTF-8 解码破坏。
   static String encodeMd5File(File file) {
-    var bytes = file.readAsBytesSync();
-    var digest = md5.convert(bytes);
+    final bytes = file.readAsBytesSync();
+    final digest = md5.convert(bytes);
     return hex.encode(digest.bytes);
   }
 
@@ -92,8 +92,8 @@ class CryptoUtils {
 
   /// Base64加密字符串
   static String encodeBase64(String data) {
-    var content = utf8.encode(data);
-    var digest = base64Encode(content);
+    final content = utf8.encode(data);
+    final digest = base64Encode(content);
     return digest;
   }
 

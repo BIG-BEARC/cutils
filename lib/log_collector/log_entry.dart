@@ -62,9 +62,10 @@ class LogEntry {
     DateTime? timestamp,
     this.stackTrace,
     this.error,
-    this.extra,
+    Map<String, dynamic>? extra,
     this.threadId,
-  }) : timestamp = timestamp ?? DateTime.now();
+  })  : extra = extra == null ? null : Map<String, dynamic>.unmodifiable(extra),
+        timestamp = timestamp ?? DateTime.now();
 
   /// 转换为字符串
   @override
@@ -84,8 +85,9 @@ class LogEntry {
     if (stackTrace != null) {
       buffer.write('\nStackTrace: $stackTrace');
     }
-    if (extra != null && extra!.isNotEmpty) {
-      buffer.write('\nExtra: $extra');
+    final extraMap = extra;
+    if (extraMap != null && extraMap.isNotEmpty) {
+      buffer.write('\nExtra: $extraMap');
     }
     return buffer.toString();
   }
@@ -119,12 +121,14 @@ class LogEntry {
         orElse: () => LogSource.custom,
       ),
       timestamp: DateTime.parse(json['timestamp']),
-      stackTrace: json['stackTrace'] != null
-          ? StackTrace.fromString(json['stackTrace'])
+      stackTrace: (json['stackTrace'] as String?) != null
+          ? StackTrace.fromString(json['stackTrace'] as String)
           : null,
       error: json['error'],
       extra: json['extra'] != null
-          ? Map<String, dynamic>.from(json['extra'])
+          ? Map<String, dynamic>.unmodifiable(
+              Map<String, dynamic>.from(json['extra'] as Map),
+            )
           : null,
       threadId: json['threadId'],
     );

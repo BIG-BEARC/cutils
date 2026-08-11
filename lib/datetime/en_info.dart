@@ -42,7 +42,5 @@ class EnInfo implements TimelineInfo {
   String oneDay(int days) => 'a day';
 
   @override
-  String weeks(int week) => ''; //x week(星期x).
-  @override
   String days(int days) => '$days days';
 }

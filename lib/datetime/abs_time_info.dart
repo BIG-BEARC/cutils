@@ -29,7 +29,5 @@ abstract class TimelineInfo {
 
   String oneDay(int days); //a day(1天).
 
-  String weeks(int week) => ''; //x week(星期x).
-
   String days(int days); //x days(x天).
 }

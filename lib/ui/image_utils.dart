@@ -8,7 +8,7 @@ class ImageUtils {
   static ImageProvider assetImage(String name,
       {String assetPath = 'assets/images/',
       ImageFormat format = ImageFormat.png}) {
-    var path = '$assetPath$name.${format.value}';
+    final path = '$assetPath$name.${format.value}';
     return AssetImage(path);
   }
 

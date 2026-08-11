@@ -25,7 +25,14 @@ class KeyBoardUtils {
     }
   }
 
-  ///isCapsLock 是否键盘锁定 CapsLock键，大写
+  /// 分析 [KeyEvent] 并返回其产生的字符。
+  ///
+  /// 依次按以下顺序判定：先排除 enter/select 等控制键；再取
+  /// [KeyEvent.character]；为空时依据 [HardwareKeyboard.instance.isShiftPressed]
+  ///（按下 Shift 表示大写）从 shift / normal 映射表中取值；最后回退到数字键盘
+  /// 映射表。无法识别时返回空字符串。
+  ///
+  /// 注意：本方法**不**检测 CapsLock 状态，仅检测 Shift。
   static String analysisKeyEvent(KeyEvent event) {
     // 不能和下面面代码合并，有时会返回两次enter
     if (event.logicalKey == LogicalKeyboardKey.enter ||
@@ -38,8 +45,9 @@ class KeyBoardUtils {
       return "";
     }
     // 1.首先从event.character判断，如果返回空，再从map中取值
-    if (event.character != null && event.character!.isNotEmpty) {
-      return event.character!;
+    final character = event.character;
+    if (character != null && character.isNotEmpty) {
+      return character;
     }
     // 2.以下情况为event.character返回之为空，则从map中取值
     final physicalKey = event.physicalKey;
@@ -53,7 +61,7 @@ class KeyBoardUtils {
     }
 
     // 2.2未返回shift键说明接下来返回的字符不是大写，从normalKeyEventMap中取值
-    if (isShiftPressed == false) {
+    if (!isShiftPressed) {
       final value = _normalKeyEventMap[physicalKey];
       if (value != null && value.isNotEmpty) {
         return value;
@@ -70,7 +78,7 @@ class KeyBoardUtils {
 }
 
 /// 未按shift和capsLock大写锁定键的字符集合map
-Map<PhysicalKeyboardKey, String> _normalKeyEventMap = {
+final Map<PhysicalKeyboardKey, String> _normalKeyEventMap = {
   PhysicalKeyboardKey.backquote: '`',
   PhysicalKeyboardKey.digit1: '1',
   PhysicalKeyboardKey.digit2: '2',
@@ -138,7 +146,7 @@ Map<PhysicalKeyboardKey, String> _normalKeyEventMap = {
 };
 
 /// 按shift和大写锁定键识别的map
-Map<PhysicalKeyboardKey, String> _shiftPressedKeyEventMap = {
+final Map<PhysicalKeyboardKey, String> _shiftPressedKeyEventMap = {
   PhysicalKeyboardKey.backquote: '~',
   PhysicalKeyboardKey.digit1: '!',
   PhysicalKeyboardKey.digit2: '@',
@@ -189,7 +197,7 @@ Map<PhysicalKeyboardKey, String> _shiftPressedKeyEventMap = {
 };
 
 /// 小数字键盘事件map 数字键盘 使用event.physicalKey 可能取不到值 然后使用event.logicalKey.keyLabel返回值
-Map<String, String> _numKeyEventMap = {
+const Map<String, String> _numKeyEventMap = {
   '0': '0',
   '1': '1',
   '2': '2',

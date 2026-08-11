@@ -117,9 +117,10 @@ extension IntFormating on int? {
   // 123456789.autoUnitFormat → "1.23亿"
   // 15000.autoUnitFormat → "1.50万"
   String get autoUnitFormat {
-    if (this == null) return '0';
+    final self = this;
+    if (self == null) return '0';
 
-    final value = this!.toDouble();
+    final value = self.toDouble();
     if (value >= 1e8) {
       return '${(value / 1e8).toStringAsFixed(2)}亿';
     } else if (value >= 1e4) {

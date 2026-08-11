@@ -45,9 +45,6 @@ class _CollidingInfo implements TimelineInfo {
   String oneDay(int days) => 'a day';
 
   @override
-  String weeks(int week) => '';
-
-  @override
   String days(int days) => '$days days';
 }
 

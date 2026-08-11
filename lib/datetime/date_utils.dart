@@ -72,13 +72,13 @@ class DateTimeUtils {
 
   /// 获取当前日期，返回指定格式
   static String getNowDateTimeFormat(String outFormat) {
-    var formatResult = formatDate(DateTime.now(), format: outFormat);
+    final formatResult = formatDate(DateTime.now(), format: outFormat);
     return formatResult;
   }
 
   /// 获取当前日期，返回指定格式
   static String getUtcDateTimeFormat(String outFormat) {
-    var formatResult = formatDate(getNowUtcDateTime(), format: outFormat);
+    final formatResult = formatDate(getNowUtcDateTime(), format: outFormat);
     return formatResult;
   }
 
@@ -299,7 +299,7 @@ class DateTimeUtils {
   /// Return whether it is leap year.
   /// 是否是闰年
   static bool isLeapYearByMilliseconds(int milliseconds) {
-    var dateTime = getDateTimeByMs(milliseconds);
+    final dateTime = getDateTimeByMs(milliseconds);
     return isLeapYearByYear(dateTime.year);
   }
 

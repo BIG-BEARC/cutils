@@ -19,7 +19,7 @@ class RandomUtils {
   /// Generates a random string of provided or random length.
   /// 生成指定长度或随机长度的随机字符串
   static String randomString({int? length}) {
-    var codeUnits =
+    final codeUnits =
         List.generate(length ?? _random.nextInt(pow(2, 10).toInt()), (index) {
       return _random.nextInt(33) + 89;
     });

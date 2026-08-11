@@ -26,7 +26,6 @@ export 'crypto/crypto_utils.dart';
 export 'file/file_utils.dart';
 export 'storage/sp_util.dart';
 export 'net/net_util.dart';
-export 'net/url_utils.dart';
 // 系统
 export 'system/device_info_util.dart';
 export 'system/package_info_util.dart';

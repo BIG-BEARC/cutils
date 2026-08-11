@@ -98,8 +98,9 @@ class TimerUtil {
   }
 
   void _doCallback(int time) {
-    if (_onTimerTickCallback != null) {
-      _onTimerTickCallback!(time);
+    final cb = _onTimerTickCallback;
+    if (cb != null) {
+      cb(time);
     }
   }
 

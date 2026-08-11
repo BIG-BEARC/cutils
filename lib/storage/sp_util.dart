@@ -177,7 +177,7 @@ class SpUtil {
 
   /// 获取字符串
   String? getString(String key, {String? defValue = ''}) {
-    var value = _prefs?.getString(key) ?? defValue;
+    final value = _prefs?.getString(key) ?? defValue;
     logger.i("getString key:$key");
     return value;
   }
