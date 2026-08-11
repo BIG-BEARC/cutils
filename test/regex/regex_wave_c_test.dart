@@ -182,16 +182,16 @@ void main() {
     const lower = '11010519491231002x';
 
     test('reference uppercase id validates', () {
-      expect(RegexUtils().isIDCard18Exact(upper), isTrue);
+      expect(RegexUtils.isIDCard18Exact(upper), isTrue);
     });
 
     test('lowercase trailing x validates (RED on old code)', () {
-      expect(RegexUtils().isIDCard18Exact(lower), isTrue,
+      expect(RegexUtils.isIDCard18Exact(lower), isTrue,
           reason: 'lowercase `x` is permitted by [0-9Xx] and must checksum OK');
     });
 
     test('isIDCard dispatches the lowercase form correctly', () {
-      expect(RegexUtils().isIDCard(lower), isTrue);
+      expect(RegexUtils.isIDCard(lower), isTrue);
     });
   });
 
@@ -200,22 +200,22 @@ void main() {
   // -------------------------------------------------------------------
   group('C4 email regex', () {
     test('normal valid emails pass', () {
-      expect(RegexUtils().isEmail('a.b@x.com'), isTrue);
-      expect(RegexUtils().isEmail('user.name+tag@example.co.uk'), isTrue);
+      expect(RegexUtils.isEmail('a.b@x.com'), isTrue);
+      expect(RegexUtils.isEmail('user.name+tag@example.co.uk'), isTrue);
     });
 
     test('clearly-invalid inputs are rejected', () {
-      expect(RegexUtils().isEmail('abc'), isFalse);
-      expect(RegexUtils().isEmail(''), isFalse);
-      expect(RegexUtils().isEmail('no-at-sign.com'), isFalse);
-      expect(RegexUtils().isEmail('a@b'), isFalse); // no dot in domain
+      expect(RegexUtils.isEmail('abc'), isFalse);
+      expect(RegexUtils.isEmail(''), isFalse);
+      expect(RegexUtils.isEmail('no-at-sign.com'), isFalse);
+      expect(RegexUtils.isEmail('a@b'), isFalse); // no dot in domain
     });
 
     test('local part is intentionally permissive (RED on old code)', () {
       // The old `\w+([-+.]\w+)*` local part forbids `!`; the new
       // `[^\s@]+` form accepts it. The new pattern is intentionally MORE
       // permissive — see commit message.
-      expect(RegexUtils().isEmail('a!b@c.com'), isTrue);
+      expect(RegexUtils.isEmail('a!b@c.com'), isTrue);
     });
 
     test('inputs longer than 254 chars are rejected (RED on old code)', () {
@@ -223,7 +223,7 @@ void main() {
       final longLocal = 'a' * 250;
       final tooLong = '$longLocal@b.co'; // 250 + 1 + 4 = 255 chars
       expect(tooLong.length, greaterThan(254));
-      expect(RegexUtils().isEmail(tooLong), isFalse);
+      expect(RegexUtils.isEmail(tooLong), isFalse);
     });
 
     test('ReDoS guard: pathological input is rejected QUICKLY (regression)',
@@ -240,7 +240,7 @@ void main() {
       expect(input.contains('@'), isFalse);
 
       final sw = Stopwatch()..start();
-      final result = RegexUtils().isEmail(input);
+      final result = RegexUtils.isEmail(input);
       sw.stop();
       developer.log(
         'C4 ReDoS guard: len=${input.length} ms=${sw.elapsedMilliseconds}',

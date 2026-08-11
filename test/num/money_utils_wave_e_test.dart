@@ -19,14 +19,14 @@ void main() {
     test('empty string throws a typed ArgumentError (not bare FormatException)',
         () {
       expect(
-        () => MoneyUtils().changeFStr2YWithUnit(''),
+        () => MoneyUtils.changeFStr2YWithUnit(''),
         throwsA(isA<ArgumentError>()),
       );
     });
 
     test('non-numeric string throws a typed ArgumentError', () {
       expect(
-        () => MoneyUtils().changeFStr2YWithUnit('abc'),
+        () => MoneyUtils.changeFStr2YWithUnit('abc'),
         throwsA(isA<ArgumentError>()),
       );
     });
@@ -35,14 +35,14 @@ void main() {
       // A value far beyond int64 range; must not leak a bare
       // `FormatException`/`IntegerDivisionByZeroException`.
       expect(
-        () => MoneyUtils().changeFStr2YWithUnit('99999999999999999999999999'),
+        () => MoneyUtils.changeFStr2YWithUnit('99999999999999999999999999'),
         throwsA(isA<ArgumentError>()),
       );
     });
 
     test('normal fen string still converts (regression)', () {
-      expect(MoneyUtils().changeFStr2YWithUnit('123'), '1.23');
-      expect(MoneyUtils().changeFStr2YWithUnit('0'), '0.00');
+      expect(MoneyUtils.changeFStr2YWithUnit('123'), '1.23');
+      expect(MoneyUtils.changeFStr2YWithUnit('0'), '0.00');
     });
   });
 }

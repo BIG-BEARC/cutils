@@ -33,14 +33,13 @@ class NumDemo extends StatelessWidget {
         ),
         DemoRow(
           title: '分 → 元（NORMAL 两位小数）',
-          expr: 'MoneyUtils().changeF2Y(12345)',
-          result: MoneyUtils().changeF2Y(12345),
+          expr: 'MoneyUtils.changeF2Y(12345)',
+          result: MoneyUtils.changeF2Y(12345),
         ),
         DemoRow(
           title: '分 → 元（带人民币符号）',
-          expr: 'MoneyUtils().changeF2YWithUnit(12345, unit: MoneyUnit.YUAN)',
-          result:
-              MoneyUtils().changeF2YWithUnit(12345, unit: MoneyUnit.YUAN),
+          expr: 'MoneyUtils.changeF2YWithUnit(12345, unit: MoneyUnit.YUAN)',
+          result: MoneyUtils.changeF2YWithUnit(12345, unit: MoneyUnit.YUAN),
         ),
         DemoRow(
           title: '百分比格式化（int 扩展，视为比率×100）',

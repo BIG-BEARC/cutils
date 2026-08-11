@@ -20,7 +20,7 @@ void main() {
       // Correct: 9007199254740993 / 100 = 90071992547409.93 exactly.
       // The old double round-trip produced "...09.92" (off by one).
       expect(
-        MoneyUtils().changeF2Y(9007199254740993),
+        MoneyUtils.changeF2Y(9007199254740993),
         '90071992547409.93',
       );
     });
@@ -28,7 +28,7 @@ void main() {
     test('NORMAL format retains exact value for huge whole-yuan amount', () {
       // 9007199254740900 fen = 90071992547409.00 yuan exactly.
       expect(
-        MoneyUtils().changeF2Y(9007199254740900, format: MoneyFormat.NORMAL),
+        MoneyUtils.changeF2Y(9007199254740900, format: MoneyFormat.NORMAL),
         '90071992547409.00',
       );
     });
@@ -36,7 +36,7 @@ void main() {
     test('END_INTEGER preserves whole-yuan value for huge amount', () {
       // amount % 100 == 0 → integer yuan. Must not lose precision via toDouble.
       expect(
-        MoneyUtils().changeF2Y(
+        MoneyUtils.changeF2Y(
           9007199254740900,
           format: MoneyFormat.END_INTEGER,
         ),
@@ -44,7 +44,7 @@ void main() {
       );
       // amount % 10 == 0 (one decimal) keeps exact tenths.
       expect(
-        MoneyUtils().changeF2Y(
+        MoneyUtils.changeF2Y(
           9007199254740950,
           format: MoneyFormat.END_INTEGER,
         ),
@@ -54,7 +54,7 @@ void main() {
 
     test('YUAN_INTEGER preserves whole-yuan value for huge amount', () {
       expect(
-        MoneyUtils().changeF2Y(
+        MoneyUtils.changeF2Y(
           9007199254740900,
           format: MoneyFormat.YUAN_INTEGER,
         ),
@@ -63,24 +63,24 @@ void main() {
     });
 
     test('normal small amounts unchanged (regression)', () {
-      expect(MoneyUtils().changeF2Y(0), '0.00');
-      expect(MoneyUtils().changeF2Y(123), '1.23');
-      expect(MoneyUtils().changeF2Y(600), '6.00');
-      expect(MoneyUtils().changeF2Y(600, format: MoneyFormat.END_INTEGER), '6');
+      expect(MoneyUtils.changeF2Y(0), '0.00');
+      expect(MoneyUtils.changeF2Y(123), '1.23');
+      expect(MoneyUtils.changeF2Y(600), '6.00');
+      expect(MoneyUtils.changeF2Y(600, format: MoneyFormat.END_INTEGER), '6');
       expect(
-        MoneyUtils().changeF2Y(650, format: MoneyFormat.END_INTEGER),
+        MoneyUtils.changeF2Y(650, format: MoneyFormat.END_INTEGER),
         '6.5',
       );
       expect(
-        MoneyUtils().changeF2Y(658, format: MoneyFormat.END_INTEGER),
+        MoneyUtils.changeF2Y(658, format: MoneyFormat.END_INTEGER),
         '6.58',
       );
       expect(
-        MoneyUtils().changeF2Y(600, format: MoneyFormat.YUAN_INTEGER),
+        MoneyUtils.changeF2Y(600, format: MoneyFormat.YUAN_INTEGER),
         '6',
       );
       expect(
-        MoneyUtils().changeF2Y(658, format: MoneyFormat.YUAN_INTEGER),
+        MoneyUtils.changeF2Y(658, format: MoneyFormat.YUAN_INTEGER),
         '6.58',
       );
     });
@@ -88,28 +88,28 @@ void main() {
 
   group('B3 withUnit enum exhaustiveness', () {
     test('NORMAL returns the money text unchanged', () {
-      expect(MoneyUtils().withUnit('6.00', MoneyUnit.NORMAL), '6.00');
+      expect(MoneyUtils.withUnit('6.00', MoneyUnit.NORMAL), '6.00');
     });
 
     test('YUAN prepends the symbol', () {
-      expect(MoneyUtils().withUnit('6.00', MoneyUnit.YUAN), '¥6.00');
+      expect(MoneyUtils.withUnit('6.00', MoneyUnit.YUAN), '¥6.00');
     });
 
     test('YUAN_ZH appends 元', () {
-      expect(MoneyUtils().withUnit('6.00', MoneyUnit.YUAN_ZH), '6.00元');
+      expect(MoneyUtils.withUnit('6.00', MoneyUnit.YUAN_ZH), '6.00元');
     });
 
     test('DOLLAR prepends the symbol', () {
-      expect(MoneyUtils().withUnit('6.00', MoneyUnit.DOLLAR), '\$6.00');
+      expect(MoneyUtils.withUnit('6.00', MoneyUnit.DOLLAR), '\$6.00');
     });
 
     test('changeF2YWithUnit normal case preserved (regression)', () {
       expect(
-        MoneyUtils().changeF2YWithUnit(123, unit: MoneyUnit.YUAN),
+        MoneyUtils.changeF2YWithUnit(123, unit: MoneyUnit.YUAN),
         '¥1.23',
       );
       expect(
-        MoneyUtils().changeF2YWithUnit(123, unit: MoneyUnit.NORMAL),
+        MoneyUtils.changeF2YWithUnit(123, unit: MoneyUnit.NORMAL),
         '1.23',
       );
     });

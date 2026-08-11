@@ -10,10 +10,6 @@ import 'money_unit.dart';
 class MoneyUtils {
   MoneyUtils._();
 
-  static final _ins = MoneyUtils._();
-
-  factory MoneyUtils() => _ins;
-
   /// 人民币符号。
   static const String YUAN = '¥';
 
@@ -30,7 +26,8 @@ class MoneyUtils {
   /// going through `double`, so a fen amount near the 2^53 boundary
   /// (e.g. `9007199254740993`) preserves its exact integer precision
   /// instead of being corrupted by the double round-trip.
-  String changeF2Y(int amount, {MoneyFormat format = MoneyFormat.NORMAL}) {
+  static String changeF2Y(int amount,
+      {MoneyFormat format = MoneyFormat.NORMAL}) {
     final yuanDecimal = Decimal.fromInt(amount).shift(-2);
     switch (format) {
       case MoneyFormat.NORMAL:
@@ -55,7 +52,7 @@ class MoneyUtils {
   ///
   /// Throws [ArgumentError] (rather than a bare [FormatException]) when
   /// [amountStr] is empty, non-numeric, or overflows `int`.
-  String changeFStr2YWithUnit(String amountStr,
+  static String changeFStr2YWithUnit(String amountStr,
       {MoneyFormat format = MoneyFormat.NORMAL,
       MoneyUnit unit = MoneyUnit.NORMAL}) {
     final amount = int.tryParse(amountStr);
@@ -70,7 +67,7 @@ class MoneyUtils {
 
   /// fen to yuan, format & unit  output.
   /// 分 转 元, format 与 unit 格式 输出.
-  String changeF2YWithUnit(int amount,
+  static String changeF2YWithUnit(int amount,
       {MoneyFormat format = MoneyFormat.NORMAL,
       MoneyUnit unit = MoneyUnit.NORMAL}) {
     return withUnit(changeF2Y(amount, format: format), unit);
@@ -82,7 +79,7 @@ class MoneyUtils {
   /// Exhaustive switch expression over [MoneyUnit] — adding a new enum
   /// value will produce a compile-time error here instead of silently
   /// falling through.
-  String withUnit(String moneyTxt, MoneyUnit unit) {
+  static String withUnit(String moneyTxt, MoneyUnit unit) {
     return switch (unit) {
       MoneyUnit.NORMAL => moneyTxt,
       MoneyUnit.YUAN => YUAN + moneyTxt,
