@@ -40,7 +40,12 @@ class RegexConstants {
   static const String REGEX_EMAIL = r"^[^\s@]+@[^\s@]+\.[^\s@]+$";
 
   ///Regex of url.
-  static const String REGEX_URL = "[a-zA-z]+://[^\\s]*";
+  ///
+  /// Fully anchored (`^...$`) so the WHOLE input must be a URL — a substring
+  /// embedded in surrounding text (e.g. `"blah http://x blah"`) is rejected.
+  /// Note: the leading class is `[a-zA-Z]` (the original `[a-zA-z]` had a
+  /// typo'd lowercase `z`).
+  static const String REGEX_URL = r"^[a-zA-Z]+://\S*$";
 
   ///Regex of Chinese character.
   static const String REGEX_ZH = "^[\\u4e00-\\u9fa5]+\$";
@@ -71,8 +76,12 @@ class RegexConstants {
       "^(?:(?!0000)[0-9]{4}-(?:(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-8])|(?:0[13-9]|1[0-2])-(?:29|30)|(?:0[13578]|1[02])-31)|(?:[0-9]{2}(?:0[48]|[2468][048]|[13579][26])|(?:0[48]|[2468][048]|[13579][26])00)-02-29)\$";
 
   /// Regex of ip address.
+  ///
+  /// Fully anchored (`^...$`) so the WHOLE input must be an IPv4 address — a
+  /// substring embedded in surrounding text (e.g. `"ip is 1.2.3.4 here"`) is
+  /// rejected.
   static const String REGEX_IP =
-      "((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)";
+      r"^((2[0-4]\d|25[0-5]|[01]?\d\d?)\.){3}(2[0-4]\d|25[0-5]|[01]?\d\d?)$";
 
   ///////////////////////////////////////////////////////////////////////////
   // The following come from http://tool.oschina.net/regex
@@ -126,65 +135,21 @@ class RegexConstants {
   static const String REGEX_NOT_POSITIVE_FLOAT =
       "^(?:-(?:[1-9]\\d*\\.\\d*|0\\.\\d*[1-9]\\d*)|0?\\.0+|0)\$";
 
-  /// Email regex
-  /// email正则表达式
-  static Pattern email =
-      r'^[a-z0-9]+([-+._][a-z0-9]+){0,2}@.*?(\.(a(?:[cdefgilmnoqrstuwxz]|ero|(?:rp|si)a)|b(?:[abdefghijmnorstvwyz]iz)|c(?:[acdfghiklmnoruvxyz]|at|o(?:m|op))|d[ejkmoz]|e(?:[ceghrstu]|du)|f[ijkmor]|g(?:[abdefghilmnpqrstuwy]|ov)|h[kmnrtu]|i(?:[delmnoqrst]|n(?:fo|t))|j(?:[emop]|obs)|k[eghimnprwyz]|l[abcikrstuvy]|m(?:[acdeghklmnopqrstuvwxyz]|il|obi|useum)|n(?:[acefgilopruz]|ame|et)|o(?:m|rg)|p(?:[aefghklmnrstwy]|ro)|qa|r[eosuw]|s[abcdeghijklmnortuvyz]|t(?:[cdfghjklmnoprtvwz]|(?:rav)?el)|u[agkmsyz]|v[aceginu]|w[fs]|y[etu]|z[amw])\b){1,2}$';
-
-  /// URL regex
-  /// Eg:
-  /// - https://medium.com/@diegoveloper/flutter-widget-size-and-position-b0a9ffed9407
-  /// - https://www.youtube.com/watch?v=COYFmbVEH0k
-  /// - https://stackoverflow.com/questions/53913192/flutter-change-the-width-of-an-alertdialog/57688555
-  static Pattern url =
-      r"^((((H|h)(T|t)|(F|f))(T|t)(P|p)((S|s)?))\://)?(www.|[a-zA-Z0-9].)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,6}(\:[0-9]{1,5})*(/($|[a-zA-Z0-9\.\,\;\?\'\\\+&amp;%\$#\=~_\-@]+))*$";
-
-  /// Hexadecimal regex
-  static Pattern hexadecimal = r'^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$';
-
-  /// Image vector regex
-  /// 图像向量正则表达式
-  static Pattern vector = r'.(svg)$';
-
-  /// Image regex
-  /// 图像正则表达式
-  static Pattern image = r'.(jpeg|jpg|gif|png|bmp)$';
-
-  /// Audio regex
-  /// 音频正则表达式
-  static Pattern audio = r'.(mp3|wav|wma|amr|ogg)$';
-
-  /// Video regex
-  /// 视频正则表达式
-  static Pattern video = r'.(mp4|avi|wmv|rmvb|mpg|mpeg|3gp)$';
-
-  /// Txt regex
-  /// 文本正则表达式
-  static Pattern txt = r'.txt$';
-
-  /// Document regex
-  /// word正则表达式
-  static Pattern doc = r'.(doc|docx)$';
-
-  /// Excel regex
-  /// Excel正则表达式
-  static Pattern excel = r'.(xls|xlsx)$';
-
-  /// PPT regex
-  /// ppt正则表达式
-  static Pattern ppt = r'.(ppt|pptx)$';
-
-  /// Document regex
-  /// apk正则表达式
-  static Pattern apk = r'.apk$';
-
-  /// PDF regex
-  /// pdf正则表达式
-  static Pattern pdf = r'.pdf$';
-
-  /// HTML regex
-  /// html正则表达式
-  static Pattern html = r'.html$';
+  // -------------------------------------------------------------------------
+  // BREAKING (Wave C2): the lowercase duplicate regex set was REMOVED.
+  //
+  // The following public `Pattern` symbols have been deleted because they
+  // were UNUSED across lib/example/test, overlapped/conflicted with the
+  // `REGEX_*` set above, contained unescaped `.` (matched any char), and
+  // were case-sensitive (`FILE.PNG` failed):
+  //   email, url, hexadecimal,
+  //   vector, image, audio, video, txt, doc, excel, ppt, apk, pdf, html.
+  //
+  // Callers should use the `REGEX_*` constants above or the typed helpers on
+  // `RegexUtils` (isEmail / isURL / isHexColor / isIPv4 ...). Downstream code
+  // that referenced a deleted symbol will get a compile-time error — this is
+  // intentional; the old patterns were buggy.
+  // -------------------------------------------------------------------------
 
   /// DateTime regex (UTC)
   /// 时间正则表达式

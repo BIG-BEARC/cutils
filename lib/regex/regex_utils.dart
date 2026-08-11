@@ -171,10 +171,13 @@ class RegexUtils {
     return false;
   }
 
-  /// 验证是否为纯数字（整数或小数）
+  /// 验证是否为纯数字（整数或小数）。
+  ///
+  /// 允许的形式：`123`、`-123`、`12.3`、`-12.3`、`.5`、`0.0`。
+  /// 小数点后必须紧跟至少一位数字，因此 `"123."`（末尾孤立的小数点）会被拒绝。
   bool isNumeric(String? s) {
     if (s == null || s.isEmpty) return false;
-    const pattern = r'^-?(?:\d+\.?\d*|\.\d+)$';
+    const pattern = r'^-?(?:\d+(?:\.\d+)?|\.\d+)$';
     return hasMatch(s, pattern);
   }
 
@@ -257,12 +260,20 @@ class RegexUtils {
     return hasMatch(color, pattern);
   }
 
-  /// 验证是否为有效的JSON格式
+  /// 验证是否为有效的 JSON 格式。
+  ///
+  /// 仅当输入能解析为 JSON **对象**（`Map`）或 **数组**（`List`）时返回 `true`。
+  /// 这是 `isJSON` 最常见的使用场景（校验接口返回体等结构化数据）。
+  ///
+  /// 一致地拒绝所有 JSON 标量：数字 / 布尔 / 字符串 / `null`。早期实现把
+  /// `"123"` 当成合法 JSON（`json.decode` 得到非 null 的 `int`），却把
+  /// `"null"` 当成非法（因为 `json.decode("null") == null`），语义不一致；
+  /// 现统一为「只接受对象/数组」。
   bool isJSON(String? str) {
     if (str == null || str.isEmpty) return false;
     try {
       final parsed = json.decode(str);
-      return parsed != null;
+      return parsed is Map || parsed is List;
     } catch (e) {
       return false;
     }
