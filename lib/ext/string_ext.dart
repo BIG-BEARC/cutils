@@ -5,22 +5,27 @@ import 'package:decimal/decimal.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description
-///String扩展：
+///String扩展：覆盖空值判定、数值解析、金额/千分位/手机号脱敏、URL 处理、全半角等。
 extension StringExt on String? {
+  /// 是否为 null 或空字符串。
   bool get isNullOrEmpty => this == null || (this?.isEmpty ?? true);
 
+  /// 尝试解析为 double；非数字或 null 返回 null。
   double? toDouble() {
     final s = this;
     if (s == null) return null;
     return double.tryParse(s);
   }
 
+  /// 尝试解析为 int；非整数或 null 返回 null。
   int? toInt() {
     final s = this;
     if (s == null) return null;
     return int.tryParse(s);
   }
 
+  /// 越界安全的 [substring]：[start]/[end] 自动夹到 `[0, length]`；
+  /// null / 空串返回 `''`。
   String substringSafe(int start, [int? end]) {
     final s = this;
     if (s == null || s.isEmpty) return '';
@@ -30,6 +35,7 @@ extension StringExt on String? {
     return s.substring(safeStart, safeEnd);
   }
 
+  /// 解析为 int，失败或 null 返回 `0`。
   int get parseIntWithDefault {
     final s = this;
     if (s == null) return 0;
@@ -37,7 +43,7 @@ extension StringExt on String? {
     return parseInt ?? 0;
   }
 
-  // 空值处理
+  /// 空值处理：null / 空串返回 [emptyStr]（默认 `"--"`）。
   String defaultStrWithEmpty({String? emptyStr}) {
     final s = this;
     if (s == null || s.isEmpty) {
@@ -46,12 +52,14 @@ extension StringExt on String? {
     return s;
   }
 
+  /// 空值处理：null / 空串返回 `"--"`。
   String get defaultString {
     final s = this;
     if (s == null || s.isEmpty) return "--";
     return s;
   }
 
+  /// 空值处理：null / 空串返回 `"0.00"`（金额占位）。
   String get defaultMoneyStr {
     final s = this;
     if (s == null || s.isEmpty) return "0.00";
@@ -92,8 +100,12 @@ extension StringExt on String? {
     return (money / 100).toStringAsFixed(2);
   }
 
-  //千分位数字字符串
-  // "123456789.01".thousandSeparated → "123,456,789.01"
+  /// 千分位数字字符串（仅接受 `^\d+(\.\d+)?$`，否则原样返回）。
+  ///
+  /// example:
+  /// ```dart
+  /// "123456789.01".thousandSeparated; // "123,456,789.01"
+  /// ```
   String get thousandSeparated {
     final s = this;
     if (s == null || s.isEmpty) return '';
@@ -114,8 +126,9 @@ extension StringExt on String? {
     return result + decimalPart;
   }
 
-  //星号脱敏中间四位
-  //"13812345678".maskMobile → "138****5678"
+  /// 星号脱敏手机号中间四位：仅对 11 位字符串生效，其它原样返回。
+  ///
+  /// example: `"13812345678".maskMobile` → `"138****5678"`。
   String get maskMobile {
     final str = this;
     if (str == null || str.isEmpty) return '';
@@ -123,7 +136,7 @@ extension StringExt on String? {
     return '${str.substring(0, 3)}****${str.substring(7)}';
   }
 
-  //判断是否为中国大陆手机号（优化正则）
+  /// 是否为中国大陆手机号（正则 `^1[3-9]\d{9}$`）。
   bool get isValidChineseMobile {
     final s = this;
     if (s == null || s.isEmpty) return false;
@@ -138,7 +151,7 @@ extension StringExt on String? {
     return s.toLowerCase().contains(other.toLowerCase());
   }
 
-  // URL 处理
+  /// 是否为合法 URL（粗匹配）。
   bool get isUrl {
     final s = this;
     if (s == null || s.isEmpty) return false;
@@ -147,13 +160,14 @@ extension StringExt on String? {
     return RegExp(urlPattern).hasMatch(s);
   }
 
+  /// 移除 URL 协议（`http://` / `https://`）。null / 空串返回 `''`。
   String removeUrlProtocol() {
     final s = this;
     if (s == null || s.isEmpty) return s ?? '';
     return s.replaceFirst(RegExp(r'https?:\/\/'), '');
   }
 
-  // 默认非空字符串
+  /// 返回非空字符串：null / 空串转换为 `""`。
   String get notNullStr {
     final s = this;
     if (s == null || s.isEmpty) return "";

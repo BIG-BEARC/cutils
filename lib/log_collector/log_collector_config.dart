@@ -5,6 +5,10 @@ import 'log_entry.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description 日志收集器配置
+///
+/// 不可变配置对象，控制日志级别过滤、存储路径与轮转、内存上限、队列上限、
+/// flush 间隔等。提供 [defaultConfig] / [development] / [production] 三个
+/// 预设工厂，以及 [copyWith] 用于微调。
 
 class LogCollectorConfig {
   /// 最小日志级别

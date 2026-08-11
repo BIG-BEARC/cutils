@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 /// * @Email:
 /// * description 图片工具类
 class ImageUtils {
+  /// 构建 assets 图片的 [ImageProvider]，路径为 `$assetPath$name.$ext`。
+  ///
+  /// [assetPath] 默认 `'assets/images/'`；[format] 默认 [ImageFormat.png]。
   static ImageProvider assetImage(String name,
       {String assetPath = 'assets/images/',
       ImageFormat format = ImageFormat.png}) {
@@ -12,6 +15,10 @@ class ImageUtils {
     return AssetImage(path);
   }
 
+  /// 构建一个 asset [Image] widget，带淡入动画、加载占位与解码尺寸缓存。
+  ///
+  /// 图片路径为 `assets/images/$imagePath.${format.value}`。
+  /// [errorWidget] 为加载失败时的占位（默认 broken_image 图标）。
   static Widget getAssetImg({
     required String imagePath,
     BoxFit boxFit = BoxFit.cover,
@@ -46,12 +53,21 @@ class ImageUtils {
   }
 }
 
+/// 图片格式枚举，用于 [ImageUtils.assetImage] / [ImageUtils.getAssetImg] 的扩展名。
 enum ImageFormat {
+  /// `.png`。
   png(value: 'png'),
+
+  /// `.jpg`。
   jpg(value: 'jpg'),
+
+  /// `.gif`。
   gif(value: 'gif'),
+
+  /// `.webp`。
   webp(value: 'webp');
 
+  /// 扩展名字符串（不含点）。
   final String value;
 
   const ImageFormat({required this.value});

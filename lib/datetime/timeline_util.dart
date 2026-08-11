@@ -23,6 +23,10 @@ void setLocaleInfo(String locale, TimelineInfo timelineInfo) {
 }
 
 /// TimelineUtil
+///
+/// 把时间戳渲染成「刚刚 / x 分钟前 / 昨天 / MM-dd / yyyy-MM-dd」等时间线文案。
+/// 文案随 [TimelineInfo] locale（默认 `'en'`）变化，可用 [setLocaleInfo] 注册
+/// 自定义 locale。所有比较一致地用 [isUtc] 参数控制按 UTC 还是 local 解读。
 class TimelineUtil {
   /// format time by DateTime.
   /// dateTime

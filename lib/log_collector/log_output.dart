@@ -14,20 +14,22 @@ import 'log_entry.dart';
 /// * @Company: 嘉联支付
 /// * description 日志输出器接口
 
-/// 日志输出器抽象类
+/// 日志输出器抽象基类。子类实现 [output] 将一条 [LogEntry] 投递到目标
+/// （控制台 / 文件 / 网络）。可选实现 [initialize] / [dispose] 管理资源。
 abstract class LogOutput {
-  /// 输出日志
+  /// 输出一条日志条目。
   Future<void> output(LogEntry entry);
 
-  /// 初始化输出器
+  /// 初始化输出器（如打开连接 / 文件）。默认空实现。
   Future<void> initialize() async {}
 
-  /// 销毁输出器
+  /// 销毁输出器（如 flush / 关闭流）。默认空实现。
   Future<void> dispose() async {}
 }
 
-/// 控制台输出器
+/// 控制台输出器：通过 `developer.log` 输出（避免被 debugPrint 拦截器再次捕获）。
 class ConsoleLogOutput extends LogOutput {
+  /// 是否带 ANSI 颜色（按级别着色）。
   final bool enableColor;
 
   ConsoleLogOutput({this.enableColor = true});
@@ -72,8 +74,13 @@ class ConsoleLogOutput extends LogOutput {
 /// ⚠️ 当前为 TODO 占位类，直接构造会抛出 [UnimplementedError]，避免被当作
 /// 空操作（no-op）静默使用导致日志丢失。后续实现完成后移除此抛出。
 class FileLogOutput extends LogOutput {
+  /// 输出文件路径。
   final String filePath;
+
+  /// 单文件最大字节数，超出则轮转。
   final int maxFileSize;
+
+  /// 保留的文件数量上限。
   final int maxFileCount;
 
   FileLogOutput({
@@ -103,8 +110,13 @@ class FileLogOutput extends LogOutput {
 ///
 /// ⚠️ 参见 [FileLogOutput]——直接构造会抛出 [UnimplementedError]。
 class NetworkLogOutput extends LogOutput {
+  /// 上报端点 URL。
   final String endpoint;
+
+  /// 自定义请求头。
   final Map<String, String>? headers;
+
+  /// 请求超时时长。
   final Duration timeout;
 
   NetworkLogOutput({
@@ -126,10 +138,19 @@ class NetworkLogOutput extends LogOutput {
 }
 
 /// 批量输出器
-/// 将日志批量收集后统一输出，提高性能
+/// 将日志批量收集后统一输出，提高性能。
+///
+/// 包装一个 [delegate] 输出器，缓冲达到 [batchSize] 或距上次 flush 超过
+/// [batchInterval] 时统一 flush。即使后续无新日志，定时器也会触发 flush，
+/// 避免缓冲日志无限期等待。
 class BatchLogOutput extends LogOutput {
+  /// 实际承载输出的委托输出器。
   final LogOutput delegate;
+
+  /// 单批最大条数，达到即 flush。
   final int batchSize;
+
+  /// 定时 flush 的最长间隔。
   final Duration batchInterval;
 
   final List<LogEntry> _buffer = [];

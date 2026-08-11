@@ -5,6 +5,13 @@ import 'package:cutils/ext/ext_fun.dart';
 /// * @Created at: 23-07-2025 17:32
 /// * @Email:
 /// * description
+/// 数值工具：基于 [Decimal] 提供防精度丢失的加减乘除与关系运算。
+///
+/// 命名约定：
+/// - `*Num`：入参 `num`，返回 `double`。运算抛 [ArgumentError]（非静默 0.0），
+///   但最终 `.toDouble()` 仍有损——详见 [addNum] 的精度说明。
+/// - `*Dec`：入参 `num`，返回 [Decimal]（精确）。
+/// - `*DecString`：入参 / 出参均为字符串，精度最高的入口，建议金额计算优先用此族。
 class NumUtils {
   NumUtils._();
 

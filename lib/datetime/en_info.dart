@@ -4,6 +4,7 @@ import 'abs_time_info.dart';
 /// * @Created at: 04-08-2025 10:49
 /// * @Email:
 /// * description
+/// 英文时间线文案。`keepOneDay` / `keepTwoDays` 均为 `true`。locale key：`'en'`。
 class EnInfo implements TimelineInfo {
   @override
   String suffixAgo() => ' ago';

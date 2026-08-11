@@ -4,6 +4,8 @@ import 'abs_time_info.dart';
 /// * @Created at: 04-08-2025 10:50
 /// * @Email:
 /// * description
+/// 中文（normal）时间线文案。与 [ZhInfo] 的唯一差异是 [keepTwoDays] 为 `false`，
+/// 即 2 天时回退到 `MM-dd`。locale key：`'zh_normal'`。
 class ZhNormalInfo implements TimelineInfo {
   @override
   String suffixAgo() => '前';

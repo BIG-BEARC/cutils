@@ -37,8 +37,10 @@ class NetUtil {
   /// 为 `null` 表示当前未订阅。
   StreamSubscription<List<ConnectivityResult>>? _subscription;
 
+  /// 是否已连接网络（聚合所有非 `none` 的 [ConnectivityResult]，蓝牙也算连接）。
   bool get connected => _connected;
 
+  /// 当前网络类型文案（如 `"wifi"` / `"移动连接"` / `"未连接"`）。
   String get netType => _netType;
 
   /// 订阅 [Connectivity.onConnectivityChanged] 流。

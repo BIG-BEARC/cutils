@@ -4,6 +4,8 @@ import 'abs_time_info.dart';
 /// * @Created at: 04-08-2025 10:49
 /// * @Email:
 /// * description
+/// 中文时间线文案。`keepOneDay` / `keepTwoDays` 均为 `true`，因此 1~2 天
+/// 会显示「x天前」样式。locale key：`'zh'`。
 class ZhInfo implements TimelineInfo {
   @override
   String suffixAgo() => '前';

@@ -6,14 +6,21 @@ import 'money_unit.dart';
 /// * @Created at: 23-07-2025 17:29
 /// * @Email:
 /// * description
+/// 金额格式化工具（输入金额一律以**分（fen）**为单位）。
 class MoneyUtils {
   MoneyUtils._();
 
   static final _ins = MoneyUtils._();
 
   factory MoneyUtils() => _ins;
+
+  /// 人民币符号。
   static const String YUAN = '¥';
+
+  /// 中文「元」。
   static const String YUAN_ZH = '元';
+
+  /// 美元符号。
   static const String DOLLAR = '\$';
 
   /// fen to yuan, format output.

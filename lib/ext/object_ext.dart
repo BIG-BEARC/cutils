@@ -22,12 +22,19 @@ extension ObjectExt on Object? {
     return false;
   }
 
+  /// 判断本对象是否为 null。
   bool get isNull => this == null;
 
+  /// 判断本对象是否非 null。
   bool get isNotNull => this != null;
 
-  //final value = 'hello';
-  // value.isTypeOf<String>(); // true
-  // value.isTypeOf<int>();    // false
+  /// 判断本对象是否是指定类型 [T]。
+  ///
+  /// example:
+  /// ```dart
+  /// final value = 'hello';
+  /// value.isTypeOf<String>(); // true
+  /// value.isTypeOf<int>();    // false
+  /// ```
   bool isTypeOf<T>() => this is T;
 }

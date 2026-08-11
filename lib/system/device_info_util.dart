@@ -10,9 +10,14 @@ import 'package:flutter/foundation.dart';
 /// * @Created at: 10-06-2025 17:40
 /// * @Email:
 /// * description
+/// 设备信息工具（基于 `device_info_plus`）。app 启动调用 [init] 后，
+/// 通过 [osVersion] / [deviceType] / [androidSdkInt] / [serialNumber] 等
+/// getter 读取缓存值；Windows 平台可调用 [winUniqueIdentifier] 取机器码。
 
+/// 全局 [DeviceInfoUtil] 单例。
 final deviceInfo = DeviceInfoUtil();
 
+/// 设备信息读取工具（单例）。
 class DeviceInfoUtil {
   DeviceInfoUtil._();
 
@@ -25,18 +30,25 @@ class DeviceInfoUtil {
 
   String _deviceInfo = "";
 
+  /// 设备完整信息（插件原始 toString）。
   String get deviceInfo => _deviceInfo;
 
   String _serialNumber = "";
 
+  /// 设备序列号 / 唯一标识（各平台语义不同，见 [init]）。
   String get serialNumber => _serialNumber;
 
+  /// 操作系统版本字符串。
   String get osVersion => _osVersion;
 
+  /// 设备型号 / 制造商（Android 为 manufacturer，iOS 为 utsname.machine）。
   String get deviceType => _deviceType;
 
+  /// Android SDK 版本号（非 Android 返回默认 16）。
   int get androidSdkInt => _androidSdkInt;
 
+  /// 初始化：按当前平台（Android / iOS / Windows / macOS）读取并缓存设备信息。
+  /// 任何平台异常都吞掉并返回 `false`，便于调用方在无插件环境降级。
   Future<bool> init() async {
     try {
       final plugin = DeviceInfoPlugin();

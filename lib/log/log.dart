@@ -9,8 +9,13 @@ import 'package:logger/logger.dart';
 /// * @Company: 嘉联支付
 /// * description 日志工具类
 
+/// 全局 [LoggerUtils] 单例，直接 `logger.i(...)` / `logger.e(...)` 使用。
+///
+/// 所有方法在 release 模式（[kReleaseMode]）下均为 no-op，避免线上输出。
 final logger = LoggerUtils();
 
+/// 对 `package:logger` 的薄封装：提供 `t/d/i/w/e/f` 六个级别方法，均带可选
+/// [tag] 参数（输出形如 `"tag: message"`），并在 release 模式下静默。
 class LoggerUtils {
   LoggerUtils._internal() {
     _logger = Logger(

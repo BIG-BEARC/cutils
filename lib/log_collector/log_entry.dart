@@ -5,23 +5,45 @@
 /// * description 日志条目
 library;
 
-/// 日志级别
+/// 日志级别（按严重度递增，索引用于 [LogCollectorConfig.minLevel] 过滤）。
 enum LogLevel {
+  /// 详细日志（最低级别，开发期排查）。
   verbose, // 详细日志
+
+  /// 调试日志。
   debug, // 调试日志
+
+  /// 信息日志。
   info, // 信息日志
+
+  /// 警告日志。
   warning, // 警告日志
+
+  /// 错误日志。
   error, // 错误日志
+
+  /// 致命错误（最高级别）。
   fatal, // 致命错误
 }
 
-/// 日志来源
+/// 日志来源，标识条目由哪个拦截器 / 通道产生。
 enum LogSource {
+  /// 来自 Flutter `debugPrint`。
   debugPrint, // Flutter debugPrint
+
+  /// 控制台输出。
   console, // 控制台输出
+
+  /// 文件日志。
   file, // 文件日志
+
+  /// 异常日志（[FlutterError] / Dart zone）。
   exception, // 异常日志
+
+  /// 网络日志。
   network, // 网络日志
+
+  /// 自定义日志（业务方手动收集）。
   custom, // 自定义日志
 }
 

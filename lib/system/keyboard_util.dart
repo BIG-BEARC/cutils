@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 /// * @Created at: 2022/2/24 2:32 下午
 /// * @Email:
 /// * description
+/// 键盘工具：关闭软键盘（[closeKeyBoard]）与分析硬件 [KeyEvent] 产生字符
+/// （[analysisKeyEvent]，用于扫码枪等外设键盘场景）。
 
 class KeyBoardUtils {
   KeyBoardUtils._();

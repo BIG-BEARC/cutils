@@ -7,6 +7,8 @@ import 'package:cutils/log/log.dart';
 /// * @Created at: 30-07-2025 17:47
 /// * @Email:
 /// * description
+/// 系统工具：屏幕方向、系统 UI（状态栏 / 导航栏）显隐与样式、屏幕尺寸与密度、
+/// 剪贴板读写、软键盘显隐。单例（`SystemUtils()`）。
 class SystemUtils {
   SystemUtils._();
 

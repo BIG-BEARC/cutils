@@ -16,8 +16,15 @@ import 'package:cutils/log/log.dart';
 /// * @Email:
 /// * description sp存储工具类，适合存储轻量级数据，不建议存储json长字符串
 
+/// 全局 [SpUtil] 单例。使用前需先 `await spUtil.init();`。
 final spUtil = SpUtil();
 
+/// SharedPreferences 薄封装单例。
+///
+/// `putJsonable` / `getObject` 系列把可 JSON 编码的对象序列化后落地；
+/// `putString` / `getBool` 等基本类型直接转发到 [SharedPreferences]。
+/// 日志只记录 key（不记录 value），避免 token / PII 入日志。
+/// 并发 [init] 由 single-flight Future 去重。
 class SpUtil {
   SpUtil._();
 
@@ -29,6 +36,10 @@ class SpUtil {
   // SharedPreferences.getInstance()。完成或失败后清空。
   Future<SharedPreferences?>? _initFuture;
 
+  /// 初始化 SharedPreferences（single-flight：并发调用共享同一次 getInstance）。
+  ///
+  /// 完成后缓存到 `_prefs`；失败清空 in-flight Future 允许重试。app 启动时
+  /// 调用一次即可。
   Future<SharedPreferences?> init() async {
     if (_prefs != null) return _prefs;
     // 并发调用者共享同一个 in-flight Future（single-flight），避免各自调用
@@ -46,6 +57,7 @@ class SpUtil {
     return _initFuture;
   }
 
+  /// 确保 [init] 已完成；若尚未初始化则等待其完成。供各 get/put 方法内部使用。
   Future<void> ensureInitialized() async {
     if (_prefs == null) {
       await init();

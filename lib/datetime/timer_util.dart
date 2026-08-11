@@ -5,7 +5,11 @@ import 'package:flutter/foundation.dart';
 ///timer callback.(millisUntilFinished 毫秒).
 typedef OnTimerTickCallback = void Function(int millisUntilFinished);
 
-/// TimerUtil.
+/// TimerUtil —— 通用定时器 / 倒计时工具。
+///
+/// 提供 [startTimer]（周期定时）与 [startCountDown]（倒计时）两种模式；
+/// 倒计时基于启动时固定的 `endTime` 墙钟，避免 [Timer.periodic] 漂移。
+/// 不再使用时请调用 [cancel] / [dispose] 释放底层 [Timer]。
 class TimerUtil {
   TimerUtil(
       {this.mInterval = Duration.millisecondsPerSecond, this.mTotalTime = 0});

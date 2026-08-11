@@ -18,9 +18,19 @@ import 'log_storage.dart';
 /// * @Company: 嘉联支付
 /// * description 通用日志收集模块
 ///
-/// 该模块不修改现有代码，通过拦截和监听的方式收集日志
+/// 该模块不修改现有代码，通过拦截和监听的方式收集日志。
+///
+/// [LogCollector] 是模块核心单例：[initialize] 后接收 [LogInterceptor] 拦截
+/// 到的日志（debugPrint / 异常等），经级别与标签过滤后入队，异步分发到
+/// [LogStorage]（内存 + 文件）与已注册的 [LogOutput]（控制台 / 网络 / 批量）。
+/// 典型入口是顶层单例 [logCollector]；便捷初始化见 [LogCollectorHelper]。
 final logCollector = LogCollector();
 
+/// 日志收集器：聚合拦截、过滤、存储与输出。
+///
+/// 生命周期：[initialize]（幂等）→ 业务期 [collect] / [addOutput] 等 →
+/// [dispose]（先排空队列再释放）。并发 [initialize] 由 in-flight Future
+/// 去重；队列达 [LogCollectorConfig.maxQueueSize] 时丢弃新条目防内存膨胀。
 class LogCollector {
   LogCollector._internal();
 

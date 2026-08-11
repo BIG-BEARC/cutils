@@ -75,6 +75,8 @@ class JsonUtils {
     }
   }
 
+  /// 将 `List<dynamic>` 序列化为 JSON 字符串。`null` 返回 `null`；编码失败
+  /// 记录错误日志并返回 `null`。
   static String? encodeList(List<dynamic>? list) {
     if (list == null) return null;
     try {

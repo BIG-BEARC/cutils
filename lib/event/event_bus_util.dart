@@ -2,10 +2,23 @@ import 'dart:async';
 
 import 'package:event_bus/event_bus.dart';
 
+/// 应用级事件总线单例（基于 `event_bus` 包）。
+///
+/// 订阅者通过 [EventBusUtil.listen] 注册（自动收集到内部集合，[dispose] 统一取消），
+/// 发布者通过 [EventBusUtil.fire] 广播。事件类型必须继承 [Event]。
 final eventBus = EventBusUtil();
 
+/// 所有事件的标记基类。订阅端用 `listen<MyEvent>(...)` 按类型过滤。
 abstract class Event {}
 
+/// 事件总线工具：单例，封装 `event_bus` 并管理订阅生命周期。
+///
+/// example:
+/// ```dart
+/// class LoginEvent extends Event {}
+/// eventBus.fire(LoginEvent());
+/// eventBus.listen<LoginEvent>((e) => print('logged in'));
+/// ```
 class EventBusUtil {
   static EventBusUtil _singleton = EventBusUtil._internal();
 
@@ -13,6 +26,7 @@ class EventBusUtil {
 
   EventBusUtil._internal();
 
+  /// 当前单例持有的 [EventBus] 流（静态访问点）。
   static EventBus get eventBus => _singleton._eventBus;
   EventBus _eventBus = EventBus();
 
@@ -20,6 +34,8 @@ class EventBusUtil {
   /// 永久挂在单例广播流上造成泄漏。
   final Set<StreamSubscription> _subscriptions = {};
 
+  /// 订阅指定类型 [T] 的事件。返回的 [StreamSubscription] 会被自动收集，
+  /// [dispose] 时统一取消；调用方也可自行提前 cancel。
   StreamSubscription<T> listen<T extends Event>(
     Function(T event) onData, {
     Function? onError,
@@ -36,6 +52,7 @@ class EventBusUtil {
     return subscription;
   }
 
+  /// 广播事件 [e]。若控制器已关闭则安全跳过（no-op）。
   void fire<T extends Event>(T e) {
     if (_eventBus.streamController.isClosed) {
       return;

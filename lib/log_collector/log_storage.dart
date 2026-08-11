@@ -19,8 +19,13 @@ import 'log_entry.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description 日志存储
+///
+/// 内存（[Queue]，容量上限后队首丢弃）+ 文件（按日 JSON 行文件，超
+/// [LogCollectorConfig.maxFileSize] 时轮转归档，超 [maxFileCount] 删最旧）。
+/// 文件写入走持久化 [IOSink]，由定时器周期性 flush 而非每行强制刷盘。
 
 class LogStorage {
+  /// 当前存储配置。
   final LogCollectorConfig config;
 
   /// 内存存储（Queue：队首丢弃 O(1)，避免 List.removeAt(0) 的 O(n) 开销）。

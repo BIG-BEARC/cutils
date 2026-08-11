@@ -17,6 +17,9 @@ import 'package:cutils/log/log.dart';
 /// * @Created at: 2022/10/31 11:02 上午
 /// * @Email:
 /// * description 文件工具类
+///
+/// 封装各平台目录定位、文件读写、目录创建、日志清理与压缩、base64 与文件互转。
+/// 单例（`FileUtils()`）。
 
 /// Thrown when [FileUtils.createFileFromBase64] receives a string that
 /// cannot be decoded as valid base64, replacing the raw [FormatException].
@@ -171,7 +174,7 @@ class FileUtils {
     }
   }
 
-  /// 同步创建文件
+  /// 同步创建目录（[path] 为空返回 null；已存在则直接返回）。
   Directory? createDir(String path) {
     if (path.isEmpty) {
       return null;
@@ -183,7 +186,7 @@ class FileUtils {
     return dir;
   }
 
-  /// 异步创建文件
+  /// 异步创建目录（命名带 Sync 后缀但实为 async；[path] 为空返回 null）。
   Future<Directory?> createDirSync(String path) async {
     if (path.isEmpty) {
       return null;
@@ -221,6 +224,7 @@ class FileUtils {
     }
   }
 
+  /// 获取一个可写的 [IOSink]（不存在则先创建文件）。调用方负责 close。
   Future<IOSink?> getWriteIoSink(
       {required File file, FileMode? fileMode}) async {
     try {
@@ -273,7 +277,8 @@ class FileUtils {
     }
   }
 
-  ///文件是否存在
+  /// 按平台规则定位文件，不存在则创建后返回；定位失败返回 null。
+  /// （注：返回的是 [File] 而非存在性 bool，存在性判断请用 [fileExist]。）
   Future<File?> getFile(
       {required String fileName, String? filePath, FileMode? fileMode}) async {
     // create({bool recursive: false})创建文件
@@ -533,6 +538,7 @@ class FileUtils {
     }
   }
 
+  /// 获取当前平台存储目录下、3 天内的 `.log` / `.dmp` 文件列表（按修改时间升序）。
   Future<List<File>> getFileList() async {
     final List<File> listFile = [];
     final String? dir;
@@ -622,6 +628,7 @@ class FileUtils {
     }
   }
 
+  /// 清除当前平台存储目录下所有 `.log` / `.dmp` 文件。
   void cleanLog() async {
     // final dir = await getLocalSupportDir();
     final String? dir;
@@ -684,13 +691,16 @@ class FileUtils {
     }
   }
 
+  /// 从路径取文件名（去掉目录与扩展名）。
   String getFileName(String path) {
     final split = path.split("/");
     final fileName = split.last.split(".").first;
     return fileName;
   }
 
-  // base64转本地图片
+  /// base64 字符串转本地图片文件（写入临时目录，扩展名 `.jpg`）。
+  ///
+  /// 非法 base64 抛 [InvalidBase64Exception]（而非原始 [FormatException]）。
   Future<File> createFileFromBase64(String base64Str) async {
     final Uint8List bytes;
     try {
@@ -709,7 +719,7 @@ class FileUtils {
     return file;
   }
 
-  // 本地图片转base64
+  /// 本地图片文件转 base64 字符串。
   Future<String> createBase64FromFile(File file) async {
     final List<int> bytes = await file.readAsBytes();
     final String base64 = base64Encode(bytes);

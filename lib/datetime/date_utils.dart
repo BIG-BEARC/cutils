@@ -4,6 +4,8 @@ import 'data_formats.dart';
 /// * @Created at: 23-07-2025 16:58
 /// * @Email:
 /// * description
+/// 日期时间工具：格式化、星期 / 年内日序、闰年判定、今日 / 昨日 / 本周判定，
+/// 以及按日 / 周 / 月 / 年的边界与步进计算。纯静态方法，无状态。
 class DateTimeUtils {
   DateTimeUtils._();
 
