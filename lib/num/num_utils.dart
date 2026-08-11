@@ -62,6 +62,16 @@ class NumUtils {
   /// Throws [ArgumentError] if either operand cannot be parsed as a
   /// precise [Decimal] (e.g. non-finite doubles). The silent `0.0`
   /// fallback is intentionally removed so misuse surfaces.
+  ///
+  /// Precision caveat: operands are routed through `a.toString()` and
+  /// parsed back as a [Decimal]. For a literal like `0.1` the display
+  /// value is `"0.1"` and the result is exact, but an *already-computed*
+  /// double such as `0.1 + 0.2` (whose value is `0.30000000000000004`)
+  /// is parsed at that long display value, carrying the floating-point
+  /// drift into the result. The final `.toDouble()` step can also lose
+  /// precision for very large magnitudes. When exactness matters, prefer
+  /// [addDecString] (keeps the result as a [Decimal]) or [addDec] and
+  /// pass string operands directly.
   static double addNum(num a, num b) {
     final result = addDec(a, b);
     if (result == null) {
@@ -77,6 +87,12 @@ class NumUtils {
   ///
   /// Throws [ArgumentError] if either operand cannot be parsed as a
   /// precise [Decimal] (e.g. non-finite doubles).
+  ///
+  /// Precision caveat: see [addNum]. Operands are parsed from their
+  /// `toString()` display value, so already-computed doubles carry their
+  /// floating-point drift, and the final `.toDouble()` can lose precision
+  /// for large magnitudes. Prefer [subtractDecString] / [subtractDec]
+  /// with string operands when exactness matters.
   static double subtractNum(num a, num b) {
     final result = subtractDec(a, b);
     if (result == null) {
@@ -92,6 +108,12 @@ class NumUtils {
   ///
   /// Throws [ArgumentError] if either operand cannot be parsed as a
   /// precise [Decimal] (e.g. non-finite doubles).
+  ///
+  /// Precision caveat: see [addNum]. Operands are parsed from their
+  /// `toString()` display value, so already-computed doubles carry their
+  /// floating-point drift, and the final `.toDouble()` can lose precision
+  /// for large magnitudes. Prefer [multiplyDecString] / [multiplyDec]
+  /// with string operands when exactness matters.
   static double multiplyNum(num a, num b) {
     final result = multiplyDec(a, b);
     if (result == null) {
@@ -107,6 +129,12 @@ class NumUtils {
   ///
   /// Throws [ArgumentError] if either operand cannot be parsed as a
   /// precise [Decimal] (e.g. non-finite doubles), or if [b] is zero.
+  ///
+  /// Precision caveat: see [addNum]. Operands are parsed from their
+  /// `toString()` display value, so already-computed doubles carry their
+  /// floating-point drift, and the final `.toDouble()` can lose precision
+  /// for large magnitudes. Prefer [divideDecString] / [divideDec]
+  /// with string operands when exactness matters.
   static double divideNum(num a, num b) {
     final result = divideDec(a, b);
     if (result == null) {

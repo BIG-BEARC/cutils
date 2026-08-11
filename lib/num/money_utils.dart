@@ -1,5 +1,6 @@
+import 'package:decimal/decimal.dart';
+
 import 'money_unit.dart';
-import 'num_utils.dart';
 
 /// * @Author: chuxiong
 /// * @Created at: 23-07-2025 17:29
@@ -17,29 +18,29 @@ class MoneyUtils {
 
   /// fen to yuan, format output.
   /// 分 转 元, format格式输出.
+  ///
+  /// Formats directly from a [Decimal] (fen → `shift(-2)`) rather than
+  /// going through `double`, so a fen amount near the 2^53 boundary
+  /// (e.g. `9007199254740993`) preserves its exact integer precision
+  /// instead of being corrupted by the double round-trip.
   String changeF2Y(int amount, {MoneyFormat format = MoneyFormat.NORMAL}) {
-    String moneyTxt;
-    double yuan = NumUtils.divideNum(amount, 100);
+    final yuanDecimal = Decimal.fromInt(amount).shift(-2);
     switch (format) {
       case MoneyFormat.NORMAL:
-        moneyTxt = yuan.toStringAsFixed(2);
-        break;
+        return yuanDecimal.toStringAsFixed(2);
       case MoneyFormat.END_INTEGER:
         if (amount % 100 == 0) {
-          moneyTxt = yuan.toInt().toString();
+          return yuanDecimal.truncate().toString();
         } else if (amount % 10 == 0) {
-          moneyTxt = yuan.toStringAsFixed(1);
+          return yuanDecimal.toStringAsFixed(1);
         } else {
-          moneyTxt = yuan.toStringAsFixed(2);
+          return yuanDecimal.toStringAsFixed(2);
         }
-        break;
       case MoneyFormat.YUAN_INTEGER:
-        moneyTxt = (amount % 100 == 0)
-            ? yuan.toInt().toString()
-            : yuan.toStringAsFixed(2);
-        break;
+        return (amount % 100 == 0)
+            ? yuanDecimal.truncate().toString()
+            : yuanDecimal.toStringAsFixed(2);
     }
-    return moneyTxt;
   }
 
   /// fen str to yuan, format & unit  output.
@@ -70,20 +71,16 @@ class MoneyUtils {
 
   /// with unit.
   /// 拼接单位.
+  ///
+  /// Exhaustive switch expression over [MoneyUnit] — adding a new enum
+  /// value will produce a compile-time error here instead of silently
+  /// falling through.
   String withUnit(String moneyTxt, MoneyUnit unit) {
-    switch (unit) {
-      case MoneyUnit.YUAN:
-        moneyTxt = YUAN + moneyTxt;
-        break;
-      case MoneyUnit.YUAN_ZH:
-        moneyTxt = moneyTxt + YUAN_ZH;
-        break;
-      case MoneyUnit.DOLLAR:
-        moneyTxt = DOLLAR + moneyTxt;
-        break;
-      default:
-        break;
-    }
-    return moneyTxt;
+    return switch (unit) {
+      MoneyUnit.NORMAL => moneyTxt,
+      MoneyUnit.YUAN => YUAN + moneyTxt,
+      MoneyUnit.YUAN_ZH => moneyTxt + YUAN_ZH,
+      MoneyUnit.DOLLAR => DOLLAR + moneyTxt,
+    };
   }
 }

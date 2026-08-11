@@ -73,9 +73,23 @@ extension DoubleFormating on double? {
     return safeValue / divisor;
   }
 
-  // 百分比格式化
+  /// 百分比格式化。
+  ///
+  /// 将 [this] 视为比率（0.25 表示 25%）并乘以 100，与
+  /// [IntFormating.percentFormat] 语义一致。
+  ///
+  /// 输出会去掉小数末尾的 0 及可能的小数点，因此整百分数显示为
+  /// `"25%"` 而非 `"25.00%"`；[fractionDigits] 仅控制最大小数位数
+  /// （先四舍五入再去尾零）。
+  ///
+  /// BREAKING: 历史实现不乘以 100（`0.25.percentFormat()` 返回
+  /// `"0.25%"`），现已统一为乘以 100。
   String percentFormat([int fractionDigits = 2]) {
-    return '${safeValue.toStringAsFixed(fractionDigits)}%';
+    var s = (safeValue * 100).toStringAsFixed(fractionDigits);
+    if (s.contains('.')) {
+      s = s.replaceAll(RegExp(r'0+$'), '').replaceAll(RegExp(r'\.$'), '');
+    }
+    return '$s%';
   }
 
   /// 千分位格式化（保留原始小数位）。

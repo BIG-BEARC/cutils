@@ -80,19 +80,25 @@ extension IntFormating on int? {
     return out;
   }
 
-  ///百分比格式化方法
-  ///0.25.percentFormat → "25%"
+  /// 百分比格式化方法。
+  ///
+  /// 将整数视为比率并乘以 100：`1.percentFormat` → `"100%"`，
+  /// `25.percentFormat` → `"2500%"`。
+  ///
+  /// 注意：`this! * 100` 为整数运算，对于接近 `int64` 上限的输入
+  /// （约 9.2e18）可能发生静默溢出。如需对极大整数做百分比格式化，
+  /// 请先转 `double` 或使用 `Decimal`。
   String get percentFormat {
     if (this == null) return '0%';
     return '${this! * 100}%';
   }
 
   ///通用货币格式化方法（带符号）
-  ///print(15000.currencyFormatWithSymbol("¥")); // ¥ 150
-  // print(15000.currencyFormatWithSymbol("$", autoMoneyUnit: true)); // $ 150.00
+  ///print(15000.currencyFormatWithSymbol("¥")); // ¥150
+  // print(15000.currencyFormatWithSymbol("$", autoMoneyUnit: true)); // $150.00
   String currencyFormatWithSymbol(String symbol, {bool autoMoneyUnit = false}) {
     if (this == null) {
-      return '$symbol 0.00';
+      return '${symbol}0.00';
     }
     final resultAmount = this! / 100;
 
@@ -103,7 +109,8 @@ extension IntFormating on int? {
       formatted = resultAmount.toStringAsFixed(2);
     }
 
-    return '$symbol $formatted';
+    // 中文（及通用货币）惯例：符号与数字之间不加空格（¥150 而非 ¥ 150）。
+    return '$symbol$formatted';
   }
 
   //单位自动转换（万、亿等）

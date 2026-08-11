@@ -1,3 +1,5 @@
+import 'package:decimal/decimal.dart';
+
 /// * @Author: chuxiong
 /// * @Created at: 2023/3/2 4:03 下午
 /// * @Email:
@@ -49,14 +51,27 @@ extension StringExt on String? {
     return this!;
   }
 
-  // 金额格式化
+  /// 金额格式化。
+  ///
+  /// 将表示分（fen）的数字字符串除以 100 转为元，并返回十进制字符串。
+  /// 使用 [Decimal] 直接运算，避免浮点除法在 2^53 边界附近丢精度，
+  /// 以及 `double.toString()` 在极大值时输出科学计数法。
+  ///
+  /// 注意：整元结果不再追加 `.0`（例如 `"100".formatMoney` → `"1"`，
+  /// 而非旧行为的 `"1.0"`），因为 [Decimal] 不会合成不存在的小数位。
+  /// 非整元结果与旧实现一致。
   String get formatMoney {
     if (isNullOrEmpty) return "--";
-    final money = double.tryParse(this!);
-    if (money == null) return "--";
-    return (money / 100).toString();
+    final dec = Decimal.tryParse(this!);
+    if (dec == null) return "--";
+    return dec.shift(-2).toString();
   }
 
+  /// 金额格式化（带单位）。
+  ///
+  /// 输入单位为**分（fen）**：方法将分字符串除以 100 转为元。
+  /// 当 [autoMoneyUnit] 为 true 且金额 >= 10000 元（即 >= 1000000 分）时，
+  /// 自动折算为「万」单位输出，例如 `12345678` 分 → `"12.35万"`。
   String moneyFormatWithUnit(bool autoMoneyUnit) {
     if (isNullOrEmpty) return "0.00";
     final money = double.tryParse(this!) ?? 0.0;
