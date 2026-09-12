@@ -7,7 +7,6 @@
 // `Future.delayed` — to keep the suite deterministic.
 
 import 'package:cutils/num/num_utils.dart';
-import 'package:decimal/decimal.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -82,16 +81,14 @@ void main() {
   // scale so the precise API returns a finite `Decimal`.
   // -----------------------------------------------------------------
   group('E2 divideDec non-terminating quotient', () {
-    test('divideDec(1, 3) returns a finite Decimal (no throw)', () {
-      final Decimal result = NumUtils.divideDec(1, 3)!;
+    test('divideDec(1, 3) returns a finite string (no throw)', () {
+      final result = NumUtils.divideDec(1, 3)!;
       // Truncated to ~20 significant decimal places.
-      expect(result.toString(), '0.33333333333333333333');
-      expect(result.toDouble(), closeTo(1 / 3, 1e-9));
+      expect(result, '0.33333333333333333333');
     });
 
-    test("divideDecString('1','3') returns a finite Decimal (no throw)", () {
-      final Decimal result = NumUtils.divideDecString('1', '3')!;
-      expect(result.toString(), '0.33333333333333333333');
+    test("divideDecString('1','3') returns a finite string (no throw)", () {
+      expect(NumUtils.divideDecString('1', '3'), '0.33333333333333333333');
     });
 
     test('terminating quotients are unchanged (regression)', () {

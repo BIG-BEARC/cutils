@@ -26,7 +26,7 @@ void main() {
   });
 
   group('A2-1 init race (single-flight)', () {
-    test('concurrent init() calls all resolve to the same non-null instance',
+    test('concurrent init() calls all resolve to true (single-flight)',
         () async {
       final results = await Future.wait([
         spUtil.init(),
@@ -35,9 +35,9 @@ void main() {
         spUtil.init(),
         spUtil.init(),
       ]);
-      // 所有并发调用者必须拿到非空且同一个 SharedPreferences 实例。
-      expect(results, everyElement(isNotNull));
-      expect(results, everyElement(same(results.first)));
+      // 所有并发调用者共享同一次 getInstance，全部成功。
+      expect(results, everyElement(isTrue));
+      expect(spUtil.getSp(), isNotNull);
     });
 
     test('interleaved init()/ensureInitialized() resolve without exception',
@@ -54,9 +54,10 @@ void main() {
     test('after init resolves, a subsequent init() reuses the cached instance',
         () async {
       final first = await spUtil.init();
-      // 第二次（warm 路径）应直接返回缓存的同一个实例，不再触发新的 getInstance。
+      // 第二次（warm 路径）应直接命中缓存返回 true，不再触发新的 getInstance。
       final second = await spUtil.init();
-      expect(second, same(first));
+      expect(first, isTrue);
+      expect(second, isTrue);
     });
   });
 

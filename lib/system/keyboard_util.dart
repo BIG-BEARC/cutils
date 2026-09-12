@@ -39,12 +39,12 @@ class KeyBoardUtils {
     // 不能和下面面代码合并，有时会返回两次enter
     if (event.logicalKey == LogicalKeyboardKey.enter ||
         event.logicalKey.keyLabel == LogicalKeyboardKey.select.keyLabel) {
-      return "";
+      return '';
     }
-    bool isNotEnterOrSelect = event.logicalKey != LogicalKeyboardKey.enter ||
+    final bool isNotEnterOrSelect = event.logicalKey != LogicalKeyboardKey.enter ||
         event.logicalKey.keyLabel != LogicalKeyboardKey.select.keyLabel;
     if (event.logicalKey.keyId > 255 && isNotEnterOrSelect) {
-      return "";
+      return '';
     }
     // 1.首先从event.character判断，如果返回空，再从map中取值
     final character = event.character;
@@ -75,7 +75,7 @@ class KeyBoardUtils {
     if (numValue != null && numValue.isNotEmpty) {
       return numValue;
     }
-    return "";
+    return '';
   }
 }
 

@@ -10,7 +10,8 @@ import 'package:cutils/ext/ext_fun.dart';
 /// 命名约定：
 /// - `*Num`：入参 `num`，返回 `double`。运算抛 [ArgumentError]（非静默 0.0），
 ///   但最终 `.toDouble()` 仍有损——详见 [addNum] 的精度说明。
-/// - `*Dec`：入参 `num`，返回 [Decimal]（精确）。
+/// - `*Dec`：入参 `num`，返回 `String?`（精确十进制字符串；`Decimal` 为内部实现，
+///   不出现在公开签名——失败返回 `null`）。
 /// - `*DecString`：入参 / 出参均为字符串，精度最高的入口，建议金额计算优先用此族。
 class NumUtils {
   NumUtils._();
@@ -30,7 +31,7 @@ class NumUtils {
 
   /// 将数字字符串转num，数字保留x位小数
   static num? getNumByValueString(String valueStr, {int? fractionDigits}) {
-    double? value = double.tryParse(valueStr);
+    final double? value = double.tryParse(valueStr);
     return fractionDigits == null
         ? value
         : getNumByValueDouble(value, fractionDigits);
@@ -39,7 +40,7 @@ class NumUtils {
   /// 浮点数字保留x位小数
   static num? getNumByValueDouble(double? value, int fractionDigits) {
     if (value == null) return null;
-    String valueStr = value.toStringAsFixed(fractionDigits);
+    final String valueStr = value.toStringAsFixed(fractionDigits);
     return fractionDigits == 0
         ? int.tryParse(valueStr)
         : double.tryParse(valueStr);
@@ -77,10 +78,10 @@ class NumUtils {
   /// is parsed at that long display value, carrying the floating-point
   /// drift into the result. The final `.toDouble()` step can also lose
   /// precision for very large magnitudes. When exactness matters, prefer
-  /// [addDecString] (keeps the result as a [Decimal]) or [addDec] and
+  /// [addDecString] / [addDec] (exact decimal strings) and
   /// pass string operands directly.
   static double addNum(num a, num b) {
-    final result = addDec(a, b);
+    final result = _addDecimal(a.toString(), b.toString());
     if (result == null) {
       throw ArgumentError(
         'addNum: operands must be finite numbers (a=$a, b=$b)',
@@ -101,7 +102,7 @@ class NumUtils {
   /// for large magnitudes. Prefer [subtractDecString] / [subtractDec]
   /// with string operands when exactness matters.
   static double subtractNum(num a, num b) {
-    final result = subtractDec(a, b);
+    final result = _subtractDecimal(a.toString(), b.toString());
     if (result == null) {
       throw ArgumentError(
         'subtractNum: operands must be finite numbers (a=$a, b=$b)',
@@ -122,7 +123,7 @@ class NumUtils {
   /// for large magnitudes. Prefer [multiplyDecString] / [multiplyDec]
   /// with string operands when exactness matters.
   static double multiplyNum(num a, num b) {
-    final result = multiplyDec(a, b);
+    final result = _multiplyDecimal(a.toString(), b.toString());
     if (result == null) {
       throw ArgumentError(
         'multiplyNum: operands must be finite numbers (a=$a, b=$b)',
@@ -143,7 +144,7 @@ class NumUtils {
   /// for large magnitudes. Prefer [divideDecString] / [divideDec]
   /// with string operands when exactness matters.
   static double divideNum(num a, num b) {
-    final result = divideDec(a, b);
+    final result = _divideDecimal(a.toString(), b.toString());
     if (result == null) {
       throw ArgumentError(
         'divideNum: operands must be finite numbers and divisor non-zero '
@@ -155,30 +156,40 @@ class NumUtils {
 
   /// 加 (精确相加,防止精度丢失).
   /// add (without loosing precision).
-  static Decimal? addDec(num a, num b) {
+  ///
+  /// 返回十进制字符串；操作数无法精确解析时返回 `null`。
+  static String? addDec(num a, num b) {
     return addDecString(a.toString(), b.toString());
   }
 
   /// 减 (精确相减,防止精度丢失).
   /// subtract (without loosing precision).
-  static Decimal? subtractDec(num a, num b) {
+  ///
+  /// 返回十进制字符串；操作数无法精确解析时返回 `null`。
+  static String? subtractDec(num a, num b) {
     return subtractDecString(a.toString(), b.toString());
   }
 
   /// 乘 (精确相乘,防止精度丢失).
   /// multiply (without loosing precision).
-  static Decimal? multiplyDec(num a, num b) {
+  ///
+  /// 返回十进制字符串；操作数无法精确解析时返回 `null`。
+  static String? multiplyDec(num a, num b) {
     return multiplyDecString(a.toString(), b.toString());
   }
 
   /// 除 (精确相除,防止精度丢失).
   /// divide (without loosing precision).
-  static Decimal? divideDec(num a, num b) {
+  ///
+  /// 返回十进制字符串；操作数无法精确解析或除数为 0 时返回 `null`。
+  static String? divideDec(num a, num b) {
     return divideDecString(a.toString(), b.toString());
   }
 
   /// 余数
-  static Decimal? remainder(num a, num b) {
+  ///
+  /// 返回十进制字符串；操作数无法精确解析或除数为 0 时返回 `null`。
+  static String? remainder(num a, num b) {
     return remainderDecString(a.toString(), b.toString());
   }
 
@@ -211,36 +222,33 @@ class NumUtils {
     return Decimal.tryParse(value);
   }
 
-  /// 两个数相加（防止精度丢失）
-  static Decimal? addDecString(String a, String b) {
+  // 私有 Decimal 内部实现：供 *Num 族与 *DecString 族共用，
+  // [Decimal] 不出现在公开签名中。
+  static Decimal? _addDecimal(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
     if (aDecimal == null || bDecimal == null) return null;
     return aDecimal + bDecimal;
   }
 
-  /// 减
-  static Decimal? subtractDecString(String a, String b) {
+  static Decimal? _subtractDecimal(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
     if (aDecimal == null || bDecimal == null) return null;
     return aDecimal - bDecimal;
   }
 
-  /// 乘
-  static Decimal? multiplyDecString(String a, String b) {
+  static Decimal? _multiplyDecimal(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
     if (aDecimal == null || bDecimal == null) return null;
     return aDecimal * bDecimal;
   }
 
-  /// 除
-  ///
   /// Non-terminating quotients (e.g. `1/3`) are truncated to 20
   /// significant decimal places via `scaleOnInfinitePrecision` so the
-  /// precise API returns a finite [Decimal] instead of throwing.
-  static Decimal? divideDecString(String a, String b) {
+  /// precise API returns a finite value instead of throwing.
+  static Decimal? _divideDecimal(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
     if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) {
@@ -249,14 +257,42 @@ class NumUtils {
     return (aDecimal / bDecimal).toDecimal(scaleOnInfinitePrecision: 20);
   }
 
-  /// 余数
-  static Decimal? remainderDecString(String a, String b) {
+  static Decimal? _remainderDecimal(String a, String b) {
     final aDecimal = _safeParseDecimal(a);
     final bDecimal = _safeParseDecimal(b);
     if (aDecimal == null || bDecimal == null || bDecimal == Decimal.zero) {
       return null;
     }
     return aDecimal % bDecimal;
+  }
+
+  /// 两个数相加（防止精度丢失），返回十进制字符串；解析失败返回 `null`。
+  static String? addDecString(String a, String b) {
+    return _addDecimal(a, b)?.toString();
+  }
+
+  /// 减，返回十进制字符串；解析失败返回 `null`。
+  static String? subtractDecString(String a, String b) {
+    return _subtractDecimal(a, b)?.toString();
+  }
+
+  /// 乘，返回十进制字符串；解析失败返回 `null`。
+  static String? multiplyDecString(String a, String b) {
+    return _multiplyDecimal(a, b)?.toString();
+  }
+
+  /// 除，返回十进制字符串。
+  ///
+  /// Non-terminating quotients (e.g. `1/3`) are truncated to 20
+  /// significant decimal places (see [_divideDecimal]) so the result
+  /// is finite instead of throwing. 除数为 0 或解析失败返回 `null`。
+  static String? divideDecString(String a, String b) {
+    return _divideDecimal(a, b)?.toString();
+  }
+
+  /// 余数，返回十进制字符串；解析失败或除数为 0 返回 `null`。
+  static String? remainderDecString(String a, String b) {
+    return _remainderDecimal(a, b)?.toString();
   }
 
   /// Relational less than operator.

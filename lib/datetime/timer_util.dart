@@ -61,7 +61,7 @@ class TimerUtil {
   void startTimer() {
     if (_isActive || mInterval <= 0) return;
     _isActive = true;
-    Duration duration = Duration(milliseconds: mInterval);
+    final Duration duration = Duration(milliseconds: mInterval);
     _doCallback(0);
     _mTimer = Timer.periodic(duration, (Timer timer) {
       _doCallback(timer.tick);
@@ -79,7 +79,7 @@ class TimerUtil {
     if (_isActive || mInterval <= 0 || mTotalTime <= 0) return;
     _isActive = true;
     final DateTime endTime = now().add(Duration(milliseconds: mTotalTime));
-    Duration duration = Duration(milliseconds: mInterval);
+    final Duration duration = Duration(milliseconds: mInterval);
     _doCallback(mTotalTime);
     _mTimer = Timer.periodic(duration, (Timer timer) {
       final int remaining = endTime.difference(now()).inMilliseconds;

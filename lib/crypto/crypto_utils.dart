@@ -13,7 +13,7 @@ class CryptoUtils {
 
   /// md5 加密字符串
   static String encodeMd5(String data) {
-    final content = Utf8Encoder().convert(data);
+    final content = const Utf8Encoder().convert(data);
     final digest = md5.convert(content);
     return hex.encode(digest.bytes);
   }
@@ -32,8 +32,8 @@ class CryptoUtils {
   ///
   /// 非整数分段抛出 [ArgumentError]（带清晰信息），避免 [FormatException] 外泄。
   static List<int> _parseXorKey(String key) {
-    List<String> keyList = key.split(',');
-    List<int> keyInts = [];
+    final List<String> keyList = key.split(',');
+    final List<int> keyInts = [];
     for (final seg in keyList) {
       final parsed = int.tryParse(seg);
       if (parsed == null) {
@@ -50,7 +50,7 @@ class CryptoUtils {
 
   /// 对原始字节做 XOR（密钥循环使用；密钥截取低 8 位，保证结果仍是合法字节）。
   static List<int> _xorBytes(List<int> data, List<int> keyInts) {
-    List<int> out = List<int>.filled(data.length, 0);
+    final List<int> out = List<int>.filled(data.length, 0);
     for (int i = 0; i < data.length; i++) {
       out[i] = data[i] ^ (keyInts[i % keyInts.length] & 0xFF);
     }
@@ -61,11 +61,11 @@ class CryptoUtils {
   ///
   /// 密钥为逗号分隔的整数；非整数分段抛出 [ArgumentError]。
   static String xorCode(String res, String key) {
-    List<int> keyInts = _parseXorKey(key);
-    List<int> codeUnits = res.codeUnits;
-    List<int> codes = [];
+    final List<int> keyInts = _parseXorKey(key);
+    final List<int> codeUnits = res.codeUnits;
+    final List<int> codes = [];
     for (int i = 0, length = codeUnits.length; i < length; i++) {
-      int code = codeUnits[i] ^ keyInts[i % keyInts.length];
+      final int code = codeUnits[i] ^ keyInts[i % keyInts.length];
       codes.add(code);
     }
     return String.fromCharCodes(codes);
@@ -77,9 +77,9 @@ class CryptoUtils {
   /// 落入代理对区间（0xD800–0xDFFF）导致 [String.fromCharCodes] 产生非良构 UTF-16，
   /// 进而破坏 [xorBase64Decode] 往返。
   static String xorBase64Encode(String res, String key) {
-    List<int> keyInts = _parseXorKey(key);
-    List<int> data = utf8.encode(res);
-    List<int> xored = _xorBytes(data, keyInts);
+    final List<int> keyInts = _parseXorKey(key);
+    final List<int> data = utf8.encode(res);
+    final List<int> xored = _xorBytes(data, keyInts);
     return base64Encode(xored);
   }
 
@@ -87,9 +87,9 @@ class CryptoUtils {
   ///
   /// 与 [xorBase64Encode] 对称：base64 解码→字节级 XOR→UTF-8 解码。
   static String xorBase64Decode(String res, String key) {
-    List<int> keyInts = _parseXorKey(key);
-    List<int> bytes = base64Decode(res);
-    List<int> xored = _xorBytes(bytes, keyInts);
+    final List<int> keyInts = _parseXorKey(key);
+    final List<int> bytes = base64Decode(res);
+    final List<int> xored = _xorBytes(bytes, keyInts);
     return utf8.decode(xored);
   }
 
@@ -102,8 +102,8 @@ class CryptoUtils {
 
   /// Base64解密字符串
   static String decodeBase64(String data) {
-    List<int> bytes = base64Decode(data);
-    String result = utf8.decode(bytes);
+    final List<int> bytes = base64Decode(data);
+    final String result = utf8.decode(bytes);
     return result;
   }
 }

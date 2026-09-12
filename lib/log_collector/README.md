@@ -26,8 +26,8 @@ LogCollector (日志收集器)
 │   └── FileStorage (文件存储)
 └── LogOutput (输出器)
     ├── ConsoleLogOutput (控制台输出)
-    ├── FileLogOutput (文件输出)
-    └── NetworkLogOutput (网络输出)
+    ├── FileLogOutput (文件输出，⚠️ 尚未实现——占位类，构造即抛异常)
+    └── NetworkLogOutput (网络输出，⚠️ 尚未实现——占位类，构造即抛异常)
 ```
 
 ## 快速开始
@@ -89,13 +89,17 @@ final config = LogCollectorConfig(
 );
 
 // 创建输出器
+//
+// ⚠️ FileLogOutput / NetworkLogOutput 当前为占位类（尚未实现），
+// 直接构造会抛 UnimplementedError——请勿使用，待后续版本实现。
+// 当前可用的输出器：ConsoleLogOutput、BatchLogOutput（包装自定义输出器）。
 final outputs = [
   ConsoleLogOutput(enableColor: true),
-  FileLogOutput(filePath: '/path/to/logs'),
-  BatchLogOutput( // 批量输出，提高性能
-    delegate: NetworkLogOutput(endpoint: 'https://api.example.com/logs'),
-    batchSize: 100,
-  ),
+  // FileLogOutput(filePath: '/path/to/logs'),        // 尚未实现，占位
+  // BatchLogOutput(                                   // 批量输出，提高性能
+  //   delegate: NetworkLogOutput(endpoint: 'https://api.example.com/logs'),
+  //   batchSize: 100,
+  // ),                                                 // 尚未实现，占位
 ];
 
 // 创建拦截器

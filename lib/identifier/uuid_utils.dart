@@ -8,7 +8,7 @@ import 'package:uuid/uuid.dart';
 class UUIDUtils {
   UUIDUtils._();
 
-  static final _uuid = const Uuid();
+  static const _uuid = Uuid();
 
   static final Map<String, String> _cache = {};
 

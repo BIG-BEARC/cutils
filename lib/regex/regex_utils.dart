@@ -61,8 +61,8 @@ class RegexUtils {
   /// 返回输入是否匹配长度为18的id卡号的正则表达式。
   static bool isIDCard18Exact(String input) {
     if (isIDCard18(input)) {
-      List<int> factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
-      List<String> suffix = [
+      final List<int> factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+      final List<String> suffix = [
         '1',
         '0',
         'X',
@@ -76,11 +76,11 @@ class RegexUtils {
         '2'
       ];
       if (cityMap.isEmpty) {
-        List<String> list = ID_CARD_PROVINCE_DICT;
-        List<MapEntry<String, String>> mapEntryList = [];
+        final List<String> list = ID_CARD_PROVINCE_DICT;
+        final List<MapEntry<String, String>> mapEntryList = [];
         for (int i = 0, length = list.length; i < length; i++) {
-          List<String> tokens = list[i].trim().split('=');
-          MapEntry<String, String> mapEntry = MapEntry(tokens[0], tokens[1]);
+          final List<String> tokens = list[i].trim().split('=');
+          final MapEntry<String, String> mapEntry = MapEntry(tokens[0], tokens[1]);
           mapEntryList.add(mapEntry);
         }
         cityMap.addEntries(mapEntryList);
@@ -90,7 +90,7 @@ class RegexUtils {
         for (int i = 0; i < 17; ++i) {
           weightSum += (input.codeUnitAt(i) - '0'.codeUnitAt(0)) * factor[i];
         }
-        int idCardMod = weightSum % 11;
+        final int idCardMod = weightSum % 11;
         // [REGEX_ID_CARD18] allows a case-insensitive trailing `X`; normalize
         // it before comparing against the uppercase suffix table.
         final String idCardLast =

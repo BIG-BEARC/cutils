@@ -32,12 +32,12 @@ class EventBusUtil {
 
   /// 当前注册的订阅。用于 [dispose] 时统一取消，避免忘记 cancel 的监听器
   /// 永久挂在单例广播流上造成泄漏。
-  final Set<StreamSubscription> _subscriptions = {};
+  final Set<StreamSubscription<dynamic>> _subscriptions = {};
 
   /// 订阅指定类型 [T] 的事件。返回的 [StreamSubscription] 会被自动收集，
   /// [dispose] 时统一取消；调用方也可自行提前 cancel。
   StreamSubscription<T> listen<T extends Event>(
-    Function(T event) onData, {
+    void Function(T event) onData, {
     Function? onError,
     void Function()? onDone,
     bool? cancelOnError,

@@ -60,9 +60,9 @@ class TimelineUtil {
     DayFormat? dayFormat,
     bool isUtc = false,
   }) {
-    int nowMs = locTimeMs ?? DateTime.now().millisecondsSinceEpoch;
-    String useLocale = locale ?? 'en';
-    TimelineInfo info = _timelineInfoMap[useLocale] ?? EnInfo();
+    final int nowMs = locTimeMs ?? DateTime.now().millisecondsSinceEpoch;
+    final String useLocale = locale ?? 'en';
+    final TimelineInfo info = _timelineInfoMap[useLocale] ?? EnInfo();
     DayFormat useDayFormat = dayFormat ?? DayFormat.common;
 
     int elapsed = nowMs - ms;
@@ -147,8 +147,8 @@ class TimelineUtil {
     bool short = false,
     bool isUtc = false,
   }) {
-    int locTimeMs = locMs ?? DateTime.now().millisecondsSinceEpoch;
-    int elapsed = locTimeMs - ms;
+    final int locTimeMs = locMs ?? DateTime.now().millisecondsSinceEpoch;
+    final int elapsed = locTimeMs - ms;
     if (elapsed < 0) {
       // 文档化：未来日期返回 formatToday（HH:mm），即使不是今天。
       return DateTimeUtils.formatDateMs(ms, format: formatToday, isUtc: isUtc);

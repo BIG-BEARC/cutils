@@ -52,8 +52,8 @@ void main() {
   group('A2-5 big-integer precision (documented limitation)', () {
     test('normal ints round-trip through encode/decode without loss', () {
       final encoded = json.encode({'id': 42});
-      final decoded = json.decode(encoded);
-      expect(decoded, isA<Map>());
+      final decoded = json.decode(encoded) as Map<dynamic, dynamic>;
+      expect(decoded, isA<Map<dynamic, dynamic>>());
       expect(decoded['id'], equals(42));
     });
 

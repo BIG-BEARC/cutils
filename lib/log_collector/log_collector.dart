@@ -147,7 +147,7 @@ class LogCollector {
     _logQueue.add(entry);
 
     // 异步处理日志
-    _processLogQueue();
+    unawaited(_processLogQueue());
   }
 
   /// 处理日志队列

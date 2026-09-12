@@ -15,7 +15,6 @@ dependencies:
   logger: ^2.6.2 #log 日志
   connectivity_plus: ^6.1.4 # 网络连接库
   decimal: ^3.0.2 #计算不损失精度库，可以表示一个任意大小且精度完全准确的浮点数。类似BigDecimal
-  dartx: ^1.2.0 #file_utils 的 isNullOrEmpty/.filter 使用
   file: ^7.0.0 #文件系统库
   path: ^1.9.0 #路劲操作库
   path_provider: ^2.1.5 #获取常用文件路径库

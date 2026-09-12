@@ -36,13 +36,13 @@ class LoggerUtils {
     DateTime? time,
     Object? error,
     StackTrace? stackTrace,
-    String tag = "",
+    String tag = '',
   }) {
     if (kReleaseMode) {
       return;
     }
     if (tag.isNotEmpty) {
-      _logger.t("$tag: $message",
+      _logger.t('$tag: $message',
           time: time, error: error, stackTrace: stackTrace);
     } else {
       _logger.t(message, time: time, error: error, stackTrace: stackTrace);
@@ -55,13 +55,13 @@ class LoggerUtils {
     DateTime? time,
     Object? error,
     StackTrace? stackTrace,
-    String tag = "",
+    String tag = '',
   }) {
     if (kReleaseMode) {
       return;
     }
     if (tag.isNotEmpty) {
-      _logger.d("$tag: $message",
+      _logger.d('$tag: $message',
           time: time, error: error, stackTrace: stackTrace);
     } else {
       _logger.d(message, time: time, error: error, stackTrace: stackTrace);
@@ -74,13 +74,13 @@ class LoggerUtils {
     DateTime? time,
     Object? error,
     StackTrace? stackTrace,
-    String tag = "",
+    String tag = '',
   }) {
     if (kReleaseMode) {
       return;
     }
     if (tag.isNotEmpty) {
-      _logger.i("$tag: $message",
+      _logger.i('$tag: $message',
           time: time, error: error, stackTrace: stackTrace);
     } else {
       _logger.i(message, time: time, error: error, stackTrace: stackTrace);
@@ -93,13 +93,13 @@ class LoggerUtils {
     DateTime? time,
     Object? error,
     StackTrace? stackTrace,
-    String tag = "",
+    String tag = '',
   }) {
     if (kReleaseMode) {
       return;
     }
     if (tag.isNotEmpty) {
-      _logger.w("$tag: $message",
+      _logger.w('$tag: $message',
           time: time, error: error, stackTrace: stackTrace);
     } else {
       _logger.w(message, time: time, error: error, stackTrace: stackTrace);
@@ -112,13 +112,13 @@ class LoggerUtils {
     DateTime? time,
     Object? error,
     StackTrace? stackTrace,
-    String tag = "",
+    String tag = '',
   }) {
     if (kReleaseMode) {
       return;
     }
     if (tag.isNotEmpty) {
-      _logger.e("$tag: $message",
+      _logger.e('$tag: $message',
           time: time, error: error, stackTrace: stackTrace);
     } else {
       _logger.e(message, time: time, error: error, stackTrace: stackTrace);
@@ -131,13 +131,13 @@ class LoggerUtils {
     DateTime? time,
     Object? error,
     StackTrace? stackTrace,
-    String tag = "",
+    String tag = '',
   }) {
     if (kReleaseMode) {
       return;
     }
     if (tag.isNotEmpty) {
-      _logger.f("$tag: $message",
+      _logger.f('$tag: $message',
           time: time, error: error, stackTrace: stackTrace);
     } else {
       _logger.f(message, time: time, error: error, stackTrace: stackTrace);

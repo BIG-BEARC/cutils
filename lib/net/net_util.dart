@@ -30,7 +30,7 @@ class NetUtil {
   static final NetUtil _ins = NetUtil._internal();
 
   //获取网络类型
-  String _netType = "none";
+  String _netType = 'none';
   bool _connected = false;
 
   /// `onConnectivityChanged` 的订阅；由 [start] 建立、由 [dispose] 取消。
@@ -57,7 +57,7 @@ class NetUtil {
         applyConnectivityResults(results);
       },
       onError: (Object e) {
-        logger.e("onConnectivityChanged 流错误:$e");
+        logger.e('onConnectivityChanged 流错误:$e');
       },
     );
   }
@@ -87,10 +87,10 @@ class NetUtil {
           .timeout(_kConnectivityTimeout);
     } on TimeoutException catch (e) {
       // 平台调用超时——视为离线，避免无限阻塞调用方。
-      logger.e("Connectivity.checkConnectivity 超时($e): 视为离线");
+      logger.e('Connectivity.checkConnectivity 超时($e): 视为离线');
       result = [ConnectivityResult.none];
     } on PlatformException catch (e) {
-      logger.e("Connectivity.checkConnectivity异常:$e");
+      logger.e('Connectivity.checkConnectivity异常:$e');
       result = [ConnectivityResult.none];
     }
     applyConnectivityResults(result);
@@ -123,25 +123,25 @@ class NetUtil {
   void _getNetType(ConnectivityResult result) {
     switch (result) {
       case ConnectivityResult.wifi:
-        _netType = "wifi";
+        _netType = 'wifi';
         break;
       case ConnectivityResult.mobile:
-        _netType = "移动连接";
+        _netType = '移动连接';
         break;
       case ConnectivityResult.ethernet:
-        _netType = "以太网";
+        _netType = '以太网';
         break;
       case ConnectivityResult.bluetooth:
-        _netType = "蓝牙";
+        _netType = '蓝牙';
         break;
       case ConnectivityResult.vpn:
-        _netType = "VPN";
+        _netType = 'VPN';
         break;
       case ConnectivityResult.other:
-        _netType = "其他网络";
+        _netType = '其他网络';
         break;
       case ConnectivityResult.none:
-        _netType = "未连接";
+        _netType = '未连接';
         break;
     }
   }

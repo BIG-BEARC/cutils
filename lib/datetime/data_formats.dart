@@ -60,7 +60,7 @@ class DateFormats {
   static const String PARAM_Y_M_D_H_M = 'yyyy/MM/dd HH:mm';
 
   /// `yyyy/MM/dd`（斜杠分隔日期）。
-  static const String PARAM_Y_M_D = "yyyy/MM/dd";
+  static const String PARAM_Y_M_D = 'yyyy/MM/dd';
 
   /// `yyyy/MM`（斜杠分隔年月）。
   static const String PARAM_Y_M = 'yyyy/MM';

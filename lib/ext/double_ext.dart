@@ -1,3 +1,7 @@
+// Package imports:
+import 'package:decimal/decimal.dart';
+
+// Project imports:
 import 'string_ext.dart';
 
 /// * @Author: chuxiong
@@ -25,14 +29,26 @@ extension DoubleFormating on double? {
   ///
   /// [autoMoneyUnit] 为 true 且金额 >= 10000 元（即 >= 1000000 分）时，
   /// 自动折算为「万」单位输出；否则除以 100 输出两位小数元。
+  ///
+  /// 走 [Decimal] 运算（与 `StringExt.moneyFormatWithUnit` 同策略），避免
+  /// 大额输入时 double 精度丢失；[Decimal] 无法解析的异形值（如科学计数法
+  /// 极大 double）回退旧 double 路径保持行为不变。
   String moneyFormatWithUnit(bool autoMoneyUnit) {
-    if (isNullOrEmpty) return "0.00";
-    final value = this!;
+    final value = this;
+    if (value == null) return '0.00';
 
-    if (autoMoneyUnit && value >= 1000000) {
-      return "${(value / 1000000).toStringAsFixed(2)}万";
+    final dec = Decimal.tryParse(value.toString());
+    if (dec != null) {
+      if (autoMoneyUnit && dec >= Decimal.fromInt(1000000)) {
+        return '${dec.shift(-6).toStringAsFixed(2)}万';
+      }
+      return dec.shift(-2).toStringAsFixed(2);
     }
 
+    // 回退：异形值走旧 double 路径。
+    if (autoMoneyUnit && value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(2)}万';
+    }
     return (value / 100).toStringAsFixed(2);
   }
 
@@ -47,8 +63,8 @@ extension DoubleFormating on double? {
     final magnitude = isNegative ? -value : value;
     final numStr = magnitude.toStringAsFixed(2);
     final parts = numStr.split('.');
-    String integerPart = parts[0];
-    String decimalPart = '.${parts[1]}';
+    final String integerPart = parts[0];
+    final String decimalPart = '.${parts[1]}';
 
     var result = '';
     for (var i = 0; i < integerPart.length; i++) {
@@ -115,6 +131,8 @@ extension DoubleFormating on double? {
     final n = this;
     if (n == null) return '0.0';
     final s = n.toString();
+    // 科学计数法等无小数点形态（如 1e21.toString() → "1e+21"），千分位格式化无意义，原样返回
+    if (!s.contains('.')) return s;
     final list = s.split('.');
     final left = list[0].formatDigitPatternEnd(digit: digit, pattern: pattern);
     final right = list[1];

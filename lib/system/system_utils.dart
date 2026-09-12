@@ -148,15 +148,19 @@ class SystemUtils {
       return;
     }
 
-    final snackBarMsg = successMessage ?? "copy success";
-    final errorSnackBarMsg = errorMessage ?? "copy error";
+    final snackBarMsg = successMessage ?? 'copy success';
+    final errorSnackBarMsg = errorMessage ?? 'copy error';
 
     try {
       await Clipboard.setData(ClipboardData(text: text));
-      _showSnackBar(context, snackBarMsg, duration);
+      if (context != null && context.mounted) {
+        _showSnackBar(context, snackBarMsg, duration);
+      }
     } catch (e, stackTrace) {
-      logger.e("copy error: $e", error: e, stackTrace: stackTrace);
-      _showSnackBar(context, errorSnackBarMsg, duration);
+      logger.e('copy error: $e', error: e, stackTrace: stackTrace);
+      if (context != null && context.mounted) {
+        _showSnackBar(context, errorSnackBarMsg, duration);
+      }
     }
   }
 
@@ -203,7 +207,7 @@ class SystemUtils {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
       return clipboardData?.text ?? '';
     } catch (e, stackTrace) {
-      logger.e("get clipboard text error: $e",
+      logger.e('get clipboard text error: $e',
           error: e, stackTrace: stackTrace);
       return '';
     }

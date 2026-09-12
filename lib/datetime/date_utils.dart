@@ -32,7 +32,7 @@ class DateTimeUtils {
   /// get DateMilliseconds By DateStr.
   /// 将字符串时间转化为毫秒值
   static int? getDateMsByTimeStr(String dateStr, {bool? isUtc}) {
-    DateTime? dateTime = getDateTime(dateStr, isUtc: isUtc);
+    final DateTime? dateTime = getDateTime(dateStr, isUtc: isUtc);
     return dateTime?.millisecondsSinceEpoch;
   }
 
@@ -99,7 +99,7 @@ class DateTimeUtils {
     if (dateTime == null) return '';
     format = format ?? DateFormats.FULL;
     if (format.contains('yy')) {
-      String year = dateTime.year.toString();
+      final String year = dateTime.year.toString();
       if (format.contains('yyyy')) {
         format = format.replaceAll('yyyy', year);
       } else {
@@ -145,8 +145,8 @@ class DateTimeUtils {
   /// short
   static String getWeekday(DateTime? dateTime,
       {String languageCode = 'en', bool short = false}) {
-    if (dateTime == null) return "";
-    String weekday = "";
+    if (dateTime == null) return '';
+    String weekday = '';
     switch (dateTime.weekday) {
       case 1:
         weekday = languageCode == 'zh' ? '星期一' : 'Monday';
@@ -185,7 +185,7 @@ class DateTimeUtils {
     String languageCode = 'en',
     bool short = false,
   }) {
-    DateTime dateTime = getDateTimeByMs(milliseconds, isUtc: isUtc);
+    final DateTime dateTime = getDateTimeByMs(milliseconds, isUtc: isUtc);
     return getWeekday(dateTime, languageCode: languageCode, short: short);
   }
 
@@ -195,8 +195,8 @@ class DateTimeUtils {
   /// 用 `DateTime(year, i+1, 0).day` 取各月最后一天（自动按 [dateTime.year]
   /// 判定闰年），不再依赖全局可变的 `MONTH_DAY` 表。
   static int getDayOfYear(DateTime dateTime) {
-    int year = dateTime.year;
-    int month = dateTime.month;
+    final int year = dateTime.year;
+    final int month = dateTime.month;
     int days = dateTime.day;
     for (int i = 1; i < month; i++) {
       // DateTime(year, i+1, 0) 是 i 月的最后一天（day=0 回退到上月末日）。
@@ -218,7 +218,7 @@ class DateTimeUtils {
   /// `== 0` 守卫误判为"无值"。
   static bool isToday(int? milliseconds, {bool isUtc = false, int? locMs}) {
     if (milliseconds == null) return false;
-    DateTime old =
+    final DateTime old =
         DateTime.fromMillisecondsSinceEpoch(milliseconds, isUtc: isUtc);
     DateTime now;
     if (locMs != null) {
@@ -235,7 +235,7 @@ class DateTimeUtils {
   /// 两边按同一时区归一化（[isUtc]）后再比日历日，避免 UTC/local 混用。
   static bool isYesterday(DateTime dateTime, DateTime locDateTime) {
     if (yearIsEqual(dateTime, locDateTime)) {
-      int spDay = getDayOfYear(locDateTime) - getDayOfYear(dateTime);
+      final int spDay = getDayOfYear(locDateTime) - getDayOfYear(dateTime);
       return spDay == 1;
     } else {
       return ((locDateTime.year - dateTime.year == 1) &&
@@ -262,7 +262,7 @@ class DateTimeUtils {
     if (ms == null) {
       return false;
     }
-    DateTime old0 = DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc);
+    final DateTime old0 = DateTime.fromMillisecondsSinceEpoch(ms, isUtc: isUtc);
     DateTime now0;
     if (locMs != null) {
       now0 = getDateTimeByMs(locMs, isUtc: isUtc);
@@ -270,9 +270,9 @@ class DateTimeUtils {
       now0 = isUtc ? DateTime.now().toUtc() : DateTime.now().toLocal();
     }
 
-    DateTime old =
+    final DateTime old =
         now0.millisecondsSinceEpoch > old0.millisecondsSinceEpoch ? old0 : now0;
-    DateTime now =
+    final DateTime now =
         now0.millisecondsSinceEpoch > old0.millisecondsSinceEpoch ? now0 : old0;
     return (now.weekday >= old.weekday) &&
         (now.millisecondsSinceEpoch - old.millisecondsSinceEpoch <=

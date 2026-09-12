@@ -1,11 +1,11 @@
 // Dart imports:
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 // Package imports:
 import 'package:archive/archive_io.dart';
-import 'package:dartx/dartx.dart';
 
 // Flutter imports:
 import 'package:path/path.dart' as path;
@@ -41,7 +41,7 @@ class FileUtils {
   FileUtils._internal();
 
   static final FileUtils _ins = FileUtils._internal();
-  final String TAG = "FileUtils";
+  final String TAG = 'FileUtils';
 
   /// 获取文档目录文件,用于存储只能由该应用访问的文件，系统不会清除该目录，只有在删除应用时才会消失。
   Future<File?> getLocalDocumentFile(
@@ -179,7 +179,7 @@ class FileUtils {
     if (path.isEmpty) {
       return null;
     }
-    Directory dir = Directory(path);
+    final Directory dir = Directory(path);
     if (!dir.existsSync()) {
       dir.createSync(recursive: true);
     }
@@ -192,7 +192,7 @@ class FileUtils {
       return null;
     }
     Directory dir = Directory(path);
-    bool exist = await dir.exists();
+    final bool exist = await dir.exists();
     if (!exist) {
       dir = await dir.create(recursive: true);
     }
@@ -416,7 +416,7 @@ class FileUtils {
   /// 读取值 以字符串形式读取 readAsStringSync() 同步读取
   /// 一次性读取整个文件，缺点就是如果文件太大的话，可能造成内存空间的压力。
   Future<String> readString(File file) async {
-    var contentStr = "";
+    var contentStr = '';
     final fileExists = await file.exists();
     if (fileExists) {
       contentStr = await file.readAsString();
@@ -431,7 +431,7 @@ class FileUtils {
 
     ///如果文件不存在，创建文件
     if (!fileExists) {
-      return "";
+      return '';
     }
     final StringBuffer buffer = StringBuffer();
     final Stream<List<int>> inputStream = file.openRead();
@@ -443,7 +443,7 @@ class FileUtils {
       }
     } catch (e) {
       logger.e(tag: TAG, e);
-      return "";
+      return '';
     }
     return buffer.toString();
   }
@@ -560,9 +560,9 @@ class FileUtils {
     }
 
     final list = Directory(dir).listSync(followLinks: false);
-    final filterLogList = list.filter((fileSystemEntity) {
-      if (fileSystemEntity.path.contains(".log") ||
-          fileSystemEntity.path.contains(".dmp")) {
+    final filterLogList = list.where((fileSystemEntity) {
+      if (fileSystemEntity.path.contains('.log') ||
+          fileSystemEntity.path.contains('.dmp')) {
         final fileDateTime = FileStat.statSync(fileSystemEntity.path).changed;
         final differDays = DateTime.now().difference(fileDateTime).inDays;
         if (differDays > 3) {
@@ -610,7 +610,7 @@ class FileUtils {
       for (var element in fileList) {
         await encoder.addFile(File(element.path));
       }
-      encoder.close();
+      unawaited(encoder.close());
       return zipFile;
     }
     return null;
@@ -620,7 +620,7 @@ class FileUtils {
   Future<bool> clearFileData(String filePath) async {
     try {
       final file = readFile(filePath);
-      file.writeAsStringSync("");
+      file.writeAsStringSync('');
       return true;
     } catch (err) {
       logger.e(err, tag: TAG);
@@ -649,8 +649,8 @@ class FileUtils {
       return;
     }
     await for (final file in Directory(dir).list(followLinks: false)) {
-      if (path.extension(file.path) == ".log" ||
-          path.extension(file.path) == ".dmp") {
+      if (path.extension(file.path) == '.log' ||
+          path.extension(file.path) == '.dmp') {
         await file.delete();
       }
     }
@@ -677,8 +677,8 @@ class FileUtils {
         return;
       }
       Directory(dir).listSync(followLinks: false).forEach((fileSystemEntity) {
-        if (fileSystemEntity.path.contains(".log") ||
-            fileSystemEntity.path.contains(".dmp")) {
+        if (fileSystemEntity.path.contains('.log') ||
+            fileSystemEntity.path.contains('.dmp')) {
           final fileDateTime = File(fileSystemEntity.path).lastModifiedSync();
           final differDays = DateTime.now().difference(fileDateTime).inDays;
           if (differDays > saveDays) {
@@ -687,14 +687,14 @@ class FileUtils {
         }
       });
     } catch (e) {
-      logger.e(tag: TAG, "deleteLog:${e.toString()}");
+      logger.e(tag: TAG, 'deleteLog:${e.toString()}');
     }
   }
 
   /// 从路径取文件名（去掉目录与扩展名）。
   String getFileName(String path) {
-    final split = path.split("/");
-    final fileName = split.last.split(".").first;
+    final split = path.split('/');
+    final fileName = split.last.split('.').first;
     return fileName;
   }
 
@@ -713,7 +713,7 @@ class FileUtils {
     }
     final tempDir = await getTemporaryDirectory();
     final targetPath =
-        "${tempDir.absolute.path}/temp_${DateTime.now().microsecondsSinceEpoch}_base64.jpg";
+        '${tempDir.absolute.path}/temp_${DateTime.now().microsecondsSinceEpoch}_base64.jpg';
     File file = File(targetPath);
     file = await file.writeAsBytes(bytes);
     return file;

@@ -12,12 +12,12 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   group('B8 isNullOrBlank no longer treats 0 as blank', () {
     test('integer 0 is NOT blank (BREAKING)', () {
-      final int v = 0;
+      const int v = 0;
       expect(v.isNullOrBlank(), isFalse);
     });
 
     test('double 0.0 is NOT blank (BREAKING)', () {
-      final double v = 0.0;
+      const double v = 0.0;
       expect(v.isNullOrBlank(), isFalse);
     });
 
@@ -27,7 +27,7 @@ void main() {
     });
 
     test('null is blank', () {
-      final Object? v = null;
+      const Object? v = null;
       expect(v.isNullOrBlank(), isTrue);
     });
 
@@ -40,7 +40,7 @@ void main() {
     });
 
     test('empty iterable/map are blank (regression)', () {
-      expect([].isNullOrBlank(), isTrue);
+      expect(<dynamic>[].isNullOrBlank(), isTrue);
       expect(<String, int>{}.isNullOrBlank(), isTrue);
     });
 

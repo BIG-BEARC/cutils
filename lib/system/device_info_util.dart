@@ -24,16 +24,16 @@ class DeviceInfoUtil {
   static final DeviceInfoUtil _instance = DeviceInfoUtil._();
 
   factory DeviceInfoUtil() => _instance;
-  String _osVersion = "unknown";
-  String _deviceType = "unknown";
+  String _osVersion = 'unknown';
+  String _deviceType = 'unknown';
   int _androidSdkInt = 16;
 
-  String _deviceInfo = "";
+  String _deviceInfo = '';
 
   /// 设备完整信息（插件原始 toString）。
   String get deviceInfo => _deviceInfo;
 
-  String _serialNumber = "";
+  String _serialNumber = '';
 
   /// 设备序列号 / 唯一标识（各平台语义不同，见 [init]）。
   String get serialNumber => _serialNumber;
@@ -86,7 +86,7 @@ class DeviceInfoUtil {
     final iosInfo = await plugin.iosInfo;
     _osVersion = iosInfo.systemVersion;
     _deviceType = iosInfo.utsname.machine;
-    _serialNumber = iosInfo.identifierForVendor ?? "";
+    _serialNumber = iosInfo.identifierForVendor ?? '';
     _deviceInfo = iosInfo.toString();
   }
 
@@ -98,7 +98,7 @@ class DeviceInfoUtil {
       _serialNumber = windowsInfo.deviceId;
       _deviceInfo = windowsInfo.toString();
     } catch (e) {
-      logger.e("_getWindowsInfo异常:${e.toString()}");
+      logger.e('_getWindowsInfo异常:${e.toString()}');
     }
 
     // "uniqueIdentifier:$uniqueIdentifier"; //window安装时生成机器id
@@ -112,7 +112,7 @@ class DeviceInfoUtil {
       _osVersion = macOsDeviceInfo.osRelease;
       _deviceInfo = macOsDeviceInfo.toString();
     } catch (e) {
-      logger.e("_getMacOsInfo异常:${e.toString()}");
+      logger.e('_getMacOsInfo异常:${e.toString()}');
     }
   }
 

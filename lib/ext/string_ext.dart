@@ -47,7 +47,7 @@ extension StringExt on String? {
   String defaultStrWithEmpty({String? emptyStr}) {
     final s = this;
     if (s == null || s.isEmpty) {
-      return emptyStr ?? "--";
+      return emptyStr ?? '--';
     }
     return s;
   }
@@ -55,14 +55,14 @@ extension StringExt on String? {
   /// 空值处理：null / 空串返回 `"--"`。
   String get defaultString {
     final s = this;
-    if (s == null || s.isEmpty) return "--";
+    if (s == null || s.isEmpty) return '--';
     return s;
   }
 
   /// 空值处理：null / 空串返回 `"0.00"`（金额占位）。
   String get defaultMoneyStr {
     final s = this;
-    if (s == null || s.isEmpty) return "0.00";
+    if (s == null || s.isEmpty) return '0.00';
     return s;
   }
 
@@ -77,9 +77,9 @@ extension StringExt on String? {
   /// 非整元结果与旧实现一致。
   String get formatMoney {
     final s = this;
-    if (s == null || s.isEmpty) return "--";
+    if (s == null || s.isEmpty) return '--';
     final dec = Decimal.tryParse(s);
-    if (dec == null) return "--";
+    if (dec == null) return '--';
     return dec.shift(-2).toString();
   }
 
@@ -88,15 +88,27 @@ extension StringExt on String? {
   /// 输入单位为**分（fen）**：方法将分字符串除以 100 转为元。
   /// 当 [autoMoneyUnit] 为 true 且金额 >= 10000 元（即 >= 1000000 分）时，
   /// 自动折算为「万」单位输出，例如 `12345678` 分 → `"12.35万"`。
+  ///
+  /// 走 [Decimal] 运算（与 [formatMoney] 同策略），避免大额输入时
+  /// double 精度丢失；[Decimal] 无法解析的异形输入（如科学计数法）
+  /// 回退旧 double 路径保持行为不变。
   String moneyFormatWithUnit(bool autoMoneyUnit) {
     final s = this;
-    if (s == null || s.isEmpty) return "0.00";
-    final money = double.tryParse(s) ?? 0.0;
+    if (s == null || s.isEmpty) return '0.00';
+    final dec = Decimal.tryParse(s);
 
-    if (autoMoneyUnit && money >= 1000000) {
-      return "${(money / 1000000).toStringAsFixed(2)}万";
+    if (dec != null) {
+      if (autoMoneyUnit && dec >= Decimal.fromInt(1000000)) {
+        return '${dec.shift(-6).toStringAsFixed(2)}万';
+      }
+      return dec.shift(-2).toStringAsFixed(2);
     }
 
+    // 回退：异形输入走旧 double 路径（失败按 0.00 处理）。
+    final money = double.tryParse(s) ?? 0.0;
+    if (autoMoneyUnit && money >= 1000000) {
+      return '${(money / 1000000).toStringAsFixed(2)}万';
+    }
     return (money / 100).toStringAsFixed(2);
   }
 
@@ -112,8 +124,8 @@ extension StringExt on String? {
     if (!RegExp(r'^\d+(\.\d+)?$').hasMatch(s)) return s;
 
     final parts = s.split('.');
-    String integerPart = parts[0];
-    String decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
+    final String integerPart = parts[0];
+    final String decimalPart = parts.length > 1 ? '.${parts[1]}' : '';
 
     var result = '';
     for (var i = 0; i < integerPart.length; i++) {
@@ -140,7 +152,7 @@ extension StringExt on String? {
   bool get isValidChineseMobile {
     final s = this;
     if (s == null || s.isEmpty) return false;
-    final pattern = r'^1[3-9]\d{9}$';
+    const pattern = r'^1[3-9]\d{9}$';
     return RegExp(pattern).hasMatch(s);
   }
 
@@ -155,7 +167,7 @@ extension StringExt on String? {
   bool get isUrl {
     final s = this;
     if (s == null || s.isEmpty) return false;
-    final urlPattern =
+    const urlPattern =
         r'(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?';
     return RegExp(urlPattern).hasMatch(s);
   }
@@ -170,7 +182,7 @@ extension StringExt on String? {
   /// 返回非空字符串：null / 空串转换为 `""`。
   String get notNullStr {
     final s = this;
-    if (s == null || s.isEmpty) return "";
+    if (s == null || s.isEmpty) return '';
     return s;
   }
 
@@ -178,7 +190,7 @@ extension StringExt on String? {
   String get fullToHalf {
     final s = this;
     if (s == null || s.isEmpty) {
-      return "";
+      return '';
     }
 
     final StringBuffer buffer = StringBuffer();
@@ -219,14 +231,25 @@ extension StringExt on String? {
     final s = this;
     if (s == null) {
       return null;
-    } else if (s.length <= maxWidth) {
-      return s;
-    } else if (offset < 3) {
-      return '${s.substring(offset, (offset + maxWidth) - 3)}...';
-    } else if (maxWidth - offset < 3) {
-      return '...${s.substring(offset, (offset + maxWidth) - 3)}';
     }
-    return '...${s.substring(offset, (offset + maxWidth) - 6)}...';
+    // 对齐 Apache Commons StringUtils.abbreviate 的前置校验
+    if (maxWidth < 4) {
+      throw ArgumentError.value(maxWidth, 'maxWidth', '必须 >= 4');
+    }
+    if (offset < 0 || offset > s.length) {
+      throw ArgumentError.value(offset, 'offset', '必须在 [0, length] 内');
+    }
+    if (s.length <= maxWidth) {
+      return s;
+    }
+    // 统一钳制右边界，杜绝负数或越界 end 导致的 RangeError
+    final end = (offset + maxWidth - 3).clamp(0, s.length);
+    if (offset < 3) {
+      return '${s.substring(offset, end)}...';
+    } else if (maxWidth - offset < 3) {
+      return '...${s.substring(offset, end)}';
+    }
+    return '...${s.substring(offset, (offset + maxWidth - 6).clamp(offset, s.length))}...';
   }
 
   /// 比较两个字符串是否相同，返回 -1/0/1。
@@ -245,7 +268,7 @@ extension StringExt on String? {
   int hammingDistance(String other) {
     final s = this;
     if (s == null || s.length != other.length) {
-      throw FormatException('Strings must have the same length');
+      throw const FormatException('Strings must have the same length');
     }
     final l1 = s.runes.toList();
     final l2 = other.runes.toList();

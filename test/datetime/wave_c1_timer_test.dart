@@ -66,7 +66,7 @@ void main() {
 
     test('restart 在未启动状态下启动倒计时', () {
       fakeAsync((async) {
-        var clk = DateTime(2026, 1, 1);
+        final clk = DateTime(2026, 1, 1);
         TimerUtil.now = () => clk;
         final timer = TimerUtil(mInterval: 1000, mTotalTime: 0);
         final ticks = <int>[];
@@ -84,7 +84,7 @@ void main() {
   group('C1.12 dispose', () {
     test('dispose 取消计时器（isActive 变 false）', () {
       fakeAsync((async) {
-        var clk = DateTime(2026, 1, 1);
+        final clk = DateTime(2026, 1, 1);
         TimerUtil.now = () => clk;
         final timer = TimerUtil(mInterval: 1000, mTotalTime: 10000);
         timer.startCountDown();

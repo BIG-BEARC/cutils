@@ -9,7 +9,7 @@ class RandomUtils {
   /// Generates a random integer that represents a Hex color.
   /// 生成一个表示十六进制颜色的随机整数
   static int randomColor() {
-    var hex = "0xFF";
+    var hex = '0xFF';
     for (int i = 0; i < 3; i++) {
       hex += _random.nextInt(255).toRadixString(16).padLeft(2, '0');
     }
@@ -30,24 +30,24 @@ class RandomUtils {
   /// Cleans up provided string by removing extra whitespace.
   /// 通过删除额外的空格来清理提供的字符串
   static String condenseWhiteSpace(String str) {
-    return str.replaceAll(RegExp(r"\s+"), " ").trim();
+    return str.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   /// Removes all whitespace from provided string.
   /// 从提供的字符串中删除所有空格。
   static String removeWhiteSpace(String str) {
-    return str.replaceAll(RegExp(r"\s+"), "");
+    return str.replaceAll(RegExp(r'\s+'), '');
   }
 
   /// Returns true for for all strings that are empty, null or only whitespace.
   static bool isWhiteSpaceOrEmptyOrNull(String? str) {
-    return removeWhiteSpace(str ?? "").isEmpty;
+    return removeWhiteSpace(str ?? '').isEmpty;
   }
 
   /// Extracts decimal numbers from the provided string.
   /// 从提供的字符串中提取十进制数。
   static String removeNonDigits(String str) {
-    return str.replaceAll(RegExp(r"\D"), "");
+    return str.replaceAll(RegExp(r'\D'), '');
   }
 
   /// Generate a random number between start and end inclusive.

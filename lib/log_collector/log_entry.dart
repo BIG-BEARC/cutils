@@ -136,13 +136,13 @@ class LogEntry {
         (e) => e.name == json['level'],
         orElse: () => LogLevel.info,
       ),
-      message: json['message'] ?? '',
-      tag: json['tag'] ?? 'default',
+      message: json['message'] as String? ?? '',
+      tag: json['tag'] as String? ?? 'default',
       source: LogSource.values.firstWhere(
         (e) => e.name == json['source'],
         orElse: () => LogSource.custom,
       ),
-      timestamp: DateTime.parse(json['timestamp']),
+      timestamp: DateTime.parse(json['timestamp'] as String),
       stackTrace: (json['stackTrace'] as String?) != null
           ? StackTrace.fromString(json['stackTrace'] as String)
           : null,
@@ -152,7 +152,7 @@ class LogEntry {
               Map<String, dynamic>.from(json['extra'] as Map),
             )
           : null,
-      threadId: json['threadId'],
+      threadId: json['threadId'] as String?,
     );
   }
 }

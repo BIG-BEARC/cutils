@@ -19,7 +19,7 @@ extension IntFormating on int? {
   /// `.0`/`.x0` 去尾零），否则恒定输出两位小数。
   String currencyFormatWithDef(bool autoMoneyUnit) {
     if (this == null) {
-      return autoMoneyUnit ? "0" : "0.00";
+      return autoMoneyUnit ? '0' : '0.00';
     }
     final resultAmount = this! / 100;
 
@@ -55,7 +55,7 @@ extension IntFormating on int? {
   /// 末尾 0：`1500` → `"15"` 而非 `"15.00"`）。null 返回 `"0.0"`。
   String get currencyFormat {
     if (this == null) {
-      return "0.0";
+      return '0.0';
     }
     final num = (this! / 100).toStringAsFixed(2);
     return Decimal.parse(num).toString();
@@ -75,7 +75,7 @@ extension IntFormating on int? {
     if (this == null) return '0';
     final number = this!;
     final parts = number.toString().split('');
-    int len = parts.length;
+    final int len = parts.length;
     int pos = 0;
     String out = '';
     for (int i = len - 1; i >= 0; i--) {

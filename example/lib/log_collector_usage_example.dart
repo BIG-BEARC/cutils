@@ -15,7 +15,7 @@ import 'package:cutils/log_collector/log_output.dart';
 /// * description 日志收集模块使用示例
 
 /// 示例1: 快速初始化（最简单的方式）
-Future<void> example1_quickInitialize() async {
+Future<void> example1QuickInitialize() async {
   await LogCollectorHelper.quickInitialize();
 
   // 现在所有的debugPrint和异常都会被自动收集
@@ -26,18 +26,21 @@ Future<void> example1_quickInitialize() async {
 }
 
 /// 示例2: 自定义配置初始化
-Future<void> example2_customConfig() async {
+Future<void> example2CustomConfig() async {
   // 创建生产环境配置
   final config = LogCollectorConfig.production();
 
   // 创建输出器
+  //
+  // ⚠️ FileLogOutput / NetworkLogOutput 尚未实现（占位类，构造即抛
+  // UnimplementedError），此处注释掉仅作签名演示，待后续版本实现。
   final outputs = [
     ConsoleLogOutput(enableColor: false), // 生产环境不使用颜色
-    FileLogOutput(
-      filePath: '/path/to/logs',
-      maxFileSize: 5 * 1024 * 1024, // 5MB
-      maxFileCount: 20,
-    ),
+    // FileLogOutput(
+    //   filePath: '/path/to/logs',
+    //   maxFileSize: 5 * 1024 * 1024, // 5MB
+    //   maxFileCount: 20,
+    // ),
   ];
 
   // 创建拦截器
@@ -54,24 +57,22 @@ Future<void> example2_customConfig() async {
 }
 
 /// 示例3: 使用批量输出器（提高性能）
-Future<void> example3_batchOutput() async {
+Future<void> example3BatchOutput() async {
   final config = LogCollectorConfig.defaultConfig();
 
-  // 创建批量网络输出器
-  final networkOutput = BatchLogOutput(
-    delegate: NetworkLogOutput(
-      endpoint: 'https://api.example.com/logs',
-      headers: {
-        'Authorization': 'Bearer token',
-      },
-    ),
+  // 创建批量输出器（演示用 ConsoleLogOutput 作 delegate）
+  //
+  // ⚠️ NetworkLogOutput 尚未实现（占位类，构造即抛 UnimplementedError），
+  // 实际场景中可自定义 LogOutput 子类作为批量 delegate，待后续版本实现。
+  final batchedOutput = BatchLogOutput(
+    delegate: ConsoleLogOutput(),
     batchSize: 50, // 每50条日志发送一次
     batchInterval: Duration(seconds: 10), // 或每10秒发送一次
   );
 
   final outputs = [
     ConsoleLogOutput(),
-    networkOutput,
+    batchedOutput,
   ];
 
   await logCollector.initialize(
@@ -82,7 +83,7 @@ Future<void> example3_batchOutput() async {
 }
 
 /// 示例4: 查询和导出日志
-Future<void> example4_queryAndExport() async {
+Future<void> example4QueryAndExport() async {
   final collector = logCollector;
 
   // 查询最近24小时的错误日志
@@ -106,7 +107,7 @@ Future<void> example4_queryAndExport() async {
 }
 
 /// 示例5: 使用标签分类日志
-Future<void> example5_taggedLogs() async {
+Future<void> example5TaggedLogs() async {
   // 收集网络相关日志
   LogCollectorHelper.log(
     '网络请求开始',

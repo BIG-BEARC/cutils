@@ -23,7 +23,7 @@ class JsonUtils {
         logger.i(json.encode(obj));
       }
     } catch (e) {
-      logger.e("JSON 打印失败: $e");
+      logger.e('JSON 打印失败: $e');
     }
   }
 
@@ -39,7 +39,7 @@ class JsonUtils {
     try {
       return json.encode(value);
     } catch (e, stackTrace) {
-      logger.e("JSON 编码失败: value:$value $e\n$stackTrace");
+      logger.e('JSON 编码失败: value:$value $e\n$stackTrace');
       return null;
     }
   }
@@ -70,7 +70,7 @@ class JsonUtils {
       if (map is! Map<String, dynamic>) return null;
       return fromMap(map);
     } catch (e) {
-      logger.e("JSON 解析失败: $e, 数据: $jsonStr");
+      logger.e('JSON 解析失败: $e, 数据: $jsonStr');
       return null;
     }
   }
@@ -114,7 +114,7 @@ class JsonUtils {
     try {
       List<dynamic> list;
       if (source is String) {
-        list = json.decode(source);
+        list = json.decode(source) as List<dynamic>;
       } else if (source is List) {
         list = source;
       } else {
@@ -136,7 +136,7 @@ class JsonUtils {
           .whereType<T>()
           .toList();
     } catch (e, stackTrace) {
-      logger.e("JSON 列表解析失败: $e\n源数据: $source\n$stackTrace");
+      logger.e('JSON 列表解析失败: $e\n源数据: $source\n$stackTrace');
       return null;
     }
   }
@@ -150,7 +150,7 @@ class JsonUtils {
       final decoded = json.decode(jsonStr);
       return decoded is Map<String, dynamic> ? decoded : null;
     } catch (e) {
-      logger.e("JSON 转 Map 失败: $e");
+      logger.e('JSON 转 Map 失败: $e');
       return null;
     }
   }
@@ -177,7 +177,7 @@ class JsonUtils {
           .whereType<Map<String, dynamic>>()
           .toList();
     } catch (e) {
-      logger.e("JSON 转 Map 列表失败: $e");
+      logger.e('JSON 转 Map 列表失败: $e');
       return null;
     }
   }

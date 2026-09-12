@@ -63,5 +63,18 @@ void main() {
       expect(null.moneyFormatWithUnit(false), '0.00');
       expect(''.moneyFormatWithUnit(false), '0.00');
     });
+
+    test('large fen beyond 2^53 keeps exact value via Decimal', () {
+      // 9007199254740993 = 2^53+1：double 路径会丢 1 分，Decimal 路径精确。
+      expect(
+        '9007199254740993'.moneyFormatWithUnit(false),
+        '90071992547409.93',
+      );
+      // 万级折算同样精确：2^53+1 分 = 9007199254.740993 万（截到 2 位）。
+      expect(
+        '9007199254740993'.moneyFormatWithUnit(true),
+        '9007199254.74万',
+      );
+    });
   });
 }

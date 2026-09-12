@@ -34,27 +34,31 @@ class SpUtil {
   SharedPreferences? _prefs;
   // 缓存进行中的初始化 Future，确保并发 init() 调用只触发一次
   // SharedPreferences.getInstance()。完成或失败后清空。
-  Future<SharedPreferences?>? _initFuture;
+  Future<bool>? _initFuture;
 
   /// 初始化 SharedPreferences（single-flight：并发调用共享同一次 getInstance）。
   ///
   /// 完成后缓存到 `_prefs`；失败清空 in-flight Future 允许重试。app 启动时
   /// 调用一次即可。
-  Future<SharedPreferences?> init() async {
-    if (_prefs != null) return _prefs;
+  ///
+  /// 返回 `true` 表示初始化成功（`SharedPreferences` 对象不外泄，
+  /// 需要原始实例时用 [getSp]）。
+  Future<bool> init() async {
+    if (_prefs != null) return true;
     // 并发调用者共享同一个 in-flight Future（single-flight），避免各自调用
     // getInstance()。
-    if (_initFuture != null) return _initFuture;
-    _initFuture = SharedPreferences.getInstance().then((p) {
+    if (_initFuture != null) return _initFuture!;
+    final Future<bool> pending = SharedPreferences.getInstance().then((p) {
       _prefs = p;
       _initFuture = null;
-      return p;
+      return true;
     }).catchError((Object e) {
       // 失败时清空，允许后续重试。
       _initFuture = null;
       throw e;
     });
-    return _initFuture;
+    _initFuture = pending;
+    return pending;
   }
 
   /// 确保 [init] 已完成；若尚未初始化则等待其完成。供各 get/put 方法内部使用。
@@ -76,7 +80,7 @@ class SpUtil {
   Future<bool> _put(String key, dynamic value) async {
     await ensureInitialized();
     // 仅记录 key，避免把敏感 value（token/PII）打入日志。
-    logger.i("_put key:$key");
+    logger.i('_put key:$key');
     try {
       return _prefs?.setString(key, json.encode(value)) ?? Future.value(false);
     } catch (e) {
@@ -94,7 +98,8 @@ class SpUtil {
     try {
       final String? jsonString = _prefs?.getString(key);
       if (jsonString == null || jsonString.isEmpty) return defValue;
-      final Map<String, dynamic> jsonMap = json.decode(jsonString);
+      final Map<String, dynamic> jsonMap =
+          json.decode(jsonString) as Map<String, dynamic>;
       return fromJson(jsonMap);
     } catch (e, stackTrace) {
       logger.e("SpUtil error reading key '$key': $e\n$stackTrace");
@@ -183,70 +188,70 @@ class SpUtil {
   /// 存储字符串
   Future<bool> putString(String key, String value) async {
     await ensureInitialized();
-    logger.i("putString key:$key");
+    logger.i('putString key:$key');
     return _prefs?.setString(key, value) ?? false;
   }
 
   /// 获取字符串
   String? getString(String key, {String? defValue = ''}) {
     final value = _prefs?.getString(key) ?? defValue;
-    logger.i("getString key:$key");
+    logger.i('getString key:$key');
     return value;
   }
 
   /// 存储布尔值
   Future<bool> putBool(String key, bool value) async {
     await ensureInitialized();
-    logger.i("putBool key:$key");
+    logger.i('putBool key:$key');
     return _prefs?.setBool(key, value) ?? false;
   }
 
   /// 获取布尔值
   bool? getBool(String key, {bool defValue = false}) {
     final value = _prefs?.getBool(key) ?? defValue;
-    logger.i("getBool key:$key");
+    logger.i('getBool key:$key');
     return value;
   }
 
   /// 存储整数
   Future<bool> putInt(String key, int value) async {
     await ensureInitialized();
-    logger.i("putInt key:$key");
+    logger.i('putInt key:$key');
     return _prefs?.setInt(key, value) ?? false;
   }
 
   /// 获取整数
   int? getInt(String key, {int defValue = 0}) {
     final value = _prefs?.getInt(key) ?? defValue;
-    logger.i("getInt key:$key");
+    logger.i('getInt key:$key');
     return value;
   }
 
   /// 存储浮点数
   Future<bool> putDouble(String key, double value) async {
     await ensureInitialized();
-    logger.i("putDouble key:$key");
+    logger.i('putDouble key:$key');
     return _prefs?.setDouble(key, value) ?? false;
   }
 
   /// 获取浮点数
   double? getDouble(String key, {double defValue = 0.0}) {
     final value = _prefs?.getDouble(key) ?? defValue;
-    logger.i("getDouble key:$key");
+    logger.i('getDouble key:$key');
     return value;
   }
 
   /// 存储字符串列表
   Future<bool> putStringList(String key, List<String> value) async {
     await ensureInitialized();
-    logger.i("putStringList key:$key");
+    logger.i('putStringList key:$key');
     return _prefs?.setStringList(key, value) ?? false;
   }
 
   /// 获取字符串列表
   List<String>? getStringList(String key, {List<String>? defValue = const []}) {
     final value = _prefs?.getStringList(key) ?? defValue;
-    logger.i("getStringList key:$key");
+    logger.i('getStringList key:$key');
     return value;
   }
 
