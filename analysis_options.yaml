@@ -1,4 +1,42 @@
+# crules-flutter 模板 · 静态分析基线（安装时复制到项目根；项目已有自己的则保留项目的）
+# 定位：把可确定性判定的规则从散文变 analyzer 硬拦（外审⑧「规则工具化」首期）
+# 依赖：flutter_lints（须在 pubspec dev_dependencies——缺依赖时 analyzer 会**静默跳过** include，基线不生效；flutter create 脚手架默认已带）
+# 维护：flutter_lints 大版本升级时复查规则集变化（include 是滚动集合，升版可能新增/移除规则——与 skill 坑节维护义务同批例行）
 include: package:flutter_lints/flutter.yaml
 
-# Additional information about this file can be found at
-# https://dart.dev/guides/language/analysis-options
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  # 注意：rules 块为纯 map 形态（曾因列表项与 map disable 条目混用触发 parse_error——YAML 同一
+  # mapping 不允许混形态；模板 0.4.1 的「map disable 扰动列表解析」即此坑，本仓实测复现并记录）
+  rules:
+    # 本项目豁免（2026-09-12 crules-flutter 接入决策，见 .claude/memory/decisions/）：
+    # regex_constants/money_unit 等模块的 SCREAMING_CASE 公开常量是既有风格且下游已按现名
+    # 引用，重命名=破坏性改动（§十红线）。发 2.0 时可再议统一重命名。
+    constant_identifier_names: false
+    non_constant_identifier_names: false
+    # 对应 checklist「组件/视图」类——归口与硬编码
+    prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_final_locals: true
+    prefer_final_fields: true
+    unnecessary_late: true
+    avoid_print: true                  # 统一日志工具（checklist §6）
+    avoid_unnecessary_containers: true
+    prefer_single_quotes: true
+    # 对应 checklist「边界处理」类——异步纪律（CancelToken 纪律无对应 lint 规则：
+    # cancelled_token_use 系 analyzer 诊断名而非 lint 规则，曾列此为死配置已删——落点 checklist 异步纪律节，custom_lint 二期候选）
+    unawaited_futures: true
+    always_declare_return_types: true
+    # 公开面纪律（plugin/库场景加重）；public_member_api_docs 按项目自开（flutter_lints 未启用它）
+    type_annotate_public_apis: true
+    prefer_typing_uninitialized_variables: true
+
+# 说明：
+# - 「禁 inline 颜色字面量 / 禁传 ref 参数 / import 五段分组」等语义规则 analyzer 原生不覆盖，
+#   属 custom_lint 范畴（外审⑦ 大杠杆项，二期：颜色字面量 / ConsumerWidget ref 传参 / import 分组均可写成 custom_lint 规则）
+# - strict-* 三开关会暴露存量代码告警——新项目直接用；存量项目可先注释 strict 段渐进收紧
