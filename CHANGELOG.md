@@ -20,7 +20,9 @@
   - 解散 `utils/` grab-bag → `event/` + `ui/` + `identifier/`
   - `text/` 拆入 `ui/` + `ext/`
 - 移除硬件相关死代码：`scanner/`、`system/serial_util`（延期到独立子包 `cutils_pos`）。
-- 清理死依赖与 pubspec plugin 段。
+- 清理死依赖与 pubspec plugin 段；移除 `dartx`（仅剩一处 `.filter` 用法，
+  已改为 `dart:core` 的 `where`；`StringExt.isNullOrEmpty` 与其同名扩展的
+  语义冲突随之消除）。
 
 ### API 风格（无状态工具转静态类）
 
@@ -34,6 +36,17 @@
 
 ### 重命名
 
+- `NumUtils` 的 `*Dec` / `*DecString` 精确计算族（`addDec` / `subtractDec` /
+  `multiplyDec` / `divideDec` / `remainder` 及对应 `*DecString`）返回类型由
+  `Decimal?` 改为 `String?`（十进制字符串）——`Decimal` 收回为内部实现，
+  不再暴露在公开签名（下游无需直接依赖 `decimal` 包）。失败语义不变
+  （解析失败 / 除零仍返回 `null`）。
+- `SpUtil.init()` 返回类型由 `Future<SharedPreferences?>` 改为 `Future<bool>`
+  （成功返回 `true`，失败抛出）——`SharedPreferences` 对象不再外泄到公开签名，
+  需要原始实例时仍可用 `getSp()`。
+- `moneyFormatWithUnit`（`StringExt` / `DoubleFormating` 两处）改走 `Decimal`
+  运算（与 `formatMoney` 同策略），大额输入（2^53 边界附近）不再丢精度；
+  `Decimal` 无法解析的异形输入回退旧 double 路径，行为兼容。
 - `DateUtils` → `DateTimeUtils`（避开 Flutter SDK 的 `DateUtils` 同名）。
 - `EncryptUtils` → `CryptoUtils`。
 - `printJson` → `logJson`（保留 `@Deprecated` 别名）。
