@@ -6,6 +6,7 @@ import 'package:decimal/decimal.dart';
 /// * @Company: 嘉联支付
 /// * description
 ///String扩展：覆盖空值判定、数值解析、金额/千分位/手机号脱敏、URL 处理、全半角等。
+/// 依赖：`decimal`（纯 Dart，金额 / 千分位格式化用）。
 extension StringExt on String? {
   /// 是否为 null 或空字符串。
   bool get isNullOrEmpty => this == null || (this?.isEmpty ?? true);

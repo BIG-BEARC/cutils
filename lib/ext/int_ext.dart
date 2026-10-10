@@ -6,6 +6,7 @@ import 'package:decimal/decimal.dart';
 /// * @Company: 嘉联支付
 /// * description
 ///int 扩展
+/// 依赖：`decimal`（纯 Dart，金额格式化用）。
 extension IntFormating on int? {
   /// 安全取值：null → `0`，否则返回自身。
   int get safeValue => this ?? 0;

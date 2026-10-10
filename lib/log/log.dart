@@ -8,6 +8,9 @@ import 'package:logger/logger.dart';
 /// * @Email:
 /// * @Company: 嘉联支付
 /// * description 日志工具类
+///
+/// 定位：轻量打点薄封装（依赖 `logger`，纯 Dart）。需要落盘 / 过滤 / 网络上报等
+/// 完整采集管线时用 `log_collector/`。
 
 /// 全局 [LoggerUtils] 单例，直接 `logger.i(...)` / `logger.e(...)` 使用。
 ///

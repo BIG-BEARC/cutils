@@ -7,6 +7,7 @@ import 'money_unit.dart';
 /// * @Email:
 /// * description
 /// 金额格式化工具（输入金额一律以**分（fen）**为单位）。
+/// 依赖：`decimal`（纯 Dart，大额精度经其保证）。
 class MoneyUtils {
   MoneyUtils._();
 

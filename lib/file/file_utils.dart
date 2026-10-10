@@ -20,6 +20,8 @@ import 'package:cutils/log/log.dart';
 ///
 /// 封装各平台目录定位、文件读写、目录创建、日志清理与压缩、base64 与文件互转。
 /// 单例（`FileUtils()`）。
+/// 依赖：`path_provider`（平台插件——目录定位经原生通道，测试需打桩）、
+/// `archive` / `path`（纯 Dart）。
 
 /// Thrown when [FileUtils.createFileFromBase64] receives a string that
 /// cannot be decoded as valid base64, replacing the raw [FormatException].

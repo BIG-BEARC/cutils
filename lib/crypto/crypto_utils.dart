@@ -8,6 +8,7 @@ import 'package:convert/convert.dart';
 ///
 /// 提供 MD5（字符串 / 文件）、Base64 编解码、以及 XOR 对称加解密（含字节级
 /// Base64 往返）。XOR 密钥为逗号分隔的整数，非整数分段抛 [ArgumentError]。
+/// 依赖：`crypto` / `convert`（纯 Dart）。
 class CryptoUtils {
   CryptoUtils._();
 

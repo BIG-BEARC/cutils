@@ -4,6 +4,9 @@
 /// * @Company: 嘉联支付
 /// * description 日志收集模块导出文件
 ///
+/// 定位：完整日志采集管线（拦截 → 过滤 → 存储 / 输出）；轻量打点用 `log/`。
+/// 依赖：`path_provider`（平台插件——经 log_storage.dart 取日志目录，测试需打桩）。
+///
 /// 使用方式：
 /// ```dart
 /// import 'package:cutils/log_collector/log_collector_export.dart';

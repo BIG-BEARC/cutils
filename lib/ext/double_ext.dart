@@ -10,6 +10,7 @@ import 'string_ext.dart';
 /// * @Company: 嘉联支付
 /// * description
 ///double 扩展
+/// 依赖：`decimal`（纯 Dart，金额格式化用）。
 extension DoubleFormating on double? {
   /// 空值判断：是否为 null（注意 `0.0` 不算空）。
   bool get isNullOrEmpty => this == null;

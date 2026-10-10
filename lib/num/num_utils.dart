@@ -6,6 +6,7 @@ import 'package:cutils/ext/ext_fun.dart';
 /// * @Email:
 /// * description
 /// 数值工具：基于 [Decimal] 提供防精度丢失的加减乘除与关系运算。
+/// 依赖：`decimal`（纯 Dart）。
 ///
 /// 命名约定：
 /// - `*Num`：入参 `num`，返回 `double`。运算抛 [ArgumentError]（非静默 0.0），
