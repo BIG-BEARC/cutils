@@ -1,6 +1,6 @@
-# cutils 项目规则（crules-flutter v1.1.2 + 项目特有章节）
+# cutils 项目规则（crules-flutter v1.1.3 + 项目特有章节）
 
-> 本文件 = **crules-flutter v1.1.2 项目根规则模板**（通用协作层 §一~§六、§十二 + plugin/工具库工程层 §七~§十一）+ **cutils 项目特有章节（§十三~§十六，本仓专属）**。
+> 本文件 = **crules-flutter v1.1.3 项目根规则模板**（通用协作层 §一~§六、§十二 + plugin/工具库工程层 §七~§十一）+ **cutils 项目特有章节（§十三~§十六，本仓专属）**。
 > superpowers 管「流程怎么走」，dart-flutter 管「Dart/Flutter 怎么写对」，本文件钉死**协作红线、提交策略、插件类型与公开 API 稳定性**。
 >
 > **使用方式**：新建 plugin / 工具库时把本文件复制到项目根目录，完成 §七【复制后必填】，删掉未选的类型。
@@ -296,7 +296,8 @@ plugin 极契合 TDD——大量纯函数和明确的公开 API，**public API �
 > 档位只改**行为件头**（收尾档倾向 / 记忆库 / 编排），不减常驻 token；两轴判分——项目档位（本节，init 一次定）× 收尾档（§三，按任务规模三档）。**不可配置项**（安全属性，无开关）：deny-list hook、协作红线、lint 硬拦。收尾时序档与校验层属任务轴、不设单项开关。
 
 - **标准〔normal〕**（日常工程，默认 = 现行行为）：档位：标准。记忆库：开（默认，可单关）。编排：按需。plan-reviewer：大需求启用。校验层：大改任务启用。收尾：按任务规模三档。
-- **提速档（随选定段保留）**：standing instruction 走 Gate 例外通道，启用必须圈死三要素——范围（文件 / 模块面）、规模（N 个任务或时间窗）、验证档（对应收尾档），缺一不成立；AI 不得自行升档、连续返工降档；每批结束逐任务对照汇报，治理走 Gate 例外台账（单一通道）。
+- **完整〔full〕**（复杂 / 多 agent）：档位：完整。记忆库：开。编排：开。plan-reviewer：默认启用。校验层：默认启用（= 重型收尾必含、常规收尾默认不含；全量启用走单开）。收尾：按任务规模三档（重型含校验层）。沉淀闸：现行 + 度量复盘。
+- **提速档（三档通用，随选定段保留）**：standing instruction 走 Gate 例外通道，启用必须圈死三要素——范围（文件 / 模块面）、规模（N 个任务或时间窗）、验证档（对应收尾档），缺一不成立；AI 不得自行升档、连续返工降档；每批结束逐任务对照汇报，治理走 Gate 例外台账（单一通道）。
 <!-- /gen:gear-preset -->
 
 ---
@@ -316,7 +317,7 @@ plugin 极契合 TDD——大量纯函数和明确的公开 API，**public API �
 - `datetime/` —— 日期时间（`date_utils` 的 **`DateTimeUtils`**、`timeline_util`、`timer_util` 及 zh/en 本地化信息）。⚠️ 类名是 `DateTimeUtils`，已避开 Flutter SDK 的 `DateUtils` 同名。
 - `regex/`、`json/` —— 正则 / JSON。
 - `crypto/` —— 加解密（**`CryptoUtils`**，用 `crypto` 包；md5/hmac/base64/xor）。
-- `file/`、`storage/`（SharedPreferences 的 `SpUtil`）、`net/`（connectivity）。
+- `file/`、`storage/`（SharedPreferences 的 `SpUtils`）、`net/`（connectivity）。
 - `system/` —— 设备 / 包信息、键盘、系统工具。
 - `ui/` —— Flutter 框架 UI 工具（`calculate_utils` 文本测量、`image_utils`）。
 - `event/`（事件总线）、`identifier/`（`random_utils`、`uuid_utils`）。
@@ -361,4 +362,4 @@ cd example && flutter run             # 通过 demo app 验证插件接口
 - **测试**使用 `package:test` / `flutter_test` 配合 `mocktail`；平台依赖（如 path_provider）通过 `MockPathProviderPlatform` 打桩（见 `test/file/file_utils_test.dart`）；barrel 解析见 `test/cutils_barrel_test.dart`。
 - 通用 Flutter/Dart 代码风格、主题与 UX 指南另见 `docs/FLUTTER_GUIDELINES.md`（若存在）。
 
-<!-- crules-flutter: v1.1.2 @ 2026-10-10 -->
+<!-- crules-flutter: v1.1.3 @ 2026-10-10 -->

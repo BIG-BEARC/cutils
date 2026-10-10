@@ -31,3 +31,16 @@ migrate_working_dir/
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
+.claude/memory/indexes/
+.claude/memory/.pending-updates*
+.claude/memory/.review-ledger
+.claude/memory/.gate-exceptions
+.claude/memory/.compliance-log
+# crules-flutter：分发面（CLAUDE.md/checklist/进阶）默认不进 git（2026-10-10 裁）——跟随仓库=删对应行后 git add；退跟踪=git rm --cached；政策见 .claude/memory/MAINTENANCE.md「git 分层」
+/CLAUDE.md
+/checklist.md
+/进阶/
+# crules-flutter：合并脚手架本机生成物（install.sh 幂等管理——base 快照供下轮三方合并，bak/conflicts 为冲突解标前件）
+*.crules-base
+*.crules-bak
+*.crules-conflicts
