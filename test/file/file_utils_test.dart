@@ -23,8 +23,17 @@ void main() {
   // 设置平台
   PathProviderPlatform.instance = mockPlatform;
 
-  final String tempPath = Directory.systemTemp.path;
+  // 专用子目录而非 systemTemp 根：隔离宿主机残留文件（如 Logitech 的
+  // com.logi.xlog.temp 目录），zip/getFileList 只见到本测试落盘的内容。
+  final String tempPath =
+      '${Directory.systemTemp.path}/cutils_file_test_${DateTime.now().microsecondsSinceEpoch}';
   final Directory tempDir = Directory(tempPath)..createSync(recursive: true);
+
+  tearDownAll(() {
+    if (tempDir.existsSync()) {
+      tempDir.deleteSync(recursive: true);
+    }
+  });
 
   setUpAll(() {
     registerFallbackValue(Directory(tempPath));
@@ -153,6 +162,31 @@ void main() {
           reason: 'current file within retention must remain');
     });
 
+    test('A2: cleanLog skips directories named *.log', () async {
+      // cleanLog clears every *.log / *.dmp file — but an empty directory
+      // named "*.log" used to be deleted silently (extension match without
+      // a type guard), and non-empty ones threw unhandled (void async).
+      final dirTrap = Directory('${tempDir.path}/a2_evil_dir.log')
+        ..createSync();
+      final logFile = File('${tempDir.path}/a2_cleanlog_purge.log')
+        ..writeAsStringSync('fresh log');
+      try {
+        fileUtils.cleanLog();
+        // cleanLog is `void ... async` and iterates via `await for`; pump a
+        // bounded number of zero-delay macrotasks to let the body run.
+        for (var i = 0; i < 200; i++) {
+          await Future<void>.delayed(Duration.zero);
+        }
+        expect(dirTrap.existsSync(), isTrue,
+            reason: 'a directory named *.log must not be deleted');
+        expect(logFile.existsSync(), isFalse,
+            reason: 'cleanLog clears all *.log files, fresh or not');
+      } finally {
+        dirTrap.deleteSync();
+        if (logFile.existsSync()) logFile.deleteSync();
+      }
+    });
+
     test('A3: deleteFileData awaits the delete before returning', () async {
       // Deleting a nonexistent path rejects the underlying Future. With the
       // bug (delete not awaited) the error never reaches the catch, so the
@@ -181,6 +215,46 @@ void main() {
       try {
         await zip.delete();
       } catch (_) {}
+    });
+
+    test('A3: getFileList skips directories named *.log and *.log.bak files',
+        () async {
+      // Substring matching used to collect directories whose name contains
+      // ".log" — zipFiles then opened a directory as File (errno 21,
+      // "Is a directory"). "*.log.bak" files are not logs either.
+      final dirTrap = Directory('${tempDir.path}/a3_evil.log')..createSync();
+      final bakFile = File('${tempDir.path}/a3_notes.log.bak')
+        ..writeAsStringSync('not a log');
+      final realLog = File('${tempDir.path}/a3_real.log')
+        ..writeAsStringSync('real');
+      try {
+        final list = await fileUtils.getFileList();
+        expect(list.any((f) => f.path == dirTrap.path), isFalse,
+            reason: 'a directory named *.log must be excluded');
+        expect(list.any((f) => f.path == bakFile.path), isFalse,
+            reason: '*.log.bak is not a log file, must be excluded');
+        expect(list.any((f) => f.path == realLog.path), isTrue,
+            reason: 'a real .log file must be collected');
+      } finally {
+        dirTrap.deleteSync();
+        bakFile.deleteSync();
+        realLog.deleteSync();
+      }
+    });
+
+    test('A3: getFileList judges expiry by mtime, not ctime', () async {
+      // FileStat.changed is ctime: renames / metadata changes refresh it.
+      // A file last modified 5 days ago must expire even with a fresh ctime.
+      final old = File('${tempDir.path}/a3_mtime_old.log')
+        ..writeAsStringSync('stale');
+      old.setLastModifiedSync(DateTime.now().subtract(const Duration(days: 5)));
+      try {
+        final list = await fileUtils.getFileList();
+        expect(list.any((f) => f.path == old.path), isFalse,
+            reason: 'mtime 5 days old must expire even with a fresh ctime');
+      } finally {
+        if (old.existsSync()) old.deleteSync();
+      }
     });
 
     test('A4: deleteLog honors the saveDays parameter', () async {

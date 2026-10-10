@@ -561,9 +561,17 @@ class FileUtils {
 
     final list = Directory(dir).listSync(followLinks: false);
     final filterLogList = list.where((fileSystemEntity) {
-      if (fileSystemEntity.path.contains('.log') ||
-          fileSystemEntity.path.contains('.dmp')) {
-        final fileDateTime = FileStat.statSync(fileSystemEntity.path).changed;
+      // 只认常规文件：目录 / 链接即使名字带 .log 也排除，避免后续按 File
+      // 打开目录抛异常（zip 压缩时即 errno 21 "Is a directory"）。
+      if (fileSystemEntity is! File) {
+        return false;
+      }
+      // 后缀匹配：子串匹配会误收 `xxx.log.bak`、`com.logi.xlog.temp` 类名字。
+      final name = path.basename(fileSystemEntity.path);
+      if (name.endsWith('.log') || name.endsWith('.dmp')) {
+        // 按修改时间（mtime）判过期；.changed 是 ctime，重命名 / 权限变更
+        // 会刷新它，导致过期日志被误判为新鲜。
+        final fileDateTime = FileStat.statSync(fileSystemEntity.path).modified;
         final differDays = DateTime.now().difference(fileDateTime).inDays;
         if (differDays > 3) {
           return false;
@@ -574,8 +582,8 @@ class FileUtils {
       }
     }).toList();
     filterLogList.sort((a, b) {
-      final timeA = FileStat.statSync(a.path).changed.millisecondsSinceEpoch;
-      final timeB = FileStat.statSync(b.path).changed.millisecondsSinceEpoch;
+      final timeA = FileStat.statSync(a.path).modified.millisecondsSinceEpoch;
+      final timeB = FileStat.statSync(b.path).modified.millisecondsSinceEpoch;
       return timeA.compareTo(timeB);
     });
     final iterable =
@@ -649,6 +657,11 @@ class FileUtils {
       return;
     }
     await for (final file in Directory(dir).list(followLinks: false)) {
+      // 只清常规文件：目录 / 链接跳过——空 `*.log` 目录会被 delete() 静默
+      // 删除，非空目录则抛异常（本函数 void async，错误无人接）。
+      if (file is! File) {
+        continue;
+      }
       if (path.extension(file.path) == '.log' ||
           path.extension(file.path) == '.dmp') {
         await file.delete();
@@ -677,8 +690,14 @@ class FileUtils {
         return;
       }
       Directory(dir).listSync(followLinks: false).forEach((fileSystemEntity) {
-        if (fileSystemEntity.path.contains('.log') ||
-            fileSystemEntity.path.contains('.dmp')) {
+        // 只删常规文件：目录 / 链接跳过（`foo.log` 目录会让 deleteSync 抛
+        // 异常，中断本轮整个清理循环）。
+        if (fileSystemEntity is! File) {
+          return;
+        }
+        // 后缀匹配，理由同 getFileList。
+        final name = path.basename(fileSystemEntity.path);
+        if (name.endsWith('.log') || name.endsWith('.dmp')) {
           final fileDateTime = File(fileSystemEntity.path).lastModifiedSync();
           final differDays = DateTime.now().difference(fileDateTime).inDays;
           if (differDays > saveDays) {
