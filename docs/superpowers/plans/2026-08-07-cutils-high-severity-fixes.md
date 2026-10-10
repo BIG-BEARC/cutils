@@ -114,4 +114,4 @@ Files: `lib/crypto/crypto_utils.dart`、`lib/ui/calculate_utils.dart`、`lib/sto
 - [ ] CHANGELOG 记破坏性正则语义变更（C1/C4）。
 
 ## 不在 Plan 3
-中/低危（Plan 4）、dartdoc/全量单测（Plan 4）、example/README（Plan 5）、迁移 cashier（Plan 5）。
+中/低危（Plan 4）、dartdoc/全量单测（Plan 4）、example/README（Plan 5）、迁移宿主业务仓（Plan 5）。

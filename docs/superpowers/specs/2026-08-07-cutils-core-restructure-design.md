@@ -3,7 +3,7 @@
 - **日期**: 2026-08-07
 - **状态**: 评审修订 v1（2026-08-07）— §6 已逐条核实属实；契约/策略决议见 §11 D1–D7；内联修订记录见 §12
 - **范围**: `cutils` 核心包（纯 Dart + Flutter 框架 + 通用平台插件）
-- **不在本次范围**: 硬件相关（串口 / 电子秤 / 扫码 / 打印机）→ 后续独立子包 `cutils_pos`，参考 `saas-cashier` `master_windows` 分支
+- **不在本次范围**: 硬件相关（串口 / 电子秤 / 扫码 / 打印机）→ 后续独立子包 `cutils_pos`，参考宿主业务仓 `master_windows` 分支
 
 ---
 
@@ -16,7 +16,7 @@
 - **清晰**: 模块边界合理、命名无 SDK 冲突、统一 API 风格、单一 barrel 导出。
 - **可用**: 每个公开 API 有 dartdoc 示例；`example/` 提供按领域分组的可运行 demo。
 
-受众标准按"未来可发布到 pub.dev"执行：稳定且有文档的公开 API、零死代码、避开与 Flutter SDK 同名。当前仍为自用，**本次允许破坏性改 import 路径与调用点**（主要消费者 `cashier` 同步迁移）。
+受众标准按"未来可发布到 pub.dev"执行：稳定且有文档的公开 API、零死代码、避开与 Flutter SDK 同名。当前仍为自用，**本次允许破坏性改 import 路径与调用点**（主要消费方宿主业务仓同步迁移）。
 
 ---
 
@@ -27,7 +27,7 @@
 
 ### 本次排除（后续 `cutils_pos`）
 - `scanner/scan_monitor`、`system/serial_util`（全注释）、电子秤（`rxdart`，当前死依赖）。
-- 参考来源: `/Users/chuxiong/project/saas-cashier` `master_windows` 分支的 `lib/utils/serial_util.dart`、`lib/module/electronic_scale/`、`lib/module/scanner/`、`lib/pub/printer/`。注意 cashier 硬件大量依赖本地 `plugin/` 下的 path 插件（不可上 pub），`cutils_pos` 定位为内部共享包（path 依赖），**不**上 pub.dev。
+- 参考来源: 宿主业务仓 `master_windows` 分支的 `lib/utils/serial_util.dart`、`lib/module/electronic_scale/`、`lib/module/scanner/`、`lib/pub/printer/`。注意宿主硬件代码大量依赖本地 `plugin/` 下的 path 插件（不可上 pub），`cutils_pos` 定位为内部共享包（path 依赖），**不**上 pub.dev。
 
 ---
 
@@ -60,7 +60,7 @@ lib/
 | S2 | `DateUtils` → `DateTimeUtils` | ⚠️ 与 Flutter SDK `DateUtils` 撞名 |
 | S3 | 解散 `utils/` grab-bag | event_bus→`event/`、image→`ui/`、random+uuid→`identifier/` |
 | S4 | `text/calculate_utils` → `ui/` | TextPainter 测量属 UI |
-| S5 | `text/text_utils` 字符串谓词并入 `ext/string_ext`，删除 `text_utils`；**非谓词方法**（`reverse`→用 runes 的扩展、`abbreviate`、`formatDoubleComma3`）一并迁入 `ext/string_ext` 作扩展 | 与 string_ext 重复；迁移需改 cashier 调用点 |
+| S5 | `text/text_utils` 字符串谓词并入 `ext/string_ext`，删除 `text_utils`；**非谓词方法**（`reverse`→用 runes 的扩展、`abbreviate`、`formatDoubleComma3`）一并迁入 `ext/string_ext` 作扩展 | 与 string_ext 重复；迁移需改宿主调用点 |
 | S6 | `encrypt/` → `crypto/`；**类 `EncryptUtils` 一并改 `CryptoUtils`**（半改名比不改更乱） | 用的是 `crypto` 包，"encrypt" 是另一个包，误导 |
 | S7 | `sp/` → `storage/`；**全局单例 `sp` 新名建议 `spStorage`**（见 §11 D3，避免与目录/类歧义） | "sp" 是实现细节缩写，`storage` 自解释 |
 | S8 | 删 `scanner/`、注释版 `serial_util` | 硬件，延期 |
@@ -204,13 +204,13 @@ lib/
 
 ## 9. 迁移
 
-`cutils` 被 `cashier` 以 path/git 依赖按完整路径 import。重构后两处会断:
+`cutils` 曾被宿主业务仓以 path/git 依赖按完整路径 import。重构后两处会断:
 1. import 路径（合并/改名/解散）。
 2. 单例→静态类调用点（`numUtils.x`→`NumUtils.x`）。
 
-策略: 先改 `cutils`（含测试、analyze 干净），再同步过一遍 `cashier` 的 import 与调用点；引导 `cashier` 改用 `import 'package:cutils/cutils.dart';` barrel 以降未来 churn。
+策略: 先改 `cutils`（含测试、analyze 干净），再同步过一遍宿主业务仓的 import 与调用点；引导其改用 `import 'package:cutils/cutils.dart';` barrel 以降未来 churn。
 
-**前置检查（阶段 1 前）**: grep cashier 对 `Cutils`/`getPlatformVersion` 的引用——删脚手架（S9）前确认无调用（参照 `example/lib/main.dart:35` 的用法）；若有，先在 cashier 移除。
+**前置检查（阶段 1 前）**: grep 宿主业务仓对 `Cutils`/`getPlatformVersion` 的引用——删脚手架（S9）前确认无调用（参照 `example/lib/main.dart:35` 的用法）；若有，先在宿主业务仓移除。
 
 ---
 
@@ -222,7 +222,7 @@ lib/
 4. **中危修复 + 测试**: §6.2。
 5. **低危清理 + 文档/dartdoc**: §6.3 + §8 dartdoc。
 6. **`example/` 演示页 + README**。
-7. **迁移 cashier**。
+7. **迁移宿主业务仓**。
 
 每阶段: `dart format` → `dart fix --apply` → `dart analyze` 零告警 → `flutter test` 全绿。
 
@@ -233,9 +233,9 @@ lib/
 > 评审结论: §6 bug 清单已逐条核实属实，准确度高。下列各项是"会被多个 Flutter 项目引用"这一约束下**必须在实现前拍板**的契约/策略决定，不再作为"待定"延后。每项给出背景、选项与推荐。
 
 ### D1. 公开 API 边界与版本策略【最高优先】
-- **背景**: §1 称"可发布 pub.dev、保持签名稳定"，§4 称"保留 `lib/<domain>/*.dart` 平铺、不强行 `lib/src/`"，§9 称"引导 cashier 用 barrel"。只要平铺文件可被外部 import，它就*事实上*是公开 API；同时鼓励 barrel 等于背书两套 import，公开表面积翻倍，内部任何移动文件都是 break。
+- **背景**: §1 称"可发布 pub.dev、保持签名稳定"，§4 称"保留 `lib/<domain>/*.dart` 平铺、不强行 `lib/src/`"，§9 称"引导宿主业务仓用 barrel"。只要平铺文件可被外部 import，它就*事实上*是公开 API；同时鼓励 barrel 等于背书两套 import，公开表面积翻倍，内部任何移动文件都是 break。
 - **选项**:（A）barrel 为**唯一**公开入口，实现挪到 `lib/src/`，full-path import 不保证稳定；（B）显式声明"barrel + 各 domain 文件**都**公开"，接受翻倍维护成本；（C）**混合制**——公开 API = 显式 blessed 路径清单（叶子领域文件本身 + 子系统门面 + 顶层便利 barrel），`lib/src/` 仅放跨模块共享 helper，1.0 冻结清单内路径。
-- **推荐**: **C**（评审深化后修正原"A"）。util 库的卖点恰是"按领域按需 import"，纯 barrel 会让扩展变 all-or-nothing、加剧 D4 污染；且 cashier 等 full-path 现状迁移成本最低。封装诉求只对子系统成立（`log_collector` 已有 `log_collector_export.dart` 门面），叶子 util 无需藏进 src/。落地动作: 在 README/CLAUDE.md 维护一份 blessed 公开路径清单，清单外（`lib/src/`、子系统内部文件）不保证稳定——清单即契约。
+- **推荐**: **C**（评审深化后修正原"A"）。util 库的卖点恰是"按领域按需 import"，纯 barrel 会让扩展变 all-or-nothing、加剧 D4 污染；且 full-path import 现状迁移成本最低。封装诉求只对子系统成立（`log_collector` 已有 `log_collector_export.dart` 门面），叶子 util 无需藏进 src/。落地动作: 在 README/CLAUDE.md 维护一份 blessed 公开路径清单，清单外（`lib/src/`、子系统内部文件）不保证稳定——清单即契约。
 - **版本**: 本次破坏性重构 `0.0.1 → 0.1.0`（pre-1.0，允许 break）；`1.0.0` = 公开 API 冻结里程碑。CHANGELOG.md 已存在，须随本次更新（见 §8）。
 
 ### D2. Decimal 精度契约【最高优先】
@@ -274,6 +274,6 @@ lib/
   - S5/S6/S7: 补 `text_utils` 非谓词方法去向、`EncryptUtils` 类名一致性、`sp` 单例新名。
   - §7: 计时类回归测试用 `FakeAsync`/`clock` 驱动。
   - §8: 交付物补 CHANGELOG.md 更新 + 版本 `0.0.1 → 0.1.0`。
-  - §9: 迁移前置检查 cashier 是否调用 `Cutils.getPlatformVersion()`。
+  - §9: 迁移前置检查宿主业务仓是否调用 `Cutils.getPlatformVersion()`。
   - §10: 阶段 1 增"更新 pubspec `dartx` 注释与 CLAUDE.md 模块地图"。
 - **评审待办（见 §11 D1–D7）**: **D1 公开 API 边界**、**D2 Decimal 契约**为最高优先，须作者拍板后方可进入阶段 3 及之后。

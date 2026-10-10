@@ -4,7 +4,7 @@
 
 **Goal:** 把 `cutils` 从 plugin 包清理、降级为普通包，并完成目录重组（合并/改名/解散/barrel），交付一个 `dart analyze` + `flutter test` 全绿的新结构。
 
-**Architecture:** 删除死代码、死依赖与 plugin 脚手架；按 spec §3 的目标结构做文件移动与改名（date+time→datetime、encrypt→crypto、sp→storage、解散 utils/、text→ui+ext）；新增顶层 `lib/cutils.dart` barrel 统一导出。本计划**不改 API 行为**（单例→静态类转换、bug 修复、新测试、文档/示例、迁移 cashier 均在后续 Plan 2–5）。
+**Architecture:** 删除死代码、死依赖与 plugin 脚手架；按 spec §3 的目标结构做文件移动与改名（date+time→datetime、encrypt→crypto、sp→storage、解散 utils/、text→ui+ext）；新增顶层 `lib/cutils.dart` barrel 统一导出。本计划**不改 API 行为**（单例→静态类转换、bug 修复、新测试、文档/示例、迁移宿主业务仓均在后续 Plan 2–5）。
 
 **Tech Stack:** Dart 3.6+ / Flutter ≥3.3、`package:flutter_lints`、`package:test`+`mocktail`。macOS 环境（BSD `sed -i ''`）。
 
@@ -741,4 +741,4 @@ Expected: 干净合并。
 - Plan 2: 单例→静态类转换（spec §4）
 - Plan 3: 高危 bug 修复 + 回归测试（spec §6.1）
 - Plan 4: 中/低危修复 + dartdoc（spec §6.2/6.3、§8）
-- Plan 5: example 演示页 + README + 迁移 cashier（spec §8/§9）
+- Plan 5: example 演示页 + README + 迁移宿主业务仓（spec §8/§9）

@@ -113,5 +113,5 @@ class RandomUtils {
 - [ ] 调用点全部改 `XUtils.foo()` 形式；`date_time_utils_test` 用 `DateTimeUtils.formatDate`。
 
 ## 不在 Plan 2
-- bug 修复（Plan 3/4）、单测全覆盖（Plan 3/4）、example/README（Plan 5）、迁移 cashier（Plan 5）。
+- bug 修复（Plan 3/4）、单测全覆盖（Plan 3/4）、example/README（Plan 5）、迁移宿主业务仓（Plan 5）。
 - 有状态单例的 init 竞态等 bug（Plan 3，如 sp/logCollector/deviceInfo 的 init）。

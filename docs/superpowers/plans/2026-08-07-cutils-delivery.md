@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: superpowers:subagent-driven-development.
 
-**Goal:** 完成"可发布"的仓库内交付——`example/` 演示页、README、CHANGELOG（汇总全部破坏性变更）、版本号 `0.0.1→0.1.0`。**cashier 迁移后置**（涉另仓库，本计划不含）。
+**Goal:** 完成"可发布"的仓库内交付——`example/` 演示页、README、CHANGELOG（汇总全部破坏性变更）、版本号 `0.0.1→0.1.0`。**宿主业务仓迁移后置**（涉另仓库，本计划不含）。
 
 **Architecture:** Plan 1-4 已把 cutils 整理成结构清晰、API 统一、bug 全修、文档齐全的库；本计划只补"对外门面"：能跑给人看的 demo、README 索引、CHANGELOG 迁移说明。不改 lib/ 逻辑。
 
@@ -55,4 +55,4 @@
 - [ ] 根 analyze 0 warning、227 测试全绿。
 
 ## 不在 Plan 5
-迁移 cashier（saas-cashier 仓库的 import 与调用点更新）——后续单独进行。
+迁移宿主业务仓（其 import 与调用点更新）——后续单独进行。

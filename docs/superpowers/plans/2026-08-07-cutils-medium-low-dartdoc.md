@@ -86,4 +86,4 @@ Files: 全 `lib/`。无新测试（机械清理），gate = analyze 不增 + 现
 - [ ] 5 波各一提交，历史清晰。
 
 ## 不在 Plan 4
-example 演示页 + README + CHANGELOG + 迁移 cashier（Plan 5）。
+example 演示页 + README + CHANGELOG + 迁移宿主业务仓（Plan 5）。

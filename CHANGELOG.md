@@ -88,7 +88,10 @@
 - **log_collector**：FlutterError 递归 / 轮转空操作 / Timer 泄漏 / dispose 不释放 outputs /
   队列无上限 / init 竞态 / ConsoleLogOutput 用 `print`。
 - **file_utils**：`readBySink` 空返回 / `cleanExpiredLog` 用 `.millisecond` 致随机删 / 多处
-  未 await / `deleteLog` 忽略 `saveDays` / 路径穿越。
+  未 await / `deleteLog` 忽略 `saveDays` / 路径穿越 / `getFileList`·`deleteLog` 枚举日志改
+  后缀匹配 + 排除目录链接（原子串匹配会误收 `*.log.bak` 与名为 `*.log` 的目录，zip 压缩
+  目录即抛）/ `cleanLog` 排除目录链接（原空 `*.log` 目录会被静默删除）/ 过期判定
+  `ctime` 改 `mtime`。
 - **datetime**：SSS 毫秒格式 / `isToday` isUtc / 倒计时漂移 / `Future.delayed` 不取消。
 - **system**：`winUniqueIdentifier` 混入 `DateTime.now` / `navigationBarHeight` 算式。
 - **ext**：千分位负数 / `TextPainter` 不 dispose / sp 把 value 打进日志（PII）。
