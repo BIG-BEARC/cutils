@@ -1,4 +1,4 @@
-// Wave C2 — medium-severity bug fixes for `net` (NetUtil).
+// Wave C2 — medium-severity bug fixes for `net` (NetUtils).
 //
 // Strict TDD: each case was first observed to FAIL on the unmodified code,
 // then the minimal fix was applied under `lib/net/net_util.dart`.
@@ -9,7 +9,7 @@
 //     the pure `isConnectedFromResults` helper (Wave D), but `_netType` was
 //     still wrong for vpn/other. Fix: handle every `ConnectivityResult` value
 //     explicitly.
-//   - NetUtil never subscribed to `onConnectivityChanged`, so the cached
+//   - NetUtils never subscribed to `onConnectivityChanged`, so the cached
 //     `_connected`/`_netType` could go stale. Fix: extract the cache-update
 //     into `@visibleForTesting applyConnectivityResults`, subscribe to the
 //     stream (`start()`), and add `dispose()`.
@@ -36,16 +36,15 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   group('C2 applyConnectivityResults (exhaustive switch)', () {
     test('vpn is connected with a non-offline label (RED on old code)', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.vpn]);
-      expect(n.connected, isTrue,
-          reason: 'vpn must be treated as connected.');
+      expect(n.connected, isTrue, reason: 'vpn must be treated as connected.');
       expect(n.netType, isNot('未连接'),
           reason: 'vpn must NOT be labeled as offline ("未连接").');
     });
 
     test('other is connected with a non-offline label (RED on old code)', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.other]);
       expect(n.connected, isTrue);
       expect(n.netType, isNot('未连接'));
@@ -53,41 +52,41 @@ void main() {
 
     // Exhaustively cover every ConnectivityResult enum value.
     test('wifi → connected', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.wifi]);
       expect(n.connected, isTrue);
       expect(n.netType, 'wifi');
     });
 
     test('mobile → connected', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.mobile]);
       expect(n.connected, isTrue);
       expect(n.netType, '移动连接');
     });
 
     test('ethernet → connected', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.ethernet]);
       expect(n.connected, isTrue);
       expect(n.netType, '以太网');
     });
 
     test('bluetooth → connected (policy: bt counts as connected, Wave D)', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.bluetooth]);
       expect(n.connected, isTrue);
     });
 
     test('none → disconnected', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults([ConnectivityResult.none]);
       expect(n.connected, isFalse);
       expect(n.netType, '未连接');
     });
 
     test('multi-result (wifi+vpn) picks a live representative netType', () {
-      final n = NetUtil();
+      final n = NetUtils();
       n.applyConnectivityResults(
         [ConnectivityResult.none, ConnectivityResult.wifi],
       );
@@ -98,7 +97,7 @@ void main() {
 
   group('C2 stream subscription lifecycle', () {
     test('start() is idempotent and dispose() cancels without throwing', () {
-      final n = NetUtil();
+      final n = NetUtils();
       // Calling start() twice must not throw and must not stack
       // subscriptions.
       n.start();

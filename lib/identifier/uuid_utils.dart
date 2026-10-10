@@ -4,9 +4,10 @@ import 'package:uuid/uuid.dart';
 /// * @Created at: 20/12/2023 11:07
 /// * @Email:
 /// * description uuid工具类
+/// 依赖：`uuid`（纯 Dart）。
 
-class UUIDUtils {
-  UUIDUtils._();
+class UuidUtils {
+  UuidUtils._();
 
   static const _uuid = Uuid();
 

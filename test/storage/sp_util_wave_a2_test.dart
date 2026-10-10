@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Project imports:
 import 'package:cutils/storage/sp_util.dart';
 
-/// Wave A2 — SpUtil 中危修复测试。
+/// Wave A2 — SpUtils 中危修复测试。
 ///
 /// 覆盖项：
 /// - A2-1: init 竞态——并发 init()/ensureInitialized() 共享同一个 in-flight
@@ -21,7 +21,7 @@ void main() {
     // setMockInitialValues 同时会清空 SharedPreferences 插件内部的 _completer，
     // 保证下一次 getInstance() 走真正的读取路径。
     SharedPreferences.setMockInitialValues({});
-    // 重置 SpUtil 单例缓存，保证每个测试都走「冷启动」路径。
+    // 重置 SpUtils 单例缓存，保证每个测试都走「冷启动」路径。
     spUtil.resetInstanceForTesting();
   });
 

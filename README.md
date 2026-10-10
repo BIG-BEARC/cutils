@@ -58,8 +58,8 @@ final ok = 'a@b.com'.isEmail; // → true
 | JSON | [`json/`](lib/json) | `JsonUtils` 编解码 / 美化 |
 | 加解密 | [`crypto/`](lib/crypto) | `CryptoUtils`（`crypto` 包；md5 / hmac / base64 / xor） |
 | 文件 | [`file/`](lib/file) | `FileUtils` 读写 / base64 / 过期清理 |
-| 存储 | [`storage/`](lib/storage) | `SpUtil`（SharedPreferences 封装，顶层实例 `spUtil`） |
-| 网络 | [`net/`](lib/net) | `NetUtil`（`connectivity_plus` 在线判断，顶层实例 `netUtil`） |
+| 存储 | [`storage/`](lib/storage) | `SpUtils`（SharedPreferences 封装，顶层实例 `spUtil`） |
+| 网络 | [`net/`](lib/net) | `NetUtils`（`connectivity_plus` 在线判断，顶层实例 `netUtil`） |
 | 系统 | [`system/`](lib/system) | 设备信息（`deviceInfo`）、包信息（`packageInfoUtil`）、键盘、系统工具 |
 | UI | [`ui/`](lib/ui) | `calculate_utils` 文本测量、`image_utils` |
 | 事件 | [`event/`](lib/event) | 事件总线（顶层实例 `eventBus`） |
@@ -73,7 +73,8 @@ cutils 按工具是否有状态选择不同 API 形态：
 
 - **无状态工具 = 静态类**：`NumUtils.foo()`、`DateTimeUtils.foo()`、`CryptoUtils.foo()`、
   `JsonUtils.foo()`、`RegexUtils.foo()`、`MoneyUtils.foo()`、`RandomUtils.foo()`、
-  `UUIDUtils.foo()`、`KeyBoardUtils.foo()`。无需创建实例，直接类名调用。
+  `UuidUtils.foo()`、`KeyboardUtils.foo()`。无需创建实例，直接类名调用
+  （全部工具类统一 `*Utils` 后缀）。
 - **类型相关 = 扩展**：挂在内置类型上，如 `'x'.isEmail`、`42.currencyFormat()`、
   `0.5.percentFormat()`。
 - **有状态 = 实例单例**：直接用预置的顶层实例，无需自己 `new`：

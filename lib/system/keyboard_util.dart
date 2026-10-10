@@ -9,8 +9,8 @@ import 'package:flutter/services.dart';
 /// 键盘工具：关闭软键盘（[closeKeyBoard]）与分析硬件 [KeyEvent] 产生字符
 /// （[analysisKeyEvent]，用于扫码枪等外设键盘场景）。
 
-class KeyBoardUtils {
-  KeyBoardUtils._();
+class KeyboardUtils {
+  KeyboardUtils._();
 
   /// Closes the on-screen keyboard by releasing focus.
   ///
@@ -41,8 +41,9 @@ class KeyBoardUtils {
         event.logicalKey.keyLabel == LogicalKeyboardKey.select.keyLabel) {
       return '';
     }
-    final bool isNotEnterOrSelect = event.logicalKey != LogicalKeyboardKey.enter ||
-        event.logicalKey.keyLabel != LogicalKeyboardKey.select.keyLabel;
+    final bool isNotEnterOrSelect =
+        event.logicalKey != LogicalKeyboardKey.enter ||
+            event.logicalKey.keyLabel != LogicalKeyboardKey.select.keyLabel;
     if (event.logicalKey.keyId > 255 && isNotEnterOrSelect) {
       return '';
     }

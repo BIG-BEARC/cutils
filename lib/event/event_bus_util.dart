@@ -4,9 +4,9 @@ import 'package:event_bus/event_bus.dart';
 
 /// 应用级事件总线单例（基于 `event_bus` 包）。
 ///
-/// 订阅者通过 [EventBusUtil.listen] 注册（自动收集到内部集合，[dispose] 统一取消），
-/// 发布者通过 [EventBusUtil.fire] 广播。事件类型必须继承 [Event]。
-final eventBus = EventBusUtil();
+/// 订阅者通过 [EventBusUtils.listen] 注册（自动收集到内部集合，[dispose] 统一取消），
+/// 发布者通过 [EventBusUtils.fire] 广播。事件类型必须继承 [Event]。
+final eventBus = EventBusUtils();
 
 /// 所有事件的标记基类。订阅端用 `listen<MyEvent>(...)` 按类型过滤。
 abstract class Event {}
@@ -19,12 +19,12 @@ abstract class Event {}
 /// eventBus.fire(LoginEvent());
 /// eventBus.listen<LoginEvent>((e) => print('logged in'));
 /// ```
-class EventBusUtil {
-  static EventBusUtil _singleton = EventBusUtil._internal();
+class EventBusUtils {
+  static EventBusUtils _singleton = EventBusUtils._internal();
 
-  factory EventBusUtil() => _singleton;
+  factory EventBusUtils() => _singleton;
 
-  EventBusUtil._internal();
+  EventBusUtils._internal();
 
   /// 当前单例持有的 [EventBus] 流（静态访问点）。
   static EventBus get eventBus => _singleton._eventBus;

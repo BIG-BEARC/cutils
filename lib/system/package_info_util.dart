@@ -9,17 +9,18 @@ import '../log/log.dart';
 ///
 /// 读取 App 包信息（名称 / 包名 / 版本名 / 版本号）。app 启动调用 [init] 后，
 /// 通过各 getter 读取缓存值。
+/// 依赖：`package_info_plus`（平台插件——测试需打桩）。
 
-/// 全局 [PackageInfoUtil] 单例。
-final packageInfoUtil = PackageInfoUtil();
+/// 全局 [PackageInfoUtils] 单例。
+final packageInfoUtil = PackageInfoUtils();
 
 /// App 包信息读取工具（单例，基于 `package_info_plus`）。
-class PackageInfoUtil {
-  PackageInfoUtil._();
+class PackageInfoUtils {
+  PackageInfoUtils._();
 
-  static final PackageInfoUtil _instance = PackageInfoUtil._();
+  static final PackageInfoUtils _instance = PackageInfoUtils._();
 
-  factory PackageInfoUtil() => _instance;
+  factory PackageInfoUtils() => _instance;
 
   //APP名称
   String _appName = '';
@@ -54,7 +55,7 @@ class PackageInfoUtil {
       _version = packageInfo.version;
       _buildNumber = packageInfo.buildNumber;
     } catch (e) {
-      logger.e('PackageInfoUtil initialize error: $e');
+      logger.e('PackageInfoUtils initialize error: $e');
     }
   }
 }

@@ -15,9 +15,11 @@ import 'package:cutils/log/log.dart';
 /// * @Created at: 12-06-2025 11:11
 /// * @Email:
 /// * description sp存储工具类，适合存储轻量级数据，不建议存储json长字符串
+///
+/// 依赖：`shared_preferences`（平台插件——经原生通道读写，测试需打桩）。
 
-/// 全局 [SpUtil] 单例。使用前需先 `await spUtil.init();`。
-final spUtil = SpUtil();
+/// 全局 [SpUtils] 单例。使用前需先 `await spUtil.init();`。
+final spUtil = SpUtils();
 
 /// SharedPreferences 薄封装单例。
 ///
@@ -25,12 +27,12 @@ final spUtil = SpUtil();
 /// `putString` / `getBool` 等基本类型直接转发到 [SharedPreferences]。
 /// 日志只记录 key（不记录 value），避免 token / PII 入日志。
 /// 并发 [init] 由 single-flight Future 去重。
-class SpUtil {
-  SpUtil._();
+class SpUtils {
+  SpUtils._();
 
-  static final SpUtil _instance = SpUtil._();
+  static final SpUtils _instance = SpUtils._();
 
-  factory SpUtil() => _instance;
+  factory SpUtils() => _instance;
   SharedPreferences? _prefs;
   // 缓存进行中的初始化 Future，确保并发 init() 调用只触发一次
   // SharedPreferences.getInstance()。完成或失败后清空。
@@ -84,7 +86,7 @@ class SpUtil {
     try {
       return _prefs?.setString(key, json.encode(value)) ?? Future.value(false);
     } catch (e) {
-      logger.e("SpUtil error _put for key '$key\n error:$e");
+      logger.e("SpUtils error _put for key '$key\n error:$e");
       return Future.value(false);
     }
   }
@@ -102,7 +104,7 @@ class SpUtil {
           json.decode(jsonString) as Map<String, dynamic>;
       return fromJson(jsonMap);
     } catch (e, stackTrace) {
-      logger.e("SpUtil error reading key '$key': $e\n$stackTrace");
+      logger.e("SpUtils error reading key '$key': $e\n$stackTrace");
       return defValue;
     }
   }
@@ -157,7 +159,7 @@ class SpUtil {
       return _prefs?.setStringList(key, encodedList) ?? false;
     } catch (e) {
       logger.e(
-          "SpUtil error putObjectList list for key '$key ,list:$list\n error:$e");
+          "SpUtils error putObjectList list for key '$key ,list:$list\n error:$e");
       return false;
     }
   }
@@ -180,7 +182,7 @@ class SpUtil {
       return decodedList;
     } catch (e, stackTrace) {
       logger.e(
-          "SpUtil error reading object list for key '$key': $e\n$stackTrace");
+          "SpUtils error reading object list for key '$key': $e\n$stackTrace");
       return defValue;
     }
   }

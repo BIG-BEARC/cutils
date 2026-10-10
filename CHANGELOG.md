@@ -2,6 +2,31 @@
 
 本文件记录 `cutils` 的发布变更。
 
+## 0.2.0 — 命名统一（破坏性）
+
+全部工具类后缀统一为 `*Utils`（21/21），消除 Util/Utils 双轨与两处拼写不规范。
+**文件名与 import 路径不变**；顶层小写实例（`spUtil` / `netUtil` / `eventBus` /
+`deviceInfo` / `packageInfoUtil` / `logger`）不变；**不保留旧名别名**（pre-1.0
+且无存量下游，留别名只会延长双轨）——按旧名调用的下游按下表改名调用点即可。
+
+| 旧类名 | 新类名 |
+|---|---|
+| `UUIDUtils` | `UuidUtils` |
+| `KeyBoardUtils` | `KeyboardUtils` |
+| `NetUtil` | `NetUtils` |
+| `TimerUtil` | `TimerUtils` |
+| `SpUtil` | `SpUtils` |
+| `TimelineUtil` | `TimelineUtils` |
+| `DeviceInfoUtil` | `DeviceInfoUtils` |
+| `EventBusUtil` | `EventBusUtils` |
+| `PackageInfoUtil` | `PackageInfoUtils` |
+
+### 文档
+
+- 各工具模块头补依赖标注（平台插件面显式标出，提醒下游集成 / 打桩成本）与
+  `log/` ↔ `log_collector/` 双轨定位说明；`log_collector` 经 `log_storage` 依赖
+  `path_provider` 一并显式化。
+
 ## 0.1.0 — 重构与质量提升（破坏性）
 
 由 plugin 包重组为纯 Dart/Flutter 工具库，全面整理目录结构与公开 API，并修复一批高危 bug。

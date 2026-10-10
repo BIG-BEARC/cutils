@@ -8,11 +8,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Project imports:
 import 'package:cutils/storage/sp_util.dart';
 
-/// Wave G — SpUtil 日志 PII 泄露回归测试。
+/// Wave G — SpUtils 日志 PII 泄露回归测试。
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // 每个测试前重置 SpUtil 单例持有的 SharedPreferences 缓存，并装填 mock 初始值，
+  // 每个测试前重置 SpUtils 单例持有的 SharedPreferences 缓存，并装填 mock 初始值，
   // 保证 getString 等读到的就是本测试塞入的值。
   setUp(() {
     SharedPreferences.setMockInitialValues({});

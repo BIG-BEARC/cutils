@@ -13,17 +13,18 @@ import 'package:flutter/foundation.dart';
 /// 设备信息工具（基于 `device_info_plus`）。app 启动调用 [init] 后，
 /// 通过 [osVersion] / [deviceType] / [androidSdkInt] / [serialNumber] 等
 /// getter 读取缓存值；Windows 平台可调用 [winUniqueIdentifier] 取机器码。
+/// 依赖：`device_info_plus`（平台插件——测试需打桩）、`crypto`（纯 Dart）。
 
-/// 全局 [DeviceInfoUtil] 单例。
-final deviceInfo = DeviceInfoUtil();
+/// 全局 [DeviceInfoUtils] 单例。
+final deviceInfo = DeviceInfoUtils();
 
 /// 设备信息读取工具（单例）。
-class DeviceInfoUtil {
-  DeviceInfoUtil._();
+class DeviceInfoUtils {
+  DeviceInfoUtils._();
 
-  static final DeviceInfoUtil _instance = DeviceInfoUtil._();
+  static final DeviceInfoUtils _instance = DeviceInfoUtils._();
 
-  factory DeviceInfoUtil() => _instance;
+  factory DeviceInfoUtils() => _instance;
   String _osVersion = 'unknown';
   String _deviceType = 'unknown';
   int _androidSdkInt = 16;

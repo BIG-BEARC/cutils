@@ -5,13 +5,13 @@ import 'package:flutter/foundation.dart';
 ///timer callback.(millisUntilFinished 毫秒).
 typedef OnTimerTickCallback = void Function(int millisUntilFinished);
 
-/// TimerUtil —— 通用定时器 / 倒计时工具。
+/// TimerUtils —— 通用定时器 / 倒计时工具。
 ///
 /// 提供 [startTimer]（周期定时）与 [startCountDown]（倒计时）两种模式；
 /// 倒计时基于启动时固定的 `endTime` 墙钟，避免 [Timer.periodic] 漂移。
 /// 不再使用时请调用 [cancel] / [dispose] 释放底层 [Timer]。
-class TimerUtil {
-  TimerUtil(
+class TimerUtils {
+  TimerUtils(
       {this.mInterval = Duration.millisecondsPerSecond, this.mTotalTime = 0});
 
   /// Timer.
@@ -148,7 +148,7 @@ class TimerUtil {
 
   /// Releases resources by cancelling the underlying [Timer]s.
   ///
-  /// 生命周期约定：持有 [TimerUtil] 的对象在销毁时应调用 [dispose]（或
+  /// 生命周期约定：持有 [TimerUtils] 的对象在销毁时应调用 [dispose]（或
   /// [cancel]）以释放底层 `dart:async` [Timer]，避免回调泄漏。本方法等价于
   /// [cancel]，提供与有状态组件（`State.dispose`）一致的命名。
   void dispose() => cancel();

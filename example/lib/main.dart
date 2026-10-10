@@ -46,7 +46,7 @@ class _HomePage extends StatelessWidget {
       _DemoEntry(
         Icons.schedule,
         '日期时间',
-        'DateTimeUtils / TimelineUtil',
+        'DateTimeUtils / TimelineUtils',
         const DatetimeDemo(),
       ),
       _DemoEntry(
@@ -70,7 +70,7 @@ class _HomePage extends StatelessWidget {
       _DemoEntry(
         Icons.storage,
         '存储',
-        'SpUtil (SharedPreferences)',
+        'SpUtils (SharedPreferences)',
         const StorageDemo(),
       ),
       _DemoEntry(
@@ -82,7 +82,7 @@ class _HomePage extends StatelessWidget {
       _DemoEntry(
         Icons.tag,
         '标识生成',
-        'RandomUtils / UUIDUtils',
+        'RandomUtils / UuidUtils',
         const IdentifierDemo(),
       ),
       _DemoEntry(

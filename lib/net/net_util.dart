@@ -12,22 +12,24 @@ import 'package:cutils/log/log.dart';
 /// * @Company: 嘉联支付
 /// * description 网络连接监听
 ///
-/// [NetUtil] 是一个 app 级单例：
+/// 依赖：`connectivity_plus`（平台插件——连通性事件经原生通道，测试需打桩）。
+///
+/// [NetUtils] 是一个 app 级单例：
 /// - 调用 [isConnectedNet] 做一次性连通性检测（带超时）；
 /// - 调用 [start] 订阅 [Connectivity.onConnectivityChanged] 流，缓存
 ///   `_connected`/`_netType` 随平台事件实时更新；
 /// - app 销毁时调用 [dispose] 取消订阅。
-final netUtil = NetUtil();
+final netUtil = NetUtils();
 
 /// 平台连通性检测的超时时长。卡住的平台调用超过此时长即视为离线。
 const Duration _kConnectivityTimeout = Duration(seconds: 5);
 
-class NetUtil {
-  factory NetUtil() => _ins;
+class NetUtils {
+  factory NetUtils() => _ins;
 
-  NetUtil._internal();
+  NetUtils._internal();
 
-  static final NetUtil _ins = NetUtil._internal();
+  static final NetUtils _ins = NetUtils._internal();
 
   //获取网络类型
   String _netType = 'none';

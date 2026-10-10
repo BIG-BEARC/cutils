@@ -59,7 +59,7 @@ void main() {
       final pastMs =
           DateTime.utc(2026, 1, 15, 11, 59, 50).millisecondsSinceEpoch;
       expect(
-        TimelineUtil.format(pastMs, locTimeMs: nowMs, locale: '_test_col'),
+        TimelineUtils.format(pastMs, locTimeMs: nowMs, locale: '_test_col'),
         isA<String>(),
       );
     });
@@ -73,7 +73,7 @@ void main() {
       final pastMs =
           DateTime.utc(2026, 1, 15, 11, 59, 50).millisecondsSinceEpoch;
       final res =
-          TimelineUtil.format(pastMs, locTimeMs: nowMs, locale: '_test_col');
+          TimelineUtils.format(pastMs, locTimeMs: nowMs, locale: '_test_col');
       // 旧实现：suffix('·') != suffixAfter('·') 为 false → 跳过 just now，
       // 返回 'a minute·'。修复后：!isFuture → true → 'just now'。
       expect(res, 'just now');
@@ -88,7 +88,7 @@ void main() {
       // 一个"几天前"的当前时刻，使 format 落入 _formatDays(common) → MM-dd。
       final nowMs = DateTime.utc(2026, 1, 15, 12, 0).millisecondsSinceEpoch;
       final res =
-          TimelineUtil.format(ms, locTimeMs: nowMs, locale: 'en', isUtc: true);
+          TimelineUtils.format(ms, locTimeMs: nowMs, locale: 'en', isUtc: true);
       // common → MM-dd，UTC → '01-10'；未线程时（local）→ '01-11'（本机）。
       expect(res, '01-10');
     });
@@ -96,7 +96,7 @@ void main() {
     test('formatByDateTime 推导 isUtc（UTC DateTime → UTC 日历）', () {
       final dt = DateTime.utc(2026, 1, 10, 23, 30);
       final loc = DateTime.utc(2026, 1, 15, 12, 0);
-      final res = TimelineUtil.formatByDateTime(dt,
+      final res = TimelineUtils.formatByDateTime(dt,
           locDateTime: loc, locale: 'en', dayFormat: DayFormat.common);
       expect(res, '01-10');
     });
@@ -108,7 +108,7 @@ void main() {
       final nowMs = DateTime.utc(2026, 1, 15, 12, 0).millisecondsSinceEpoch;
       // 未来 1 天。
       final futureMs = DateTime.utc(2026, 1, 16, 9, 30).millisecondsSinceEpoch;
-      final res = TimelineUtil.formatA(futureMs, locMs: nowMs, isUtc: true);
+      final res = TimelineUtils.formatA(futureMs, locMs: nowMs, isUtc: true);
       expect(res, '09:30');
     });
 
@@ -116,7 +116,7 @@ void main() {
       final nowMs = DateTime.utc(2026, 1, 15, 12, 0).millisecondsSinceEpoch;
       // 一年前。
       final pastMs = DateTime.utc(2025, 1, 10, 9, 30).millisecondsSinceEpoch;
-      final res = TimelineUtil.formatA(pastMs, locMs: nowMs, isUtc: true);
+      final res = TimelineUtils.formatA(pastMs, locMs: nowMs, isUtc: true);
       expect(res, '2025-01-10');
     });
   });

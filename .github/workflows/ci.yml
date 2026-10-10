@@ -1,0 +1,31 @@
+# cutils CI：机械质量门（checklist 条 6「机械项归 CI，不占人审注意力」）
+# 三道门与本地验收口径一致：格式零漂移 → dart analyze 零 warning（硬门）→ flutter test 全绿。
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check formatting (no drift)
+        run: dart format --output=none --set-exit-if-changed lib/ test/ example/lib
+
+      - name: Static analysis (zero-warning gate)
+        run: dart analyze
+
+      - name: Tests
+        run: flutter test

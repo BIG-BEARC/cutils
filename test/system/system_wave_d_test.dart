@@ -30,8 +30,8 @@ void main() {
   group('D1 winUniqueIdentifier stability', () {
     test('buildWinUniqueId is deterministic for stable ids', () {
       const ids = <String>['baseboard-1', 'bios-2', 'cpu-3', 'disk-4', 'os-5'];
-      final first = DeviceInfoUtil.buildWinUniqueId(ids);
-      final second = DeviceInfoUtil.buildWinUniqueId(ids);
+      final first = DeviceInfoUtils.buildWinUniqueId(ids);
+      final second = DeviceInfoUtils.buildWinUniqueId(ids);
       expect(first, equals(second),
           reason: 'Stable hardware ids must yield a stable identifier.');
       // Sanity: the hash is the md5 of the concatenated input.
@@ -41,13 +41,13 @@ void main() {
 
     test('buildWinUniqueId does not depend on wall-clock time', () {
       const ids = <String>['x', 'y'];
-      final a = DeviceInfoUtil.buildWinUniqueId(ids);
+      final a = DeviceInfoUtils.buildWinUniqueId(ids);
       // Spin until the clock definitely advanced past millisecond resolution.
       final t = DateTime.now();
       while (DateTime.now() == t) {
         /* burn a few microseconds */
       }
-      final b = DeviceInfoUtil.buildWinUniqueId(ids);
+      final b = DeviceInfoUtils.buildWinUniqueId(ids);
       expect(b, equals(a),
           reason: 'Identifier must not change as DateTime.now() advances.');
     });
@@ -66,15 +66,15 @@ void main() {
       // concatenation still including `DateTime.now()`, calling
       // `winUniqueIdentifier()` twice returned two different hashes.)
       const ids = <String>['board', 'bios', 'cpu', 'disk', 'os'];
-      final first = DeviceInfoUtil.buildWinUniqueId(ids);
-      final second = DeviceInfoUtil.buildWinUniqueId(List<String>.from(ids));
+      final first = DeviceInfoUtils.buildWinUniqueId(ids);
+      final second = DeviceInfoUtils.buildWinUniqueId(List<String>.from(ids));
       expect(second, equals(first),
           reason: 'winUniqueIdentifier must be stable across invocations.');
     });
   });
 
   // -------------------------------------------------------------------
-  // D2 — `KeyBoardUtils.closeKeyBoard` called
+  // D2 — `KeyboardUtils.closeKeyBoard` called
   // `SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive)`, so
   // closing the keyboard also hid the status/nav bars. The fix removes
   // that side effect entirely.
@@ -100,7 +100,7 @@ void main() {
           home: Scaffold(
             body: Builder(
               builder: (context) => ElevatedButton(
-                onPressed: () => KeyBoardUtils.closeKeyBoard(context),
+                onPressed: () => KeyboardUtils.closeKeyBoard(context),
                 child: const Text('close'),
               ),
             ),

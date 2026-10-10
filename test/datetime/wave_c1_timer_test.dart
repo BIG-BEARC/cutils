@@ -3,9 +3,9 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Wave C1 — timer_util 中危修复。
-// 全部 FakeAsync + 注入 TimerUtil.now，无真实墙钟等待。
+// 全部 FakeAsync + 注入 TimerUtils.now，无真实墙钟等待。
 void main() {
-  tearDown(() => TimerUtil.now = DateTime.now);
+  tearDown(() => TimerUtils.now = DateTime.now);
 
   // C1.11 — updateTotalTime 变为纯 setter（不再隐式重启）；
   //         旧 cancel+set+start 的合并行为改由 restart(int) 提供。
@@ -13,13 +13,13 @@ void main() {
     test('updateTotalTime 只设总数，不重启（无即时 tick 爆发）', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         void step(Duration d) {
           clk = clk.add(d);
           async.elapse(d);
         }
 
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 10000);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 10000);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         timer.startCountDown(); // 立即 tick 10000
@@ -41,13 +41,13 @@ void main() {
     test('restart(int) 取消并按新总数重启（立即 tick 新总值）', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         void step(Duration d) {
           clk = clk.add(d);
           async.elapse(d);
         }
 
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 10000);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 10000);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         timer.startCountDown(); // tick 10000
@@ -67,8 +67,8 @@ void main() {
     test('restart 在未启动状态下启动倒计时', () {
       fakeAsync((async) {
         final clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 0);
+        TimerUtils.now = () => clk;
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 0);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         // 未启动（mTotalTime=0）→ restart 设新值并启动。
@@ -85,8 +85,8 @@ void main() {
     test('dispose 取消计时器（isActive 变 false）', () {
       fakeAsync((async) {
         final clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 10000);
+        TimerUtils.now = () => clk;
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 10000);
         timer.startCountDown();
         expect(timer.isActive(), isTrue);
 
@@ -98,13 +98,13 @@ void main() {
     test('dispose 后推进时间不再产生 tick', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         void step(Duration d) {
           clk = clk.add(d);
           async.elapse(d);
         }
 
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 10000);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 10000);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         timer.startCountDown(); // tick 10000

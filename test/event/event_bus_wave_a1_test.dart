@@ -26,11 +26,11 @@ void main() {
   // The singleton is disposed in these tests; subsequent tests in this file
   // re-create via the factory which returns the same (disposed) instance —
   // dispose() below recreates the internal controller so reuse works.
-  group('EventBusUtil.dispose', () {
+  group('EventBusUtils.dispose', () {
     test(
         'cancel all subscriptions and close the stream so disposed listeners '
         'receive nothing further', () async {
-      final bus = EventBusUtil();
+      final bus = EventBusUtils();
       var received = 0;
 
       bus.listen<_TestEvent>((e) => received++);

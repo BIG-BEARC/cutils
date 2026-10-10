@@ -4,7 +4,7 @@
 /// * description
 /// Timeline 信息配置：定义「时间线」文案（刚刚 / x 分钟前 / 昨天 等）的多语言
 /// 抽象契约。由 [ZhInfo]、[EnInfo]、[ZhNormalInfo]、[EnNormalInfo] 实现，
-/// 并可通过 [TimelineUtil.setLocaleInfo] 注册自定义 locale。
+/// 并可通过 [TimelineUtils.setLocaleInfo] 注册自定义 locale。
 abstract class TimelineInfo {
   /// 过去时间的后缀（如中文「前」、英文 `' ago'`）。
   String suffixAgo(); //suffix ago(后缀 后).

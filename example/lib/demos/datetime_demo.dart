@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 // Project imports:
 import 'demo_base.dart';
 
-/// 日期时间：[DateTimeUtils] 格式化 / 今日判定 / 星期，[TimelineUtil] 时间线文案。
+/// 日期时间：[DateTimeUtils] 格式化 / 今日判定 / 星期，[TimelineUtils] 时间线文案。
 class DatetimeDemo extends StatelessWidget {
   const DatetimeDemo({super.key});
 
@@ -24,8 +24,7 @@ class DatetimeDemo extends StatelessWidget {
           title: '格式化当前时间',
           expr:
               "DateTimeUtils.formatDate(DateTime.now(), format: 'yyyy-MM-dd HH:mm:ss')",
-          result: DateTimeUtils.formatDate(now,
-              format: 'yyyy-MM-dd HH:mm:ss'),
+          result: DateTimeUtils.formatDate(now, format: 'yyyy-MM-dd HH:mm:ss'),
         ),
         DemoRow(
           title: '是否是今天（按毫秒）',
@@ -39,13 +38,13 @@ class DatetimeDemo extends StatelessWidget {
         ),
         DemoRow(
           title: '时间线文案（2 小时前，中文）',
-          expr: "TimelineUtil.formatByDateTime(2小时前, locale: 'zh')",
-          result: TimelineUtil.formatByDateTime(twoHoursAgo, locale: 'zh'),
+          expr: "TimelineUtils.formatByDateTime(2小时前, locale: 'zh')",
+          result: TimelineUtils.formatByDateTime(twoHoursAgo, locale: 'zh'),
         ),
         DemoRow(
           title: 'QQ 风格时间线（2 天前）',
-          expr: "TimelineUtil.formatA(2天前的毫秒, languageCode: 'zh')",
-          result: TimelineUtil.formatA(twoDaysAgo.millisecondsSinceEpoch,
+          expr: "TimelineUtils.formatA(2天前的毫秒, languageCode: 'zh')",
+          result: TimelineUtils.formatA(twoDaysAgo.millisecondsSinceEpoch,
               languageCode: 'zh'),
         ),
       ],

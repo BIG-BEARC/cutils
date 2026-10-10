@@ -5,16 +5,16 @@ import 'package:flutter_test/flutter_test.dart';
 // Wave F — high-severity timer fixes (F3 drift, F4 stale tail).
 //
 // FakeAsync 驱动 Timer.periodic；本环境下它不接管 DateTime.now()，故
-// TimerUtil.now 注入一个可变时钟，测试用 step() 「先推进时钟再 elapse」，
+// TimerUtils.now 注入一个可变时钟，测试用 step() 「先推进时钟再 elapse」，
 // 使每次 periodic tick 看到正确的 now()。无真实墙钟等待。
 void main() {
-  tearDown(() => TimerUtil.now = DateTime.now);
+  tearDown(() => TimerUtils.now = DateTime.now);
 
   group('F3 countdown tracks wall-clock', () {
     test('remaining tracks elapsed wall-clock, no drift', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         // 先推进时钟再 elapse：periodic tick 在 elapse 边界触发时读到的
         // now() 即为推进后的值，与 fake 时间同步。
         void step(Duration d) {
@@ -22,7 +22,7 @@ void main() {
           async.elapse(d);
         }
 
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 10000);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 10000);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         timer.startCountDown(); // 立即 tick: 10000
@@ -44,13 +44,13 @@ void main() {
     test('full countdown reaches zero at the wall-clock-correct instant', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         void step(Duration d) {
           clk = clk.add(d);
           async.elapse(d);
         }
 
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 3000);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 3000);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         timer.startCountDown();
@@ -69,14 +69,14 @@ void main() {
     test('no stale tail callback fires after cancel()', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         void step(Duration d) {
           clk = clk.add(d);
           async.elapse(d);
         }
 
         // total=3500, interval=1000 → 3 整 tick 后剩 500ms 进入 tail 分支。
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 3500);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 3500);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
         timer.startCountDown();
@@ -100,13 +100,13 @@ void main() {
     test('a stale tail from a previous run does not corrupt a new run', () {
       fakeAsync((async) {
         var clk = DateTime(2026, 1, 1);
-        TimerUtil.now = () => clk;
+        TimerUtils.now = () => clk;
         void step(Duration d) {
           clk = clk.add(d);
           async.elapse(d);
         }
 
-        final timer = TimerUtil(mInterval: 1000, mTotalTime: 3500);
+        final timer = TimerUtils(mInterval: 1000, mTotalTime: 3500);
         final ticks = <int>[];
         timer.setOnTimerTickCallback(ticks.add);
 

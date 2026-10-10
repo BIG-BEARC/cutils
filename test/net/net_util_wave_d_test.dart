@@ -4,7 +4,7 @@
 // reason on the unmodified code, then the minimal fix was applied under
 // `lib/net/net_util.dart` to turn it green. No public signatures were
 // changed; one additive `@visibleForTesting` pure helper
-// (`NetUtil.isConnectedFromResults`) was introduced so the connectivity
+// (`NetUtils.isConnectedFromResults`) was introduced so the connectivity
 // decision is unit-testable without a live platform plugin or a mocked
 // `dart:io Platform`.
 //
@@ -21,10 +21,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:cutils/net/net_util.dart';
 
 void main() {
-  group('D4/D5 NetUtil.isConnectedFromResults', () {
+  group('D4/D5 NetUtils.isConnectedFromResults', () {
     test('D5 wifi+vpn multi-result is connected', () {
       expect(
-        NetUtil.isConnectedFromResults(
+        NetUtils.isConnectedFromResults(
           [ConnectivityResult.wifi, ConnectivityResult.vpn],
         ),
         isTrue,
@@ -34,7 +34,7 @@ void main() {
 
     test('D5 bluetooth is treated as connected', () {
       expect(
-        NetUtil.isConnectedFromResults([ConnectivityResult.bluetooth]),
+        NetUtils.isConnectedFromResults([ConnectivityResult.bluetooth]),
         isTrue,
         reason: 'Bluetooth must be treated as connected per project policy.',
       );
@@ -42,25 +42,25 @@ void main() {
 
     test('D5 none is disconnected', () {
       expect(
-        NetUtil.isConnectedFromResults([ConnectivityResult.none]),
+        NetUtils.isConnectedFromResults([ConnectivityResult.none]),
         isFalse,
       );
     });
 
     test('D5 empty list is disconnected', () {
-      expect(NetUtil.isConnectedFromResults(<ConnectivityResult>[]), isFalse);
+      expect(NetUtils.isConnectedFromResults(<ConnectivityResult>[]), isFalse);
     });
 
     test('D5 vpn-only is connected', () {
       expect(
-        NetUtil.isConnectedFromResults([ConnectivityResult.vpn]),
+        NetUtils.isConnectedFromResults([ConnectivityResult.vpn]),
         isTrue,
       );
     });
 
     test('D4 mixed list containing none alongside wifi stays connected', () {
       expect(
-        NetUtil.isConnectedFromResults(
+        NetUtils.isConnectedFromResults(
           [ConnectivityResult.none, ConnectivityResult.wifi],
         ),
         isTrue,
@@ -76,7 +76,7 @@ void main() {
       // to `return true`. The pure decision now says a `none`-only list is
       // offline on every platform, Windows included.
       expect(
-        NetUtil.isConnectedFromResults([ConnectivityResult.none]),
+        NetUtils.isConnectedFromResults([ConnectivityResult.none]),
         isFalse,
         reason: 'Windows with no connectivity must report offline.',
       );
