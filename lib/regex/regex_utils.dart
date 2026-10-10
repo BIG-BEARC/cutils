@@ -61,7 +61,25 @@ class RegexUtils {
   /// 返回输入是否匹配长度为18的id卡号的正则表达式。
   static bool isIDCard18Exact(String input) {
     if (isIDCard18(input)) {
-      final List<int> factor = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+      final List<int> factor = [
+        7,
+        9,
+        10,
+        5,
+        8,
+        4,
+        2,
+        1,
+        6,
+        3,
+        7,
+        9,
+        10,
+        5,
+        8,
+        4,
+        2
+      ];
       final List<String> suffix = [
         '1',
         '0',
@@ -80,7 +98,8 @@ class RegexUtils {
         final List<MapEntry<String, String>> mapEntryList = [];
         for (int i = 0, length = list.length; i < length; i++) {
           final List<String> tokens = list[i].trim().split('=');
-          final MapEntry<String, String> mapEntry = MapEntry(tokens[0], tokens[1]);
+          final MapEntry<String, String> mapEntry =
+              MapEntry(tokens[0], tokens[1]);
           mapEntryList.add(mapEntry);
         }
         cityMap.addEntries(mapEntryList);

@@ -70,18 +70,18 @@ class _LogDemoState extends State<LogDemo> {
           runSpacing: 8,
           children: [
             ElevatedButton(
-              onPressed: () => _emit('logger.i',
-                  () => logger.i('info 演示', tag: 'demo')),
+              onPressed: () =>
+                  _emit('logger.i', () => logger.i('info 演示', tag: 'demo')),
               child: const Text('logger.i'),
             ),
             ElevatedButton(
-              onPressed: () => _emit('logger.w',
-                  () => logger.w('warn 演示', tag: 'demo')),
+              onPressed: () =>
+                  _emit('logger.w', () => logger.w('warn 演示', tag: 'demo')),
               child: const Text('logger.w'),
             ),
             ElevatedButton(
-              onPressed: () => _emit('logger.e',
-                  () => logger.e('error 演示', tag: 'demo')),
+              onPressed: () =>
+                  _emit('logger.e', () => logger.e('error 演示', tag: 'demo')),
               child: const Text('logger.e'),
             ),
             ElevatedButton(

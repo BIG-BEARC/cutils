@@ -46,7 +46,8 @@ class CryptoDemo extends StatelessWidget {
         ),
         DemoRow(
           title: 'XOR 自反（xorCode 两次还原）',
-          expr: "CryptoUtils.xorCode(CryptoUtils.xorCode('hello','1,2,3'),'1,2,3')",
+          expr:
+              "CryptoUtils.xorCode(CryptoUtils.xorCode('hello','1,2,3'),'1,2,3')",
           result: xoredRoundTrip,
         ),
         DemoRow(
