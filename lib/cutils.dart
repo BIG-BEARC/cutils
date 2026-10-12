@@ -8,6 +8,8 @@ library;
 
 // 类型扩展
 export 'ext/ext_fun.dart';
+// 字节
+export 'byte/byte_utils.dart';
 // 数值与金额
 export 'num/num_utils.dart';
 export 'num/money_utils.dart';

@@ -2,6 +2,26 @@
 
 本文件记录 `cutils` 的发布变更。
 
+## 0.3.0 — 吸收 YCFlutterUtils 三件能力（byte / 元转分 / 校验族）
+
+自 YCFlutterUtils 按「能力吸收、重写」落地三件（非文件拷贝：源实现为
+pre-null-safety 代码且带缺陷，本批全部按本仓基线重写并修正）：
+
+- **新增 `lib/byte/` 字节工具模块**（零第三方依赖，仅 `dart:typed_data` /
+  `dart:convert`）：`ByteUtils`——可读字符串 ↔ `Uint8List`（hex/dec，值域
+  校验拒绝超 `0xFF` token，不做静默截断）、base64 互转、克隆 / 判等与
+  截取 / 拼接 / 插入 / 删除窗口操作（越界钳制，不修改入参）；`ByteWord` /
+  `ByteDoubleWord`——16 / 32 位整数按显式 `Endian` 序列化拆装。
+- **`MoneyUtils.changeY2F(String) → int` 元转分**：与 `changeF2Y` 对称，
+  Decimal 全程不经 `double`（2^53 边界外不丢精度）；无法解析、非整分、
+  换算分值超出平台 int 范围均抛 `ArgumentError`。
+- **`RegexUtils` 新增 15 个校验方法与配套 `REGEX_*` 常量**：文件类型族 11
+  （isImage / isAudio / isVideo / isTxt / isDoc / isExcel / isPpt / isApk /
+  isPdf / isHtml / isVector——扩展名启发式，双端锚定 + 转义分隔点，大小写
+  不敏感）、哈希格式族 3（isMD5 / isSHA1 / isSHA256——仅格式校验，非校验
+  和；支持冒号分隔形态）、`isHexadecimal`（裸十六进制串，与 `isHexColor`
+  颜色格式语义不同）。
+
 ## 0.2.1 — log_collector 条目级压制控制台输出
 
 `LogEntry` 新增 `suppressConsole` 标志（默认 `false`，既有行为不变）：置 `true`

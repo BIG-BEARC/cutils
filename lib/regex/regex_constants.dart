@@ -251,4 +251,59 @@ class RegexConstants {
   /// Minimum character: 8
   static Pattern passwordHardAllowedWhitespace =
       r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[\S ]{8,}$';
+
+  // ---- 文件类型族（扩展名启发式，不校验文件内容）----
+  // 全部双端锚定并转义扩展名分隔点：`foojpeg` 这类无点串不误判。
+  // 匹配大小写不敏感，由 RegexUtils 以 `caseSensitive: false` 生效，
+  // 因此这里声明为 `String` 常量供 RegExp 构造。
+
+  /// 图片文件扩展名（.jpeg/.jpg/.gif/.png/.bmp）。
+  static const String REGEX_IMAGE = r'^.+\.(?:jpeg|jpg|gif|png|bmp)$';
+
+  /// 音频文件扩展名（.mp3/.wav/.wma/.amr/.ogg）。
+  static const String REGEX_AUDIO = r'^.+\.(?:mp3|wav|wma|amr|ogg)$';
+
+  /// 视频文件扩展名（.mp4/.avi/.wmv/.rmvb/.mpg/.mpeg/.3gp）。
+  static const String REGEX_VIDEO = r'^.+\.(?:mp4|avi|wmv|rmvb|mpg|mpeg|3gp)$';
+
+  /// 文本文件扩展名（.txt）。
+  static const String REGEX_TXT = r'^.+\.txt$';
+
+  /// Word 文档扩展名（.doc/.docx）。
+  static const String REGEX_DOC = r'^.+\.(?:doc|docx)$';
+
+  /// Excel 表格扩展名（.xls/.xlsx）。
+  static const String REGEX_EXCEL = r'^.+\.(?:xls|xlsx)$';
+
+  /// PPT 演示文稿扩展名（.ppt/.pptx）。
+  static const String REGEX_PPT = r'^.+\.(?:ppt|pptx)$';
+
+  /// APK 安装包扩展名（.apk）。
+  static const String REGEX_APK = r'^.+\.apk$';
+
+  /// PDF 文档扩展名（.pdf）。
+  static const String REGEX_PDF = r'^.+\.pdf$';
+
+  /// HTML 文件扩展名（.html，不含 .htm）。
+  static const String REGEX_HTML = r'^.+\.html$';
+
+  /// SVG 矢量图扩展名（.svg）。
+  static const String REGEX_VECTOR = r'^.+\.svg$';
+
+  /// 纯十六进制字符串（任意长度 ≥1，大小写混排均可）。
+  /// 与 [RegexUtils.isHexColor]（#RRGGBB 颜色格式）语义不同。
+  static const String REGEX_HEXADECIMAL = r'^[0-9a-fA-F]+$';
+
+  // ---- 哈希格式族（仅校验格式：长度 + 十六进制字符集，非校验和）----
+
+  /// MD5 格式：32 位十六进制（大小写均可）。
+  static const String REGEX_MD5 = r'^[a-fA-F0-9]{32}$';
+
+  /// SHA-1 格式：40 位十六进制，或冒号分隔的 20 字节形态。
+  static const String REGEX_SHA1 =
+      r'^(?:(?:[A-Fa-f0-9]{2}:){19}[A-Fa-f0-9]{2}|[a-fA-F0-9]{40})$';
+
+  /// SHA-256 格式：64 位十六进制，或冒号分隔的 32 字节形态。
+  static const String REGEX_SHA256 =
+      r'^(?:(?:[A-Fa-f0-9]{2}:){31}[A-Fa-f0-9]{2}|[a-fA-F0-9]{64})$';
 }

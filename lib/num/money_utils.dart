@@ -6,7 +6,8 @@ import 'money_unit.dart';
 /// * @Created at: 23-07-2025 17:29
 /// * @Email:
 /// * description
-/// 金额格式化工具（输入金额一律以**分（fen）**为单位）。
+/// 金额格式化与分/元互转工具：`changeF2Y*` 系输入以**分（fen）**为单位，
+/// `changeY2F` 输入以**元（yuan）**十进制字符串为单位。
 /// 依赖：`decimal`（纯 Dart，大额精度经其保证）。
 class MoneyUtils {
   MoneyUtils._();
@@ -72,6 +73,38 @@ class MoneyUtils {
       {MoneyFormat format = MoneyFormat.NORMAL,
       MoneyUnit unit = MoneyUnit.NORMAL}) {
     return withUnit(changeF2Y(amount, format: format), unit);
+  }
+
+  /// yuan str to fen.
+  /// 元字符串 转 分.
+  ///
+  /// 精度全程走 [Decimal]（`tryParse` + `shift(2)`），不经 `double`，超出
+  /// 2^53 边界的元值不丢精度。以下情形抛 [ArgumentError]，均不静默截断 /
+  /// 钳制：输入无法解析；解析后产生非整分（小数位超过两位，如 `"1.234"`）；
+  /// 换算分值超出平台 int 范围（`BigInt.toInt()` 对越界值会钳制为最大 /
+  /// 最小 int，故显式守卫）。
+  static int changeY2F(String yuan) {
+    final yuanDecimal = Decimal.tryParse(yuan);
+    if (yuanDecimal == null) {
+      throw ArgumentError(
+        'changeY2F: yuan must be a valid decimal value (got: "$yuan")',
+      );
+    }
+    final fen = yuanDecimal.shift(2);
+    if (fen != fen.truncate()) {
+      throw ArgumentError(
+        'changeY2F: yuan cannot be represented as an exact integer fen '
+        '(got: "$yuan")',
+      );
+    }
+    final fenBig = fen.toBigInt();
+    if (!fenBig.isValidInt) {
+      throw ArgumentError(
+        'changeY2F: converted fen value overflows the platform int range '
+        '(got: "$yuan")',
+      );
+    }
+    return fenBig.toInt();
   }
 
   /// with unit.

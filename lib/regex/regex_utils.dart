@@ -296,6 +296,104 @@ class RegexUtils {
       return false;
     }
   }
+
+  // ---- 文件类型族（扩展名启发式：只看名字，不校验文件内容）----
+  // 扩展名大小写不敏感（.PNG 与 .png 同义），故以 caseSensitive: false
+  // 预编译缓存；哈希族与 hexadecimal 模式自含大小写字符集。全部静态
+  // 预编译，方法调用免重复构造 RegExp。
+
+  static final RegExp _imageRegExp =
+      RegExp(RegexConstants.REGEX_IMAGE, caseSensitive: false);
+  static final RegExp _audioRegExp =
+      RegExp(RegexConstants.REGEX_AUDIO, caseSensitive: false);
+  static final RegExp _videoRegExp =
+      RegExp(RegexConstants.REGEX_VIDEO, caseSensitive: false);
+  static final RegExp _txtRegExp =
+      RegExp(RegexConstants.REGEX_TXT, caseSensitive: false);
+  static final RegExp _docRegExp =
+      RegExp(RegexConstants.REGEX_DOC, caseSensitive: false);
+  static final RegExp _excelRegExp =
+      RegExp(RegexConstants.REGEX_EXCEL, caseSensitive: false);
+  static final RegExp _pptRegExp =
+      RegExp(RegexConstants.REGEX_PPT, caseSensitive: false);
+  static final RegExp _apkRegExp =
+      RegExp(RegexConstants.REGEX_APK, caseSensitive: false);
+  static final RegExp _pdfRegExp =
+      RegExp(RegexConstants.REGEX_PDF, caseSensitive: false);
+  static final RegExp _htmlRegExp =
+      RegExp(RegexConstants.REGEX_HTML, caseSensitive: false);
+  static final RegExp _vectorRegExp =
+      RegExp(RegexConstants.REGEX_VECTOR, caseSensitive: false);
+  static final RegExp _md5RegExp = RegExp(RegexConstants.REGEX_MD5);
+  static final RegExp _sha1RegExp = RegExp(RegexConstants.REGEX_SHA1);
+  static final RegExp _sha256RegExp = RegExp(RegexConstants.REGEX_SHA256);
+  static final RegExp _hexadecimalRegExp =
+      RegExp(RegexConstants.REGEX_HEXADECIMAL);
+
+  /// 验证是否为图片文件名（.jpeg/.jpg/.gif/.png/.bmp，不区分大小写）。
+  static bool isImage(String? s) =>
+      s != null && s.isNotEmpty && _imageRegExp.hasMatch(s);
+
+  /// 验证是否为音频文件名（.mp3/.wav/.wma/.amr/.ogg）。
+  static bool isAudio(String? s) =>
+      s != null && s.isNotEmpty && _audioRegExp.hasMatch(s);
+
+  /// 验证是否为视频文件名（.mp4/.avi/.wmv/.rmvb/.mpg/.mpeg/.3gp）。
+  static bool isVideo(String? s) =>
+      s != null && s.isNotEmpty && _videoRegExp.hasMatch(s);
+
+  /// 验证是否为文本文件名（.txt）。
+  static bool isTxt(String? s) =>
+      s != null && s.isNotEmpty && _txtRegExp.hasMatch(s);
+
+  /// 验证是否为 Word 文档名（.doc/.docx）。
+  static bool isDoc(String? s) =>
+      s != null && s.isNotEmpty && _docRegExp.hasMatch(s);
+
+  /// 验证是否为 Excel 表格名（.xls/.xlsx）。
+  static bool isExcel(String? s) =>
+      s != null && s.isNotEmpty && _excelRegExp.hasMatch(s);
+
+  /// 验证是否为 PPT 演示文稿名（.ppt/.pptx）。
+  static bool isPpt(String? s) =>
+      s != null && s.isNotEmpty && _pptRegExp.hasMatch(s);
+
+  /// 验证是否为 APK 安装包名（.apk）。
+  static bool isApk(String? s) =>
+      s != null && s.isNotEmpty && _apkRegExp.hasMatch(s);
+
+  /// 验证是否为 PDF 文档名（.pdf）。
+  static bool isPdf(String? s) =>
+      s != null && s.isNotEmpty && _pdfRegExp.hasMatch(s);
+
+  /// 验证是否为 HTML 文件名（.html，不含 .htm）。
+  static bool isHtml(String? s) =>
+      s != null && s.isNotEmpty && _htmlRegExp.hasMatch(s);
+
+  /// 验证是否为 SVG 矢量图名（.svg）。
+  static bool isVector(String? s) =>
+      s != null && s.isNotEmpty && _vectorRegExp.hasMatch(s);
+
+  // ---- 哈希格式族（仅校验格式：长度 + 十六进制字符集，非校验和）----
+
+  /// 验证是否为 MD5 格式（32 位十六进制，大小写均可）。
+  static bool isMD5(String? s) =>
+      s != null && s.isNotEmpty && _md5RegExp.hasMatch(s);
+
+  /// 验证是否为 SHA-1 格式（40 位十六进制，或冒号分隔 20 字节形态）。
+  static bool isSHA1(String? s) =>
+      s != null && s.isNotEmpty && _sha1RegExp.hasMatch(s);
+
+  /// 验证是否为 SHA-256 格式（64 位十六进制，或冒号分隔 32 字节形态）。
+  static bool isSHA256(String? s) =>
+      s != null && s.isNotEmpty && _sha256RegExp.hasMatch(s);
+
+  /// 验证是否为纯十六进制字符串（任意长度 ≥1）。
+  ///
+  /// 与 [isHexColor] 语义不同：本方法匹配不带 `#` 前缀约束的裸十六进制串
+  /// （任意长度），`isHexColor` 只匹配 `#RGB`/`#RRGGBB` 等颜色格式。
+  static bool isHexadecimal(String? s) =>
+      s != null && s.isNotEmpty && _hexadecimalRegExp.hasMatch(s);
 }
 
 /// id card province dict.
