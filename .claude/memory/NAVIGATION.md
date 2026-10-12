@@ -10,6 +10,7 @@
 |---|---|---|
 | 金额 / 高精度计算 | 本表 | `lib/num/`（money_utils / money_unit / num_utils，基于 decimal） |
 | 内置类型扩展 | 本表 | `lib/ext/`（barrel: ext_fun.dart） |
+| 字节 / 协议解析 | 本表 | `lib/byte/`（ByteUtils：可读串/base64/窗口操作；ByteWord/ByteDoubleWord 端序拆装） |
 | 日期时间 | 本表 | `lib/datetime/`（DateTimeUtils / timeline_util / timer_util） |
 | 正则 | 本表 | `lib/regex/`（SCREAMING_CASE 常量是既有风格，勿改） |
 | JSON 编解码 | 本表 | `lib/json/json_utils.dart` |
