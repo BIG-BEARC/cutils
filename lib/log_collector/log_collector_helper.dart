@@ -55,11 +55,15 @@ class LogCollectorHelper {
   }
 
   /// 手动收集日志
+  ///
+  /// [suppressConsole] 语义见 [LogEntry.suppressConsole]（本类各级别方法的
+  /// 同名参数均透传它）。
   static Future<void> log(
     String message, {
     LogLevel level = LogLevel.info,
     String tag = 'manual',
     Map<String, dynamic>? extra,
+    bool suppressConsole = false,
   }) async {
     await instance.collect(LogEntry(
       level: level,
@@ -67,22 +71,38 @@ class LogCollectorHelper {
       tag: tag,
       source: LogSource.custom,
       extra: extra,
+      suppressConsole: suppressConsole,
     ));
   }
 
   /// 收集调试日志
-  static Future<void> debug(String message, {String tag = 'debug'}) async {
-    await log(message, level: LogLevel.debug, tag: tag);
+  static Future<void> debug(
+    String message, {
+    String tag = 'debug',
+    bool suppressConsole = false,
+  }) async {
+    await log(message,
+        level: LogLevel.debug, tag: tag, suppressConsole: suppressConsole);
   }
 
   /// 收集信息日志
-  static Future<void> info(String message, {String tag = 'info'}) async {
-    await log(message, level: LogLevel.info, tag: tag);
+  static Future<void> info(
+    String message, {
+    String tag = 'info',
+    bool suppressConsole = false,
+  }) async {
+    await log(message,
+        level: LogLevel.info, tag: tag, suppressConsole: suppressConsole);
   }
 
   /// 收集警告日志
-  static Future<void> warning(String message, {String tag = 'warning'}) async {
-    await log(message, level: LogLevel.warning, tag: tag);
+  static Future<void> warning(
+    String message, {
+    String tag = 'warning',
+    bool suppressConsole = false,
+  }) async {
+    await log(message,
+        level: LogLevel.warning, tag: tag, suppressConsole: suppressConsole);
   }
 
   /// 收集错误日志
@@ -91,6 +111,7 @@ class LogCollectorHelper {
     String tag = 'error',
     Object? error,
     StackTrace? stackTrace,
+    bool suppressConsole = false,
   }) async {
     await instance.collect(LogEntry(
       level: LogLevel.error,
@@ -99,6 +120,7 @@ class LogCollectorHelper {
       source: LogSource.custom,
       error: error,
       stackTrace: stackTrace,
+      suppressConsole: suppressConsole,
     ));
   }
 
@@ -108,6 +130,7 @@ class LogCollectorHelper {
     String tag = 'fatal',
     Object? error,
     StackTrace? stackTrace,
+    bool suppressConsole = false,
   }) async {
     await instance.collect(LogEntry(
       level: LogLevel.fatal,
@@ -116,6 +139,7 @@ class LogCollectorHelper {
       source: LogSource.custom,
       error: error,
       stackTrace: stackTrace,
+      suppressConsole: suppressConsole,
     ));
   }
 }

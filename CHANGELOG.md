@@ -2,6 +2,22 @@
 
 本文件记录 `cutils` 的发布变更。
 
+## 0.2.1 — log_collector 条目级压制控制台输出
+
+`LogEntry` 新增 `suppressConsole` 标志（默认 `false`，既有行为不变）：置 `true`
+的条目照常进入采集管线（内存 + 文件，`getLogs` / `export` 可查），仅分发时跳过
+控制台类输出器——适合 release 下低值 / 高频日志留档不刷屏。
+
+- `LogCollectorHelper` 六个级别方法（`log` / `debug` / `info` / `warning` /
+  `error` / `fatal`）新增同名可选参数透传。
+- `LogOutput` 基类新增 `isConsole` 契约 getter（默认 `false`）：向控制台写入的
+  自定义输出器须 override 为 `true`；包装 / 委托型输出器须转发
+  `delegate.isConsole`（`ConsoleLogOutput` / `BatchLogOutput` 已内置正确实现）。
+- 语义边界：不追溯拦截来源已上控制台的原始输出（如 `debugPrint` 原始打印）；
+  标志仅进程内路由有效，不进 `toJson` 持久化。
+- 方案经独立评审闭环，记录见 `docs/评审-plan-log-suppress-console.md`；新增
+  15 个测试用例（`test/log_collector/log_collector_suppress_console_test.dart`）。
+
 ## 0.2.0 — 命名统一（破坏性）
 
 全部工具类后缀统一为 `*Utils`（21/21），消除 Util/Utils 双轨与两处拼写不规范。

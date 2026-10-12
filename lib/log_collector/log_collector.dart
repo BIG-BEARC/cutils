@@ -173,6 +173,11 @@ class LogCollector {
         // 输出日志：遍历快照，避免 output.output() 内部调用 addOutput /
         // removeOutput 触发 ConcurrentModificationError。
         for (final output in List<LogOutput>.of(_outputs)) {
+          // 条目级压制：suppressConsole 条目照常入库，仅跳过控制台类输出器
+          // （在 collector 层跳过即不进 BatchLogOutput 缓冲，无二次判断点问题）。
+          if (entry.suppressConsole && output.isConsole) {
+            continue;
+          }
           try {
             await output.output(entry);
           } catch (e) {

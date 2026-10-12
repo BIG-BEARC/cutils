@@ -17,6 +17,16 @@ import 'log_entry.dart';
 /// 日志输出器抽象基类。子类实现 [output] 将一条 [LogEntry] 投递到目标
 /// （控制台 / 文件 / 网络）。可选实现 [initialize] / [dispose] 管理资源。
 abstract class LogOutput {
+  /// 是否为控制台类输出器。
+  ///
+  /// 声明制契约：凡向控制台写入（developer.log / debugPrint / print）的
+  /// 输出器**必须** override 为 `true`，否则 `LogEntry.suppressConsole` 的
+  /// 条目级压制对本输出器不生效（分发层只能按此标识跳过，机制上拦不住
+  /// 输出器自身向控制台写）。**包装 / 委托型输出器必须转发**
+  /// `delegate.isConsole`（参考 [BatchLogOutput]），否则被包装的控制台
+  /// 输出器会绕过压制。默认 `false`——文件 / 网络 / 自定义输出器无需关心。
+  bool get isConsole => false;
+
   /// 输出一条日志条目。
   Future<void> output(LogEntry entry);
 
@@ -33,6 +43,9 @@ class ConsoleLogOutput extends LogOutput {
   final bool enableColor;
 
   ConsoleLogOutput({this.enableColor = true});
+
+  @override
+  bool get isConsole => true;
 
   @override
   Future<void> output(LogEntry entry) async {
@@ -165,6 +178,11 @@ class BatchLogOutput extends LogOutput {
     this.batchSize = 100,
     this.batchInterval = const Duration(seconds: 5),
   });
+
+  /// 转发 [delegate] 的控制台标识——否则 `suppressConsole` 条目会经缓冲
+  /// 逃逸到包装的控制台输出器（分发层只看最外层输出器的 [isConsole]）。
+  @override
+  bool get isConsole => delegate.isConsole;
 
   /// 如果尚无挂起的 flush 计时器，则启动一个 [batchInterval] 后触发的
   /// 单次 flush。

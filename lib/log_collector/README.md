@@ -71,6 +71,12 @@ LogCollectorHelper.log(
     'action': 'login',
   },
 );
+
+// 压制控制台输出：条目照常采集（内存 + 文件，查询 / 导出可查），
+// 仅不进控制台类输出器——适合 release 下低值 / 高频日志留档不刷屏。
+// 语义边界：不追溯拦截来源已上控制台的原始输出（如 debugPrint）；
+// 该标志仅进程内有效，不持久化。六个级别方法均带此参数。
+LogCollectorHelper.debug('高频心跳日志', suppressConsole: true);
 ```
 
 ### 3. 高级配置
@@ -224,6 +230,11 @@ class CustomOutput extends LogOutput {
 // 使用自定义输出器
 collector.addOutput(CustomOutput());
 ```
+
+> **isConsole 契约**：若自定义输出器向控制台写入（developer.log /
+> debugPrint / print），必须 override `isConsole` 为 `true`；包装 /
+> 委托型输出器必须转发 `delegate.isConsole`（参考 `BatchLogOutput`）。
+> 否则 `LogEntry.suppressConsole` 的条目级压制对本输出器不生效。
 
 ## 注意事项
 

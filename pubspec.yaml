@@ -1,6 +1,6 @@
 name: cutils
 description: "Flutter Utils."
-version: 0.2.0
+version: 0.2.1
 homepage: https://github.com/BIG-BEARC/cutils
 repository: https://github.com/BIG-BEARC/cutils
 environment:

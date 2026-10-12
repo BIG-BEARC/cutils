@@ -76,6 +76,17 @@ class LogEntry {
   /// 线程ID（如果有）
   final String? threadId;
 
+  /// 压制控制台输出：为 `true` 时本条目照常进入采集管线（内存 + 文件存储，
+  /// getLogs / export 可查），仅在分发环节跳过控制台类输出器（见
+  /// [LogOutput.isConsole]）。
+  ///
+  /// 语义边界：
+  /// - 只拦 collector 的控制台类输出器分发；不追溯拦截条目来源已产生的输出
+  ///   （如 debugPrint 原始打印在拦截器收集前就已上控制台）。
+  /// - 仅进程内分发路由有效，不持久化：不进 [toJson] / [fromJson]，文件读回
+  ///   的条目该标志恒为 `false`（若未来做日志回灌 / 重放需注意会重新上控制台）。
+  final bool suppressConsole;
+
   LogEntry({
     required this.level,
     required this.message,
@@ -86,6 +97,7 @@ class LogEntry {
     this.error,
     Map<String, dynamic>? extra,
     this.threadId,
+    this.suppressConsole = false,
   })  : extra = extra == null ? null : Map<String, dynamic>.unmodifiable(extra),
         timestamp = timestamp ?? DateTime.now();
 
