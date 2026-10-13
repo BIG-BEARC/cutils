@@ -30,3 +30,17 @@
 - 状态：未修复｜已修复于 vX（不删卡，老环境仍在） ｜ 最后核验：<日期>
 - 出处：复盘链接 + 官方 issue
 ```
+
+## [全平台] Dart `num.round()` 不是银行家舍入——手写 roundHalfUp 反而引入浮点 bug
+- 归属：Dart SDK（语言语义）
+- 触发场景：吸收/移植其它语言（Java 注释习惯）的工具代码，或凭印象写「半舍入」 ｜ 症状：自实现 `(v + 0.5).truncate()` 式 roundHalfUp 在特定输入上差 1；注释宣称「Dart .round() 是银行家舍入」与实际行为不符 ｜ 根因：Dart `round()` 语义是 **half away from zero**（2.5→3、-2.5→-3，等价 Java `RoundingMode.HALF_UP`），并非银行家舍入（HALF_EVEN）；而 `(v + 0.5).truncate()` 有经典浮点边界 bug——`0.49999999999999994 + 0.5 == 1.0`（double 表示误差），截断得 1，正确应得 0 ｜ 规避：半数向上舍入直接用内置 `round()`；金额类高精度场景走 `Decimal`（本项目 `MoneyUtils`）不进 double
+- 区间：Dart SDK 全版本（语言规范行为） × 本仓实测（2026-10-12 `dart run` 临时脚本）
+- 状态：未修复（语言行为非缺陷，长期有效） ｜ 最后核验：2026-10-12
+- 出处：saas_pos_smart_edition `shared/utils/round_half_up` 类实现审查（吸收评估中实测证伪，未吸收）；行为依据 Dart 语言规范 `double.round()`
+
+## [iOS] immersiveSticky 隐藏状态栏后 `MediaQuery.padding.top` 不同步归零——Scaffold 内容整体下移
+- 归属：Flutter SDK（engine 时序）
+- 触发场景：iOS 上用 `SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky)` 隐藏 status bar 后布局 ｜ 症状：status bar 已隐藏但 `MediaQuery.padding.top` 仍是旧值（不同步归零的时序 bug），Scaffold 据此把内容推下，页面整体下移 ｜ 根因：engine 侧 padding 更新与 UI 模式切换异步，读取到的是切换前快照 ｜ 规避：不依赖 status bar 隐藏时序——在 `MaterialApp.builder` 中对该页 `MediaQuery.removePadding(context: removeTop: true)` 强制 padding=0；**不要**依赖 Info.plist 的 `UIStatusBarHidden`（会被 Flutter engine 覆盖，不可靠），iOS 隐藏 status bar 仍走 immersiveSticky
+- 区间：iOS × Flutter engine（immersiveSticky 模式） ｜ Android 无此坑
+- 状态：未修复（engine 行为，规避法长期有效） ｜ 最后核验：2026-10-12
+- 出处：saas_pos_smart_edition `core/utils/fullscreen_util.dart` 头注（生产实证，原作者 甄灿兵）；能力吸收评估时采集

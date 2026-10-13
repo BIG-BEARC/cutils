@@ -2,6 +2,41 @@
 
 本文件记录 `cutils` 的发布变更。
 
+## 0.4.0 — 吸收 saas_pos 六件能力（版本比较 / 局域网 IPv4 / 脱敏族 / 营业日 / SP 自愈 / SHA·HMAC）
+
+自 saas_pos_smart_edition（收银端）按「能力吸收、重写」落地六件（非文件拷贝：
+全部按本仓基线重写，静默吞错改为显式抛错，私有益处收敛为通用工具）：
+
+- **新增 `lib/system/version_utils.dart`**：`VersionUtils.compare` / `isNewer`
+  ——点分版本号三态比较（v/V 前缀剥离、逐段数值序、尾零等价 `1.0 == 1`、
+  缺段视为更小）；空输入抛 `ArgumentError`（原实现静默返回 false）。不解析
+  预发布标签（`1.0.0-beta` 与 `1.0.0` 视为相等）。
+- **新增 `lib/net/lan_utils.dart`**：`LanUtils.getPreferredLanIpv4`
+  ——首选局域网 IPv4（192.168 > 10 > 172.16-31 > 其它；环回 / APIPA 排除，
+  虚拟网卡降权不排除）；无网返回 `null` 不抛错。web 不可用（`dart:io`）。
+- **`StringExt` 脱敏族升级**（`lib/ext/string_ext.dart`）：
+  - `maskMobile` 分级脱敏（≥10 位前 3 后 4 / 7-9 位前 2 后 2 / 4-6 位前 1
+    后 1 / <4 位原样；国家码前缀保留并以空格拼回；按纯数字位定级）。
+    **行为变化**：旧实现仅 11 位生效、其余原样返回（不脱敏泄露），非 11 位
+    输入现在会被分级脱敏；且掩码体改为按纯数字重建，原串中的非数字字符
+    （如 `-` 分隔符）不再保留——11 位含杂质的输入输出同样变化；
+  - 新增 `maskMobileOr` / `maskMiddle` / `maskMiddleOr`（保留头尾通用脱敏，
+    负参抛 `ArgumentError`）。
+- **`DateTimeUtils.getBusinessDate`**（`lib/datetime/date_utils.dart`）：营业
+  日归属——按 `"HH:mm:ss"` 日切线把结账时刻归属到营业日锚点时刻（返回截止
+  时刻非日界 00:00）；无截止线返回原值；截止线非法抛 `ArgumentError`
+  （原实现静默吞错）。
+- **Windows SP 文件自愈**（`lib/storage/sp_util.dart` + `sp_backup_io.dart` /
+  `sp_backup_none.dart`）：`SpUtils.init()` 成功后备份
+  `shared_preferences.json`，失败时先校验备份（合法 JSON 对象）再回写恢复
+  （先校验后替换，失败保现场），rethrow 语义不变；备份 / 恢复 IO 失败仅记
+  日志。**平台面变化**：sp_util 经条件 import 引入 `dart:io`（web 走 no-op
+  stub，备份 / 恢复入口在 web 上为空操作）；非 Windows 平台 no-op。文件
+  布局与 shared_preferences_windows 2.4.1 默认实现耦合。
+- **`CryptoUtils` 新增摘要 / 签名**（`lib/crypto/crypto_utils.dart`）：
+  `encodeSha256`（hex 小写）、`encodeHmacSha1` / `encodeHmacSha256`
+  （utf8 编码，默认 hex 小写，`base64: true` 返回标准 base64）。
+
 ## 0.3.0 — 吸收 YCFlutterUtils 三件能力（byte / 元转分 / 校验族）
 
 自 YCFlutterUtils 按「能力吸收、重写」落地三件（非文件拷贝：源实现为

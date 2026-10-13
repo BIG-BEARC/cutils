@@ -316,7 +316,7 @@ plugin 极契合 TDD——大量纯函数和明确的公开 API，**public API �
 - `ext/` —— 内置类型扩展（`string_ext`、`int_ext`、`double_ext`、`bool_ext`、`object_ext`、`widget_ext`），`ext_fun.dart` 是 barrel。
 - `datetime/` —— 日期时间（`date_utils` 的 **`DateTimeUtils`**、`timeline_util`、`timer_util` 及 zh/en 本地化信息）。⚠️ 类名是 `DateTimeUtils`，已避开 Flutter SDK 的 `DateUtils` 同名。
 - `regex/`、`json/` —— 正则 / JSON。
-- `crypto/` —— 加解密（**`CryptoUtils`**，用 `crypto` 包；md5/hmac/base64/xor）。
+- `crypto/` —— 加解密（**`CryptoUtils`**，用 `crypto` 包；md5/sha256/hmac-sha1/hmac-sha256/base64/xor）。
 - `file/`、`storage/`（SharedPreferences 的 `SpUtils`）、`net/`（connectivity）。
 - `system/` —— 设备 / 包信息、键盘、系统工具。
 - `ui/` —— Flutter 框架 UI 工具（`calculate_utils` 文本测量、`image_utils`）。

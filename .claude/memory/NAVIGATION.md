@@ -14,11 +14,11 @@
 | 日期时间 | 本表 | `lib/datetime/`（DateTimeUtils / timeline_util / timer_util） |
 | 正则 | 本表 | `lib/regex/`（SCREAMING_CASE 常量是既有风格，勿改） |
 | JSON 编解码 | 本表 | `lib/json/json_utils.dart` |
-| 加解密 | 本表 | `lib/crypto/crypto_utils.dart`（md5/hmac/base64/xor） |
+| 加解密 | 本表 | `lib/crypto/crypto_utils.dart`（md5/sha256/hmac/base64/xor） |
 | 文件 / 压缩 | 本表 | `lib/file/file_utils.dart` |
-| 本地存储 | 本表 | `lib/storage/sp_util.dart`（SharedPreferences） |
-| 网络 | 本表 | `lib/net/`（connectivity） |
-| 设备 / 系统 | 本表 | `lib/system/`（device_info / keyboard / system_utils） |
+| 本地存储 | 本表 | `lib/storage/sp_util.dart`（SharedPreferences；Windows 端文件备份自愈见 sp_backup_io.dart） |
+| 网络 | 本表 | `lib/net/`（connectivity / lan_utils——局域网 IPv4） |
+| 设备 / 系统 | 本表 | `lib/system/`（device_info / keyboard / system_utils / version_utils——版本号比较） |
 | 文本测量 / 图片 | 本表 | `lib/ui/`（calculate_utils / image_utils） |
 | 事件总线 | 本表 | `lib/event/event_bus_util.dart` |
 | 随机 / UUID | 本表 | `lib/identifier/` |
