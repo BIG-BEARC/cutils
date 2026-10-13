@@ -16,4 +16,18 @@ void main() {
     expect(Radix, isNotNull);
     expect(MoneyUtils.changeY2F, isNotNull);
   });
+
+  test('barrel 导出 saas_pos 吸收批（version / lan / 脱敏扩展锚）', () {
+    expect(VersionUtils.compare, isNotNull);
+    expect(VersionUtils.isNewer, isNotNull);
+    expect(LanUtils.pickBestLanIpv4, isNotNull);
+    expect('13812345678'.maskMobile, isNotNull);
+    expect('13812345678'.maskMobileOr(), isNotNull);
+    expect('13812345678'.maskMiddle(head: 3, tail: 4), isNotNull);
+    expect('13812345678'.maskMiddleOr(head: 3, tail: 4), isNotNull);
+    expect(DateTimeUtils.getBusinessDate, isNotNull);
+    expect(CryptoUtils.encodeSha256, isNotNull);
+    expect(CryptoUtils.encodeHmacSha1, isNotNull);
+    expect(CryptoUtils.encodeHmacSha256, isNotNull);
+  });
 }

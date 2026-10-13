@@ -22,7 +22,7 @@ class ExtDemo extends StatelessWidget {
           result: 'hello'.reverse(),
         ),
         DemoRow(
-          title: '手机号脱敏（11 位生效，maskMobile）',
+          title: '手机号脱敏（分级，maskMobile）',
           expr: "'13812345678'.maskMobile",
           result: '13812345678'.maskMobile,
         ),

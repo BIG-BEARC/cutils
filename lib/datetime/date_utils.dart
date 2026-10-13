@@ -682,6 +682,60 @@ class DateTimeUtils {
     return copyWith(d, day: d.day - 1);
   }
 
+  /// 营业日归属：按日切线 [cutoffTime] 把结账时刻 [checkoutTime] 归属到
+  /// 所属营业日的锚点时刻。
+  ///
+  /// 规则：[checkoutTime] 晚于等于当天 [cutoffTime]（`"HH:mm:ss"`）时归属
+  /// 当天，否则归属前一天；返回值为**归属日的 [cutoffTime] 时刻**（而非日界
+  /// 00:00），调用方可直接取其年月日作为营业日、或整体作为营业时间戳。
+  /// 未提供 [cutoffTime] 时原样返回 [checkoutTime]（无日切概念）。
+  ///
+  /// [cutoffTime] 必须是三段数字（`0 <= hour <= 23`、`0 <= minute <= 59`、
+  /// `0 <= second <= 59`），否则抛 [ArgumentError]——不静默回退原值，
+  /// 调用方应 try-catch 或预先校验配置。
+  ///
+  /// 能力吸收自 saas_pos 收银端营业日归属逻辑并按本库基线重写。
+  ///
+  /// example:
+  /// ```dart
+  /// // 日切线 04:00：10 月 12 日凌晨 3 点的结账归属 10 月 11 日
+  /// DateTimeUtils.getBusinessDate(
+  ///   checkoutTime: DateTime(2026, 10, 12, 3),
+  ///   cutoffTime: '04:00:00',
+  /// ); // DateTime(2026, 10, 11, 4, 0, 0)
+  /// ```
+  static DateTime getBusinessDate({
+    required DateTime checkoutTime,
+    String? cutoffTime,
+  }) {
+    if (cutoffTime == null) return checkoutTime;
+    final parts = cutoffTime.split(':');
+    if (parts.length != 3) {
+      throw ArgumentError.value(
+          cutoffTime, 'cutoffTime', '必须是 "HH:mm:ss" 三段格式');
+    }
+    final h = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    final s = int.tryParse(parts[2]);
+    if (h == null ||
+        m == null ||
+        s == null ||
+        h < 0 ||
+        h > 23 ||
+        m < 0 ||
+        m > 59 ||
+        s < 0 ||
+        s > 59) {
+      throw ArgumentError.value(cutoffTime, 'cutoffTime', '段值非法');
+    }
+    final cutoffToday = DateTime(
+        checkoutTime.year, checkoutTime.month, checkoutTime.day, h, m, s);
+    if (!checkoutTime.isBefore(cutoffToday)) {
+      return cutoffToday;
+    }
+    return previousDay(cutoffToday);
+  }
+
   /// Returns same date in the next year.
   static DateTime nextYear(DateTime d) {
     return _date(d.isUtc, d.year + 1, d.month, d.day);

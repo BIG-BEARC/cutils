@@ -27,12 +27,6 @@ class JsonUtils {
     }
   }
 
-  /// Deprecated：使用 [logJson] 代替。
-  @Deprecated('使用 logJson 代替。printJson 命名踩日志禁词（print），'
-      '已重命名为 logJson。')
-  static void printJson(dynamic obj, {bool prettyPrint = true}) =>
-      logJson(obj, prettyPrint: prettyPrint);
-
   /// 将任意对象转为 JSON 字符串
   static String? encodeObj(dynamic value) {
     if (value == null) return null;

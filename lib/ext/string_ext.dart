@@ -139,14 +139,96 @@ extension StringExt on String? {
     return result + decimalPart;
   }
 
-  /// 星号脱敏手机号中间四位：仅对 11 位字符串生效，其它原样返回。
+  /// 分级星号脱敏手机号（原地升级：不再限定 11 位原样返回）。
   ///
-  /// example: `"13812345678".maskMobile` → `"138****5678"`。
+  /// 按**纯数字位数**定级（非数字字符剔除后重建，分隔符如 `-` 不保留）：
+  /// - ≥10 位：前 3 后 4，固定 4 星（`138****5678`）；
+  /// - 7-9 位：前 2 后 2，固定 3 星（`12***67`）；
+  /// - 4-6 位：前 1 后 1，固定 2 星（`1**4`）；
+  /// - <4 位：不脱敏，原样返回。
+  ///
+  /// `+` 开头且后接 1~3 位数字的**国家码前缀**保留，以「码 + 空格 + 掩码体」
+  /// 拼回（`+8613812345678` → `+86 138****5678`）。前缀识别是启发式，
+  /// 无法区分「+1」与「+155」类连写歧义；带空格的真实显示形态可正确切分。
+  ///
+  /// example:
+  /// ```dart
+  /// "13812345678".maskMobile; // "138****5678"
+  /// "+86 138 1234 5678".maskMobile; // "+86 138****5678"
+  /// ```
   String get maskMobile {
-    final str = this;
-    if (str == null || str.isEmpty) return '';
-    if (str.length != 11) return str;
-    return '${str.substring(0, 3)}****${str.substring(7)}';
+    final s = this;
+    if (s == null) return '';
+    final match = RegExp(r'^\+(\d{1,3})').firstMatch(s);
+    final prefix = match?.group(0) ?? '';
+    final digits = (match == null ? s : s.substring(match.end))
+        .replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return s;
+    final String masked;
+    if (digits.length >= 10) {
+      masked =
+          '${digits.substring(0, 3)}****${digits.substring(digits.length - 4)}';
+    } else if (digits.length >= 7) {
+      masked =
+          '${digits.substring(0, 2)}***${digits.substring(digits.length - 2)}';
+    } else if (digits.length >= 4) {
+      masked =
+          '${digits.substring(0, 1)}**${digits.substring(digits.length - 1)}';
+    } else {
+      // 不足 4 位不脱敏（含带国家码前缀的短号）——原样返回是已定稿语义，
+      // 不做「前缀 + 规范化数字」的重建插空格。
+      return s;
+    }
+    return prefix.isEmpty ? masked : '$prefix $masked';
+  }
+
+  /// [maskMobile] 的空值安全版：null / 空串返回 [fallback]。
+  ///
+  /// 与 [maskMiddleOr] 同族统一命名参数形态（本族扩展参数位一致，便于
+  /// 后续扩展；发布后改形态即破坏性，故一次到位）。
+  String maskMobileOr({String fallback = ''}) {
+    final s = this;
+    if (s == null || s.isEmpty) return fallback;
+    return s.maskMobile;
+  }
+
+  /// 保留头尾、掩码中间的通用脱敏。
+  ///
+  /// 保留前 [head] 位与后 [tail] 位，中间以 [placeholder]（默认 `"****"`）
+  /// 填充；[head] / [tail] 均为 0 时整串掩码。负参抛
+  /// [ArgumentError]（不静默钳制）；长度不超过 `head + tail` 时原样返回
+  /// （不脱敏短串）。
+  ///
+  /// example:
+  /// ```dart
+  /// "张三丰".maskMiddle(head: 1, tail: 1); // "张****丰"
+  /// "13812345678".maskMiddle(head: 3, tail: 4); // "138****5678"
+  /// ```
+  String maskMiddle({int head = 0, int tail = 0, String placeholder = '****'}) {
+    final s = this;
+    if (s == null) return '';
+    if (head < 0) {
+      throw ArgumentError.value(head, 'head', '不能为负');
+    }
+    if (tail < 0) {
+      throw ArgumentError.value(tail, 'tail', '不能为负');
+    }
+    if (s.length <= head + tail) return s;
+    if (head == 0 && tail == 0) return placeholder;
+    final tailPart = tail == 0 ? '' : s.substring(s.length - tail);
+    return '${s.substring(0, head)}$placeholder$tailPart';
+  }
+
+  /// [maskMiddle] 的空值安全版：null / 空串返回 [fallback]（默认 `''`）。
+  String maskMiddleOr({
+    String fallback = '',
+    int head = 0,
+    int tail = 0,
+    String placeholder = '****',
+  }) {
+    final s = this;
+    if (s == null || s.isEmpty) return fallback;
+    return s.maskMiddle(head: head, tail: tail, placeholder: placeholder);
   }
 
   /// 是否为中国大陆手机号（正则 `^1[3-9]\d{9}$`）。

@@ -28,11 +28,13 @@ export 'crypto/crypto_utils.dart';
 export 'file/file_utils.dart';
 export 'storage/sp_util.dart';
 export 'net/net_util.dart';
+export 'net/lan_utils.dart';
 // 系统
 export 'system/device_info_util.dart';
 export 'system/package_info_util.dart';
 export 'system/keyboard_util.dart';
 export 'system/system_utils.dart';
+export 'system/version_utils.dart';
 // UI / 事件 / 标识
 export 'ui/calculate_utils.dart';
 export 'ui/image_utils.dart';

@@ -10,6 +10,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Project imports:
 import 'package:cutils/json/json_utils.dart';
 import 'package:cutils/log/log.dart';
+import 'package:cutils/storage/sp_backup_none.dart'
+    if (dart.library.io) 'package:cutils/storage/sp_backup_io.dart'
+    as sp_backup;
 
 /// * @Author: chuxiong
 /// * @Created at: 12-06-2025 11:11
@@ -17,6 +20,9 @@ import 'package:cutils/log/log.dart';
 /// * description sp存储工具类，适合存储轻量级数据，不建议存储json长字符串
 ///
 /// 依赖：`shared_preferences`（平台插件——经原生通道读写，测试需打桩）。
+/// 平台面：本模块经条件 import 引入 Windows 文件备份自愈
+/// （`sp_backup_io.dart`，`dart:io`）；web 端走 no-op stub，
+/// 备份 / 恢复相关入口在 web 上为空操作，其余 API 平台无关。
 
 /// 全局 [SpUtils] 单例。使用前需先 `await spUtil.init();`。
 final spUtil = SpUtils();
@@ -43,6 +49,17 @@ class SpUtils {
   /// 完成后缓存到 `_prefs`；失败清空 in-flight Future 允许重试。app 启动时
   /// 调用一次即可。
   ///
+  /// **Windows 文件自愈**：init 成功后把 shared_preferences.json 备份一份
+  /// （`.bak`）；init 失败时尝试用备份恢复（先校验备份为合法 JSON 对象才
+  /// 回写，失败保现场），再按原语义 rethrow——备份 / 恢复自身的 IO 失败
+  /// 只记日志，不影响 init 返回值。恢复成功后备份保留，下次 init 成功时
+  /// 会重新备份为新鲜内容。web / 非 Windows 平台为 no-op。
+  ///
+  /// **失败路径的并发窗口**（已定稿接受现状，注明语义）：失败时先清空
+  /// in-flight Future 再做恢复，因此恢复完成前重入的 [init] 不会共享本次
+  /// 恢复——它会再走一轮冷启动（底层仍坏则再失败一轮，恢复因幂等而不
+  /// 叠加副作用）；恢复完成后下一次调用按正常语义成功，不存在死锁。
+  ///
   /// 返回 `true` 表示初始化成功（`SharedPreferences` 对象不外泄，
   /// 需要原始实例时用 [getSp]）。
   Future<bool> init() async {
@@ -50,13 +67,18 @@ class SpUtils {
     // 并发调用者共享同一个 in-flight Future（single-flight），避免各自调用
     // getInstance()。
     if (_initFuture != null) return _initFuture!;
-    final Future<bool> pending = SharedPreferences.getInstance().then((p) {
+    final Future<bool> pending =
+        SharedPreferences.getInstance().then((p) async {
       _prefs = p;
       _initFuture = null;
+      // 成功路径备份（IO 失败仅记日志，不改变成功返回值）。
+      await sp_backup.backupSpFile();
       return true;
-    }).catchError((Object e) {
+    }).catchError((Object e) async {
       // 失败时清空，允许后续重试。
       _initFuture = null;
+      // Windows 端尝试文件级自愈后再抛（rethrow 语义不变）。
+      await sp_backup.restoreSpFile();
       throw e;
     });
     _initFuture = pending;

@@ -6,8 +6,9 @@ import 'package:convert/convert.dart';
 
 /// 加密和解密工具类
 ///
-/// 提供 MD5（字符串 / 文件）、Base64 编解码、以及 XOR 对称加解密（含字节级
-/// Base64 往返）。XOR 密钥为逗号分隔的整数，非整数分段抛 [ArgumentError]。
+/// 提供 MD5（字符串 / 文件）、SHA-256 摘要、HMAC-SHA1 / HMAC-SHA256 签名、
+/// Base64 编解码、以及 XOR 对称加解密（含字节级 Base64 往返）。XOR 密钥为
+/// 逗号分隔的整数，非整数分段抛 [ArgumentError]。
 /// 依赖：`crypto` / `convert`（纯 Dart）。
 class CryptoUtils {
   CryptoUtils._();
@@ -27,6 +28,37 @@ class CryptoUtils {
     final bytes = file.readAsBytesSync();
     final digest = md5.convert(bytes);
     return hex.encode(digest.bytes);
+  }
+
+  /// sha256 摘要：输入按 UTF-8 编码，返回小写 hex（64 字符），与
+  /// [encodeMd5] 输出风格一致。
+  static String encodeSha256(String data) {
+    final digest = sha256.convert(const Utf8Encoder().convert(data));
+    return hex.encode(digest.bytes);
+  }
+
+  /// HMAC-SHA1 签名：[data] 与 [secret] 均按 UTF-8 编码，默认返回小写
+  /// hex（40 字符）；[base64] 为 `true` 时返回标准 base64。
+  ///
+  /// example: `CryptoUtils.encodeHmacSha1('msg', 'secret')`。
+  static String encodeHmacSha1(String data, String secret,
+      {bool base64 = false}) {
+    final bytes = Hmac(sha1, const Utf8Encoder().convert(secret))
+        .convert(const Utf8Encoder().convert(data))
+        .bytes;
+    return base64 ? const Base64Encoder().convert(bytes) : hex.encode(bytes);
+  }
+
+  /// HMAC-SHA256 签名：[data] 与 [secret] 均按 UTF-8 编码，默认返回小写
+  /// hex（64 字符）；[base64] 为 `true` 时返回标准 base64。
+  ///
+  /// example: `CryptoUtils.encodeHmacSha256('msg', 'secret', base64: true)`。
+  static String encodeHmacSha256(String data, String secret,
+      {bool base64 = false}) {
+    final bytes = Hmac(sha256, const Utf8Encoder().convert(secret))
+        .convert(const Utf8Encoder().convert(data))
+        .bytes;
+    return base64 ? const Base64Encoder().convert(bytes) : hex.encode(bytes);
   }
 
   /// 解析并校验 XOR 密钥。

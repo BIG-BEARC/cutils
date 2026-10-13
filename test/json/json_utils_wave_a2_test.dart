@@ -8,15 +8,12 @@ import 'package:flutter_test/flutter_test.dart';
 // Project imports:
 import 'package:cutils/json/json_utils.dart';
 
-// 本测试文件会显式调用 deprecated 别名 printJson 以验证转发，文件级豁免。
-// ignore_for_file: deprecated_member_use_from_same_package
-
 /// Wave A2 — JsonUtils 中危修复测试。
 ///
 /// 覆盖项：
 /// - A2-4: `encodeObjectList([])` 返回 `"[]"`（不再返回 null）。
 /// - A2-5: 大整数精度限制以 dartdoc 文档化；普通 int 仍可精确往返。
-/// - A2-6: `printJson` → `logJson`（保留 deprecated 别名转发）。
+/// - A2-6: `printJson` → `logJson` 更名（兼容层现已移除，仅存 logJson 直测）。
 void main() {
   group('A2-4 encodeObjectList empty list', () {
     test('empty list returns "[]" (not null)', () {
@@ -95,18 +92,7 @@ void main() {
       expect(logged.join('\n'), contains('"x":1'));
     });
 
-    test('deprecated printJson forwards to logJson (same JSON body)', () {
-      // 同一输入，两个入口输出的 JSON 主体必须一致（时间戳横幅会不同，故只比较内容行）。
-      bool isJsonBody(String l) =>
-          l.contains('"') || l.contains('{') || l.contains('}');
-      final outLog = capturePrint(() => JsonUtils.logJson({'x': 1, 'y': 'a'}))
-          .where(isJsonBody)
-          .join();
-      final outPrint =
-          capturePrint(() => JsonUtils.printJson({'x': 1, 'y': 'a'}))
-              .where(isJsonBody)
-              .join();
-      expect(outPrint, equals(outLog));
-    });
+    // printJson 兼容层已从 JsonUtils 移除（工作区既有决策），其转发验证
+    // 用例随之删除——组内保留上面两个 logJson 直测。
   });
 }
